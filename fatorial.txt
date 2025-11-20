@@ -1,0 +1,63 @@
+# fatorial.txt
+# Calcula fatorial de números de 1 até 8
+# Usa laço e memórias
+
+# Inicializar variáveis
+(1 N)
+(1 FAT)
+
+# Loop para calcular fatoriais de 1 a 8
+# WHILE(N <= 8) { FAT = FAT * N; N = N + 1; }
+((N 8 <=) (((FAT N *) FAT) ((N 1 +) N) *) while)
+
+# Armazenar resultado final
+(FAT RESULTADO)
+
+# Calcular 1!
+(1 NUM)
+(1 FATORIAL1)
+
+# Calcular 2!
+(2 NUM)
+(1 2 *)
+(1 RES FATORIAL2)
+
+# Calcular 3!
+(3 NUM)
+(2 FATORIAL2 *)
+(1 RES FATORIAL3)
+
+# Calcular 4!
+(4 NUM)
+(3 FATORIAL3 *)
+(1 RES FATORIAL4)
+
+# Calcular 5!
+(5 NUM)
+(4 FATORIAL4 *)
+(1 RES FATORIAL5)
+
+# Calcular 6!
+(6 NUM)
+(5 FATORIAL5 *)
+(1 RES FATORIAL6)
+
+# Calcular 7!
+(7 NUM)
+(6 FATORIAL6 *)
+(1 RES FATORIAL7)
+
+# Calcular 8!
+(8 NUM)
+(7 FATORIAL7 *)
+(1 RES FATORIAL8)
+
+# Resultados esperados:
+# 1! = 1
+# 2! = 2
+# 3! = 6
+# 4! = 24
+# 5! = 120
+# 6! = 720
+# 7! = 5040
+# 8! = 40320

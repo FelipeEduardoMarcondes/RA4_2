@@ -1,0 +1,87 @@
+# Three Address Code (TAC) - Otimizado
+# Gerado automaticamente
+
+
+# Linha 1
+
+# Linha 2
+
+# Linha 3
+
+# Linha 4
+
+# Linha 5
+MEM[X] = 5
+
+# Linha 6
+t13 = MEM[X]
+
+# Linha 7
+MEM[A] = 10
+
+# Linha 8
+MEM[B] = 20
+
+# Linha 9
+MEM[UNUSED] = 99
+
+# Linha 10
+t19 = MEM[A]
+t20 = MEM[B]
+
+# Linha 11
+MEM[A] = 10
+
+# Linha 12
+t23 = MEM[A]
+MEM[B] = t23
+
+# Linha 13
+t24 = MEM[B]
+MEM[C] = t24
+
+# Linha 14
+t25 = MEM[C]
+
+# Linha 15
+
+# Linha 16
+
+# Linha 17
+
+# Linha 18
+
+# Linha 19
+
+# Linha 20
+ifFalse 1 goto L0
+goto L1
+L0:
+L1:
+
+# Linha 21
+MEM[N] = 1
+
+# Linha 22
+t56 = MEM[N]
+MEM[M] = t56
+
+# Linha 23
+t57 = MEM[M]
+MEM[K] = t57
+
+# Linha 24
+t58 = MEM[K]
+
+# Linha 25
+MEM[PI] = 3.14
+
+# Linha 26
+t62 = MEM[PI]
+
+# Linha 27
+t66 = RES[1]
+
+# Linha 28
+
+# Linha 29
