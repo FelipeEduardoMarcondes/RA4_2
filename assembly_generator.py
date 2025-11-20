@@ -138,8 +138,9 @@ class AVRAssemblyGenerator:
             self._carregar_memoria(match)
             return
         
-        # Armazenar em memória: MEM[var] = t1
-        match = re.match(r'MEM\[(\w+)\]\s*=\s*(t\d+)', inst)
+        # Armazenar em memória: MEM[var] = t1 OU MEM[var] = 5
+        # CORREÇÃO: Regex alterada para aceitar qualquer não-espaço (\S+) no lado direito
+        match = re.match(r'MEM\[(\w+)\]\s*=\s*(\S+)', inst)
         if match:
             self._armazenar_memoria(match)
             return
@@ -183,7 +184,7 @@ class AVRAssemblyGenerator:
             if -128 <= int_val <= 127:
                 self.assembly.append(f"    ldi {reg}, {int_val}")
             else:
-                # Valor grande, usar 16 bits
+                # Valor grande, usar 16 bits (apenas byte baixo por enquanto neste exemplo simples)
                 self.assembly.append(f"    ldi {reg}, {int_val & 0xFF}")
                 self.assembly.append(f"    ; Valor de 16 bits: {int_val}")
         
@@ -311,10 +312,26 @@ class AVRAssemblyGenerator:
         self.assembly.append("")
     
     def _armazenar_memoria(self, match):
-        """MEM[var] = t1"""
-        var_name, temp = match.groups()
-        reg = self._obter_registrador(temp)
+        """MEM[var] = t1 OU MEM[var] = 5 (literal)"""
+        var_name, source = match.groups()
         
+        # Verifica se a fonte é um registrador/temporário ou um literal
+        if source.startswith('t'):
+            # É uma temporária (ex: t1)
+            reg = self._obter_registrador(source)
+        else:
+            # É um literal (ex: 5, 100.0)
+            reg = 'r16'  # Usa r16 como registrador temporário para o valor imediato
+            try:
+                if '.' in source:
+                    int_val = int(float(source)) # Simplificado
+                else:
+                    int_val = int(source)
+                self.assembly.append(f"    ldi {reg}, {int_val & 0xFF}")
+            except ValueError:
+                self.assembly.append(f"    ; Erro ao converter literal: {source}")
+                return
+
         # Alocar endereço se necessário
         if var_name not in self.mem_vars:
             self.mem_vars[var_name] = self.mem_counter
@@ -345,7 +362,7 @@ class AVRAssemblyGenerator:
         """t1 = RES[t2]"""
         dest, index = match.groups()
         reg_dest = self._obter_registrador(dest)
-        reg_index = self._obter_registrador(index)
+        # reg_index = self._obter_registrador(index) # Não utilizado no placeholder
         
         self.assembly.append(f"    ; RES[{index}] - histórico não implementado")
         self.assembly.append(f"    ldi {reg_dest}, 0    ; Placeholder")
@@ -355,7 +372,7 @@ class AVRAssemblyGenerator:
         """Aloca ou retorna registrador para uma variável temporária."""
         if temp_var not in self.temp_to_reg:
             if self.reg_counter > 23:
-                # Sem registradores disponíveis - usar pilha ou reutilizar
+                # Sem registradores disponíveis - usar pilha ou reutilizar (simplificado: reseta)
                 self.reg_counter = 16
             
             reg = f"r{self.reg_counter}"

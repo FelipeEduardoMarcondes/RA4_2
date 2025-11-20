@@ -1,0 +1,1065 @@
+# Three Address Code (TAC)
+# Gerado automaticamente
+
+
+# Linha 1
+t0 = 100
+MEM[X] = t0
+
+# Linha 2
+t1 = 50
+MEM[Y] = t1
+
+# Linha 3
+t2 = 25
+MEM[Z] = t2
+
+# Linha 4
+t3 = 3.14159
+MEM[PI] = t3
+
+# Linha 5
+t4 = 2.71828
+MEM[E] = t4
+
+# Linha 6
+t5 = 4
+t6 = RES[t5]
+
+# Linha 7
+t7 = MEM[X]
+t8 = MEM[Y]
+t9 = t7 + t8
+t10 = MEM[Z]
+t11 = t9 - t10
+
+# Linha 8
+t12 = MEM[X]
+t13 = MEM[Y]
+t14 = t12 * t13
+t15 = MEM[Z]
+t16 = t14 / t15
+
+# Linha 9
+t17 = MEM[X]
+t18 = 2
+t19 = t17 ^ t18
+t20 = MEM[Y]
+t21 = 2
+t22 = t20 ^ t21
+t23 = t19 + t22
+
+# Linha 10
+t24 = MEM[PI]
+t25 = 2
+t26 = t24 * t25
+t27 = 10
+t28 = t26 ^ t27
+
+# Linha 11
+t29 = MEM[E]
+t30 = MEM[X]
+t31 = MEM[Y]
+t32 = t30 | t31
+t33 = t29 + t32
+
+# Linha 12
+t34 = MEM[X]
+t35 = MEM[Y]
+t36 = t34 > t35
+t37 = MEM[Z]
+t38 = 0
+t39 = t37 > t38
+t40 = t36 * t39
+
+# Linha 13
+t41 = MEM[X]
+t42 = MEM[Y]
+t43 = t41 + t42
+t44 = MEM[Z]
+t45 = t43 > t44
+
+# Linha 14
+t46 = MEM[X]
+t47 = MEM[Y]
+t48 = MEM[Z]
+t49 = t47 + t48
+t50 = t46 + t49
+t51 = 100
+t52 = t50 >= t51
+
+# Linha 15
+t53 = MEM[PI]
+t54 = MEM[E]
+t55 = t53 > t54
+ifFalse t55 goto L0
+t57 = 1
+t56 = t57
+goto L1
+L0:
+t58 = 0
+t56 = t58
+L1:
+
+# Linha 16
+t59 = MEM[X]
+t60 = MEM[Y]
+t61 = t59 < t60
+t62 = MEM[Y]
+t63 = MEM[Z]
+t64 = t62 < t63
+t65 = t61 * t64
+
+# Linha 17
+t66 = MEM[X]
+t67 = MEM[Y]
+t68 = t66 % t67
+t69 = MEM[Z]
+t70 = t68 + t69
+
+# Linha 18
+t71 = MEM[X]
+t72 = 1001.445452112
+t73 = t71 % t72
+t74 = 0
+t75 = t73 == t74
+
+# Linha 19
+t76 = MEM[Z]
+t77 = 5
+t78 = t76 % t77
+t79 = 2
+t80 = t78 == t79
+
+# Linha 20
+t81 = 2
+t82 = MEM[X]
+t83 = t81 ^ t82
+t84 = 3
+t85 = MEM[Y]
+t86 = t84 ^ t85
+t87 = t83 + t86
+
+# Linha 21
+t88 = MEM[X]
+t89 = MEM[Y]
+t90 = t88 ^ t89
+t91 = MEM[Z]
+t92 = t90 % t91
+
+# Linha 22
+t93 = MEM[X]
+t94 = 3.7557
+t95 = t93 / t94
+t96 = MEM[Y]
+t97 = 2.3345
+t98 = t96 | t97
+t99 = t95 + t98
+
+# Linha 23
+t100 = MEM[Z]
+t101 = 4
+t102 = t100 / t101
+t103 = MEM[X]
+t104 = 5
+t105 = t103 | t104
+t106 = t102 - t105
+
+# Linha 24
+t107 = MEM[X]
+t108 = MEM[Y]
+t109 = t107 / t108
+t110 = MEM[Z]
+t111 = t109 | t110
+t112 = 2
+t113 = t111 * t112
+
+# Linha 25
+t114 = 100.54
+t115 = 7
+t116 = t114 / t115
+t117 = 3
+t118 = 2
+t119 = t117 | t118
+t120 = t116 + t119
+
+# Linha 26
+t121 = MEM[X]
+t122 = MEM[Y]
+t123 = t121 | t122
+t124 = MEM[Z]
+t125 = 2
+t126 = t124 / t125
+t127 = t123 - t126
+
+# Linha 27
+t128 = MEM[X]
+t129 = 50
+t130 = t128 > t129
+ifFalse t130 goto L2
+t132 = MEM[X]
+t133 = 10
+t134 = t132 - t133
+t131 = t134
+goto L3
+L2:
+t135 = MEM[X]
+t136 = 10
+t137 = t135 + t136
+t131 = t137
+L3:
+
+# Linha 28
+t138 = MEM[Y]
+t139 = MEM[Z]
+t140 = t138 == t139
+ifFalse t140 goto L4
+t142 = 1
+t141 = t142
+goto L5
+L4:
+t143 = -1
+t141 = t143
+L5:
+
+# Linha 29
+t144 = MEM[X]
+t145 = MEM[Y]
+t146 = t144 > t145
+ifFalse t146 goto L6
+t148 = MEM[X]
+t147 = t148
+goto L7
+L6:
+t149 = MEM[Y]
+t147 = t149
+L7:
+
+# Linha 30
+t150 = MEM[Z]
+t151 = 0
+t152 = t150 != t151
+ifFalse t152 goto L8
+t154 = MEM[X]
+t155 = MEM[Z]
+t156 = t154 / t155
+t153 = t156
+goto L9
+L8:
+t157 = 0
+t153 = t157
+L9:
+
+# Linha 31
+t158 = MEM[X]
+t159 = MEM[Y]
+t160 = t158 + t159
+t161 = 100
+t162 = t160 < t161
+ifFalse t162 goto L10
+t164 = 1
+t163 = t164
+goto L11
+L10:
+t165 = 0
+t163 = t165
+L11:
+
+# Linha 32
+t166 = 0
+MEM[I] = t166
+
+# Linha 33
+L12:
+t168 = MEM[I]
+t169 = 10
+t170 = t168 < t169
+ifFalse t170 goto L13
+t171 = MEM[I]
+t172 = 1
+t173 = t171 + t172
+MEM[I] = t173
+t167 = t173
+goto L12
+L13:
+
+# Linha 34
+t174 = MEM[I]
+
+# Linha 35
+t175 = 1
+MEM[CONTADOR] = t175
+
+# Linha 36
+L14:
+t177 = MEM[CONTADOR]
+t178 = 5
+t179 = t177 <= t178
+ifFalse t179 goto L15
+t180 = MEM[CONTADOR]
+t181 = 2
+t182 = t180 * t181
+MEM[CONTADOR] = t182
+t176 = t182
+goto L14
+L15:
+
+# Linha 37
+t183 = MEM[CONTADOR]
+
+# Linha 38
+t184 = 10
+t185 = 20
+t186 = t184 + t185
+t187 = 5
+t188 = t186 * t187
+t189 = 2
+t190 = t188 - t189
+
+# Linha 39
+t191 = MEM[X]
+t192 = MEM[Y]
+t193 = t191 + t192
+t194 = 2
+t195 = t193 / t194
+
+# Linha 40
+t196 = MEM[PI]
+t197 = 2
+t198 = t196 * t197
+t199 = MEM[X]
+t200 = t198 * t199
+
+# Linha 41
+t201 = MEM[E]
+t202 = MEM[X]
+t203 = t201 ^ t202
+t204 = 1
+t205 = t203 + t204
+
+# Linha 42
+t206 = MEM[X]
+t207 = MEM[Y]
+t208 = t206 * t207
+t209 = MEM[X]
+t210 = MEM[Y]
+t211 = t209 + t210
+t212 = t208 / t211
+
+# Linha 43
+t213 = MEM[X]
+t214 = 2
+t215 = t213 ^ t214
+t216 = MEM[Y]
+t217 = 2
+t218 = t216 ^ t217
+t219 = t215 + t218
+t220 = 0.5
+t221 = t219 ^ t220
+
+# Linha 44
+t222 = MEM[X]
+t223 = MEM[Y]
+t224 = t222 > t223
+t225 = MEM[Y]
+t226 = MEM[Z]
+t227 = t225 > t226
+t228 = t224 * t227
+
+# Linha 45
+t229 = MEM[X]
+t230 = 0
+t231 = t229 > t230
+t232 = MEM[Y]
+t233 = 0
+t234 = t232 > t233
+t235 = t231 * t234
+t236 = MEM[Z]
+t237 = 0
+t238 = t236 > t237
+t239 = t235 * t238
+
+# Linha 46
+t240 = MEM[X]
+t241 = MEM[Y]
+t242 = t240 >= t241
+t243 = MEM[X]
+t244 = MEM[Z]
+t245 = t243 <= t244
+t246 = t242 * t245
+
+# Linha 47
+t247 = MEM[X]
+t248 = MEM[Y]
+t249 = t247 != t248
+t250 = MEM[Y]
+t251 = MEM[Z]
+t252 = t250 != t251
+t253 = t249 * t252
+
+# Linha 48
+t254 = MEM[X]
+t255 = MEM[Y]
+t256 = t254 + t255
+t257 = MEM[Z]
+t258 = 10
+t259 = t257 - t258
+t260 = t256 * t259
+
+# Linha 49
+t261 = MEM[X]
+t262 = 2
+t263 = t261 ^ t262
+t264 = MEM[Y]
+t265 = 2
+t266 = t264 ^ t265
+t267 = t263 + t266
+t268 = MEM[Z]
+t269 = 2
+t270 = t268 ^ t269
+t271 = t267 - t270
+
+# Linha 50
+t272 = MEM[PI]
+t273 = MEM[X]
+t274 = t272 * t273
+t275 = 2
+t276 = t274 / t275
+t277 = MEM[E]
+t278 = MEM[Y]
+t279 = t277 * t278
+t280 = 3
+t281 = t279 / t280
+t282 = t276 + t281
+
+# Linha 51
+t283 = MEM[X]
+t284 = MEM[Y]
+t285 = t283 / t284
+t286 = MEM[Y]
+t287 = MEM[Z]
+t288 = t286 / t287
+t289 = t285 * t288
+
+# Linha 52
+t290 = MEM[X]
+t291 = 100
+t292 = t290 % t291
+t293 = MEM[Y]
+t294 = 100
+t295 = t293 % t294
+t296 = t292 + t295
+
+# Linha 53
+t297 = MEM[X]
+t298 = MEM[Y]
+t299 = t297 > t298
+t300 = 1
+t301 = t299 * t300
+t302 = MEM[Z]
+t303 = MEM[Y]
+t304 = t302 > t303
+t305 = 1
+t306 = t304 * t305
+t307 = t301 + t306
+
+# Linha 54
+t308 = MEM[X]
+t309 = 0
+t310 = t308 > t309
+t311 = MEM[Y]
+t312 = 0
+t313 = t311 > t312
+t314 = t310 * t313
+t315 = 1
+t316 = t314 == t315
+
+# Linha 55
+t317 = 1
+MEM[A] = t317
+
+# Linha 56
+t318 = 2
+MEM[B] = t318
+
+# Linha 57
+t319 = 3
+MEM[C] = t319
+
+# Linha 58
+t320 = 4
+MEM[D] = t320
+
+# Linha 59
+t321 = 5
+MEM[F] = t321
+
+# Linha 60
+t322 = MEM[A]
+t323 = MEM[B]
+t324 = t322 + t323
+t325 = MEM[C]
+t326 = t324 + t325
+t327 = MEM[D]
+t328 = t326 + t327
+t329 = MEM[F]
+t330 = t328 + t329
+
+# Linha 61
+t331 = MEM[A]
+t332 = MEM[B]
+t333 = t331 * t332
+t334 = MEM[C]
+t335 = t333 * t334
+t336 = MEM[D]
+t337 = t335 * t336
+t338 = MEM[F]
+t339 = t337 * t338
+
+# Linha 62
+t340 = MEM[F]
+t341 = MEM[D]
+t342 = t340 - t341
+t343 = MEM[C]
+t344 = t342 - t343
+t345 = MEM[B]
+t346 = t344 - t345
+t347 = MEM[A]
+t348 = t346 - t347
+
+# Linha 63
+t349 = MEM[A]
+t350 = MEM[B]
+t351 = t349 / t350
+t352 = MEM[C]
+t353 = t351 / t352
+t354 = MEM[D]
+t355 = t353 / t354
+t356 = MEM[F]
+t357 = t355 / t356
+
+# Linha 64
+t358 = MEM[A]
+t359 = MEM[B]
+t360 = t358 < t359
+ifFalse t360 goto L16
+t362 = MEM[C]
+t363 = MEM[D]
+t364 = t362 < t363
+ifFalse t364 goto L18
+t366 = 1
+t365 = t366
+goto L19
+L18:
+t367 = 2
+t365 = t367
+L19:
+t361 = t365
+goto L17
+L16:
+t368 = 3
+t361 = t368
+L17:
+
+# Linha 65
+t369 = MEM[A]
+t370 = 0
+t371 = t369 > t370
+ifFalse t371 goto L20
+t373 = MEM[B]
+t374 = 0
+t375 = t373 > t374
+ifFalse t375 goto L22
+t377 = MEM[A]
+t378 = MEM[B]
+t379 = t377 + t378
+t376 = t379
+goto L23
+L22:
+t380 = MEM[A]
+t381 = MEM[B]
+t382 = t380 - t381
+t376 = t382
+L23:
+t372 = t376
+goto L21
+L20:
+t383 = 0
+t372 = t383
+L21:
+
+# Linha 66
+t384 = 1
+t385 = 3
+t386 = t384 | t385
+
+# Linha 67
+t387 = 2
+t388 = 3
+t389 = t387 | t388
+
+# Linha 68
+t390 = 5
+t391 = 6
+t392 = t390 | t391
+
+# Linha 69
+t393 = 22
+t394 = 7
+t395 = t393 | t394
+
+# Linha 70
+t396 = 355
+t397 = 113
+t398 = t396 | t397
+
+# Linha 71
+t399 = 0
+t400 = MEM[X]
+t401 = t399 - t400
+
+# Linha 72
+t402 = 0
+t403 = MEM[Y]
+t404 = MEM[Z]
+t405 = t403 + t404
+t406 = t402 - t405
+
+# Linha 73
+t407 = MEM[A]
+t408 = MEM[B]
+t409 = t407 - t408
+t410 = 0
+t411 = t409 < t410
+
+# Linha 74
+t412 = MEM[A]
+t413 = MEM[B]
+t414 = t412 + t413
+t415 = MEM[C]
+t416 = t414 * t415
+
+# Linha 75
+t417 = MEM[A]
+t418 = MEM[B]
+t419 = t417 * t418
+t420 = MEM[C]
+t421 = t419 + t420
+
+# Linha 76
+t422 = MEM[A]
+t423 = MEM[B]
+t424 = t422 + t423
+t425 = MEM[C]
+t426 = t424 * t425
+t427 = MEM[D]
+t428 = t426 + t427
+
+# Linha 77
+t429 = MEM[A]
+t430 = MEM[B]
+t431 = t429 * t430
+t432 = MEM[C]
+t433 = t431 + t432
+t434 = MEM[D]
+t435 = t433 * t434
+
+# Linha 78
+t436 = 10
+MEM[N] = t436
+
+# Linha 79
+L24:
+t438 = MEM[N]
+t439 = 0
+t440 = t438 > t439
+ifFalse t440 goto L25
+t441 = MEM[N]
+t442 = 1
+t443 = t441 - t442
+MEM[N] = t443
+t437 = t443
+goto L24
+L25:
+
+# Linha 80
+t444 = MEM[N]
+
+# Linha 81
+t445 = 0
+MEM[SOMA] = t445
+
+# Linha 82
+t446 = 1
+MEM[I] = t446
+
+# Linha 83
+L26:
+t448 = MEM[I]
+t449 = 10
+t450 = t448 <= t449
+ifFalse t450 goto L27
+t451 = MEM[SOMA]
+t452 = MEM[I]
+t453 = t451 + t452
+MEM[SOMA] = t453
+t454 = MEM[I]
+t455 = 1
+t456 = t454 + t455
+MEM[I] = t456
+t457 = t453 * t456
+t447 = t457
+goto L26
+L27:
+
+# Linha 84
+t458 = MEM[SOMA]
+
+# Linha 85
+t459 = MEM[X]
+t460 = MEM[Y]
+t461 = t459 / t460
+t462 = MEM[Y]
+t463 = t461 * t462
+t464 = MEM[X]
+t465 = t463 - t464
+
+# Linha 86
+t466 = MEM[X]
+t467 = MEM[Y]
+t468 = t466 % t467
+t469 = MEM[Y]
+t470 = 2
+t471 = t469 / t470
+t472 = t468 + t471
+
+# Linha 87
+t473 = 100
+t474 = 7
+t475 = t473 / t474
+t476 = 100
+t477 = 7
+t478 = t476 % t477
+t479 = t475 + t478
+
+# Linha 88
+t480 = MEM[PI]
+t481 = 5
+t482 = 2
+t483 = t481 ^ t482
+t484 = t480 * t483
+
+# Linha 89
+t485 = 2
+t486 = MEM[PI]
+t487 = t485 * t486
+t488 = 5
+t489 = t487 * t488
+
+# Linha 90
+t490 = 10
+t491 = 20
+t492 = t490 * t491
+t493 = 2
+t494 = t492 * t493
+
+# Linha 91
+t495 = 10
+t496 = 20
+t497 = t495 + t496
+t498 = 2
+t499 = t497 * t498
+
+# Linha 92
+t500 = MEM[X]
+t501 = MEM[Y]
+t502 = MEM[Z]
+t503 = t501 + t502
+t504 = t500 > t503
+
+# Linha 93
+t505 = MEM[A]
+t506 = MEM[B]
+t507 = t505 + t506
+t508 = 2
+t509 = t507 ^ t508
+t510 = MEM[C]
+t511 = MEM[D]
+t512 = t510 + t511
+t513 = 2
+t514 = t512 ^ t513
+t515 = t509 + t514
+t516 = 0.5
+t517 = t515 ^ t516
+
+# Linha 94
+t518 = MEM[X]
+t519 = MEM[Y]
+t520 = t518 / t519
+t521 = MEM[Y]
+t522 = MEM[Z]
+t523 = t521 / t522
+t524 = t520 / t523
+t525 = MEM[Z]
+t526 = MEM[X]
+t527 = t525 / t526
+t528 = t524 / t527
+
+# Linha 95
+t529 = MEM[PI]
+t530 = MEM[E]
+t531 = t529 ^ t530
+t532 = MEM[E]
+t533 = MEM[PI]
+t534 = t532 ^ t533
+t535 = t531 - t534
+
+# Linha 96
+t536 = MEM[A]
+t537 = MEM[B]
+t538 = t536 * t537
+t539 = MEM[C]
+t540 = t538 + t539
+t541 = MEM[D]
+t542 = MEM[F]
+t543 = t541 * t542
+t544 = MEM[A]
+t545 = t543 + t544
+t546 = t540 > t545
+
+# Linha 97
+t547 = 1.0
+MEM[A] = t547
+
+# Linha 98
+t548 = 5.0
+MEM[B] = t548
+
+# Linha 99
+t549 = 2.0
+MEM[C] = t549
+
+# Linha 100
+t550 = MEM[B]
+t551 = MEM[B]
+t552 = t550 * t551
+t553 = 4
+t554 = MEM[A]
+t555 = t553 * t554
+t556 = t552 - t555
+
+# Linha 101
+t557 = MEM[DELTA]
+t558 = RES[t557]
+
+# Linha 102
+t559 = 0
+
+# Linha 103
+t560 = 0
+
+# Linha 104
+t561 = 0
+
+# Linha 105
+t562 = 0
+
+# Linha 106
+t563 = 0
+
+# Linha 107
+t564 = MEM[DELTA]
+t565 = 0
+t566 = t564 < t565
+ifFalse t566 goto L28
+t568 = 0
+t567 = t568
+goto L29
+L28:
+t569 = 1
+t567 = t569
+L29:
+
+# Linha 108
+t570 = 10
+MEM[R] = t570
+
+# Linha 109
+t571 = 3.14159
+MEM[PI] = t571
+
+# Linha 110
+t572 = MEM[PI]
+t573 = MEM[R]
+t574 = t572 * t573
+t575 = MEM[R]
+t576 = t574 * t575
+
+# Linha 111
+t577 = MEM[AREA]
+t578 = RES[t577]
+
+# Linha 112
+t579 = 4
+t580 = 3
+t581 = t579 / t580
+t582 = MEM[PI]
+t583 = t581 * t582
+
+# Linha 113
+t584 = MEM[TEMP]
+t585 = RES[t584]
+
+# Linha 114
+t586 = MEM[TEMP]
+t587 = MEM[R]
+t588 = t586 * t587
+t589 = MEM[R]
+t590 = t588 * t589
+
+# Linha 115
+t591 = MEM[QUASE_VOL]
+t592 = RES[t591]
+
+# Linha 116
+t593 = MEM[QUASE_VOL]
+t594 = MEM[R]
+t595 = t593 * t594
+
+# Linha 117
+t596 = MEM[VOLUME]
+t597 = RES[t596]
+
+# Linha 118
+t598 = 10
+MEM[X] = t598
+
+# Linha 119
+t599 = 20
+MEM[Y] = t599
+
+# Linha 120
+t600 = 30
+MEM[Z] = t600
+
+# Linha 121
+t601 = MEM[X]
+t602 = MEM[Y]
+t603 = t601 + t602
+
+# Linha 122
+t604 = MEM[X]
+t605 = MEM[Y]
+t606 = t604 * t605
+
+# Linha 123
+t607 = MEM[Z]
+t608 = 1
+t609 = RES[t608]
+t610 = t607 / t609
+
+# Linha 124
+t611 = MEM[Z]
+t612 = 2
+t613 = RES[t612]
+t614 = t611 | t613
+
+# Linha 125
+t615 = MEM[X]
+t616 = MEM[Y]
+t617 = t615 + t616
+t618 = MEM[Z]
+t619 = 10
+t620 = t618 + t619
+t621 = t617 * t620
+t622 = MEM[A]
+t623 = MEM[B]
+t624 = t622 + t623
+t625 = MEM[C]
+t626 = 1
+t627 = t625 * t626
+t628 = t624 / t627
+t629 = t621 - t628
+
+# Linha 126
+t630 = 5
+MEM[I] = t630
+
+# Linha 127
+t631 = 1
+MEM[FAT] = t631
+
+# Linha 128
+L30:
+t633 = MEM[I]
+t634 = 0
+t635 = t633 > t634
+ifFalse t635 goto L31
+t636 = MEM[FAT]
+t637 = MEM[I]
+t638 = t636 * t637
+MEM[FAT] = t638
+t639 = MEM[I]
+t640 = 1
+t641 = t639 - t640
+MEM[I] = t641
+t642 = t638 * t641
+t632 = t642
+goto L30
+L31:
+
+# Linha 129
+t643 = MEM[FAT]
+
+# Linha 130
+t644 = MEM[FAT]
+t645 = 100
+t646 = t644 > t645
+ifFalse t646 goto L32
+t648 = MEM[AREA]
+t647 = t648
+goto L33
+L32:
+t649 = MEM[VOLUME]
+t647 = t649
+L33:
+
+# Linha 131
+t650 = 100
+MEM[LIMITE] = t650
+
+# Linha 132
+t651 = 0
+MEM[CONTADOR] = t651
+
+# Linha 133
+t652 = 0
+MEM[SOMA] = t652
+
+# Linha 134
+L34:
+t654 = MEM[CONTADOR]
+t655 = MEM[LIMITE]
+t656 = t654 < t655
+ifFalse t656 goto L35
+t657 = MEM[SOMA]
+t658 = MEM[CONTADOR]
+t659 = t657 + t658
+MEM[SOMA] = t659
+t653 = t659
+goto L34
+L35:
+
+# Linha 135
+t660 = MEM[SOMA]
+
+# Linha 136
+t661 = MEM[SOMA]
+t662 = 2
+t663 = t661 / t662
+t664 = MEM[FAT]
+t665 = 2
+t666 = t664 / t665
+t667 = t663 + t666
+t668 = 500.5
+t669 = t667 | t668
