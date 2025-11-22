@@ -4,15 +4,15 @@
 
 ## Estatísticas
 
-- **Instruções originais:** 118
-- **Instruções otimizadas:** 55
-- **Redução:** 63 instruções (53.4%)
+- **Instruções originais:** 16
+- **Instruções otimizadas:** 4
+- **Redução:** 12 instruções (75.0%)
 
 ## Otimizações Aplicadas
 
 ### Constant Folding
 
-**Aplicações:** 4
+**Aplicações:** 0
 
 **Descrição:** Avalia expressões constantes em tempo de compilação.
 
@@ -24,7 +24,7 @@ Depois: t1 = 5
 
 ### Constant Propagation
 
-**Aplicações:** 29
+**Aplicações:** 4
 
 **Descrição:** Propaga valores constantes através do código.
 
@@ -39,7 +39,7 @@ Depois: t1 = 5
 
 ### Dead Code Elimination
 
-**Aplicações:** 63
+**Aplicações:** 12
 
 **Descrição:** Remove código que não afeta o resultado do programa.
 
@@ -79,18 +79,13 @@ t3 = 10
 t4 = 5
 t5 = t3 - t4
 # Linha 3
-t6 = 4
-t7 = 5
+t6 = 4.5
+t7 = 5.2
 t8 = t6 * t7
 # Linha 4
 t9 = 100
-t10 = 10
-t11 = t9 / t10
-# Linha 5
-t12 = 5
-MEM[X] = t12
-# Linha 6
-...
+t10 = 12
+t11 = t9 | t10
 ```
 
 ### TAC Otimizado (primeiras 20 linhas)
@@ -100,22 +95,5 @@ MEM[X] = t12
 # Linha 2
 # Linha 3
 # Linha 4
-# Linha 5
-MEM[X] = 5
-# Linha 6
-t13 = MEM[X]
-# Linha 7
-MEM[A] = 10
-# Linha 8
-MEM[B] = 20
-# Linha 9
-MEM[UNUSED] = 99
-# Linha 10
-t19 = MEM[A]
-t20 = MEM[B]
-# Linha 11
-MEM[A] = 10
-# Linha 12
-...
 ```
 
