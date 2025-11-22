@@ -29,7 +29,6 @@ LIMITE: .byte 2  ; 0x012A
 ; Seção de código
 .text
 ; Prólogo do programa
-.include "m328Pdef.inc"
 
 .org 0x0000
     rjmp main
@@ -154,12 +153,12 @@ main:
     mov r23, r21
     cp r21, r22   ; Comparar r21 com r22
     cp r22, r21
-    brlt cmp_true_2356826846192
+    brlt cmp_true_1914515208400
     ldi r23, 0        ; Falso
-    rjmp cmp_end_2356826846192
-cmp_true_2356826846192:
+    rjmp cmp_end_1914515208400
+cmp_true_1914515208400:
     ldi r23, 1        ; Verdadeiro
-cmp_end_2356826846192:
+cmp_end_1914515208400:
 
     ; TAC: ifFalse t55 goto L0
     cpi r23, 0         ; Comparar com zero
@@ -262,12 +261,12 @@ L1:
     mov r17, r16
     cp r16, r25   ; Comparar r16 com r25
     cp r25, r16
-    brlt cmp_true_2356826842160
+    brlt cmp_true_1914515194144
     ldi r17, 0        ; Falso
-    rjmp cmp_end_2356826842160
-cmp_true_2356826842160:
+    rjmp cmp_end_1914515194144
+cmp_true_1914515194144:
     ldi r17, 1        ; Verdadeiro
-cmp_end_2356826842160:
+cmp_end_1914515194144:
 
     ; TAC: ifFalse t130 goto L2
     cpi r17, 0         ; Comparar com zero
@@ -294,12 +293,12 @@ L3:
     ; TAC: t140 = t138 == t139
     mov r22, r20
     cp r20, r21   ; Comparar r20 com r21
-    breq cmp_true_2356826841968
+    breq cmp_true_1914515201920
     ldi r22, 0        ; Falso
-    rjmp cmp_end_2356826841968
-cmp_true_2356826841968:
+    rjmp cmp_end_1914515201920
+cmp_true_1914515201920:
     ldi r22, 1        ; Verdadeiro
-cmp_end_2356826841968:
+cmp_end_1914515201920:
 
     ; TAC: ifFalse t140 goto L4
     cpi r22, 0         ; Comparar com zero
@@ -321,12 +320,12 @@ L5:
     mov r17, r23
     cp r23, r16   ; Comparar r23 com r16
     cp r16, r23
-    brlt cmp_true_2356826843744
+    brlt cmp_true_1914515196352
     ldi r17, 0        ; Falso
-    rjmp cmp_end_2356826843744
-cmp_true_2356826843744:
+    rjmp cmp_end_1914515196352
+cmp_true_1914515196352:
     ldi r17, 1        ; Verdadeiro
-cmp_end_2356826843744:
+cmp_end_1914515196352:
 
     ; TAC: ifFalse t146 goto L6
     cpi r17, 0         ; Comparar com zero
@@ -351,12 +350,12 @@ L7:
     ldi r25, 0
     mov r21, r20
     cp r20, r25   ; Comparar r20 com r25
-    brne cmp_true_2356826845520
+    brne cmp_true_1914515195392
     ldi r21, 0        ; Falso
-    rjmp cmp_end_2356826845520
-cmp_true_2356826845520:
+    rjmp cmp_end_1914515195392
+cmp_true_1914515195392:
     ldi r21, 1        ; Verdadeiro
-cmp_end_2356826845520:
+cmp_end_1914515195392:
 
     ; TAC: ifFalse t152 goto L8
     cpi r21, 0         ; Comparar com zero
@@ -388,12 +387,12 @@ L9:
     ldi r25, 100
     mov r19, r18
     cp r18, r25   ; Comparar r18 com r25
-    brlt cmp_true_2356826848352
+    brlt cmp_true_1914515198368
     ldi r19, 0        ; Falso
-    rjmp cmp_end_2356826848352
-cmp_true_2356826848352:
+    rjmp cmp_end_1914515198368
+cmp_true_1914515198368:
     ldi r19, 1        ; Verdadeiro
-cmp_end_2356826848352:
+cmp_end_1914515198368:
 
     ; TAC: ifFalse t162 goto L10
     cpi r19, 0         ; Comparar com zero
@@ -418,12 +417,12 @@ L12:
     ldi r25, 10
     mov r21, r20
     cp r20, r25   ; Comparar r20 com r25
-    brlt cmp_true_2356826839520
+    brlt cmp_true_1914515205760
     ldi r21, 0        ; Falso
-    rjmp cmp_end_2356826839520
-cmp_true_2356826839520:
+    rjmp cmp_end_1914515205760
+cmp_true_1914515205760:
     ldi r21, 1        ; Verdadeiro
-cmp_end_2356826839520:
+cmp_end_1914515205760:
 
     ; TAC: ifFalse t170 goto L13
     cpi r21, 0         ; Comparar com zero
@@ -462,12 +461,12 @@ L14:
     ldi r25, 5
     mov r18, r17
     cp r17, r25   ; Comparar r17 com r25
-    brge cmp_true_2356826848832
+    brge cmp_true_1914515195296
     ldi r18, 0        ; Falso
-    rjmp cmp_end_2356826848832
-cmp_true_2356826848832:
+    rjmp cmp_end_1914515195296
+cmp_true_1914515195296:
     ldi r18, 1        ; Verdadeiro
-cmp_end_2356826848832:
+cmp_end_1914515195296:
 
     ; TAC: ifFalse t179 goto L15
     cpi r18, 0         ; Comparar com zero
@@ -756,12 +755,12 @@ L15:
     ; TAC: t360 = t358 < t359
     mov r21, r19
     cp r19, r20   ; Comparar r19 com r20
-    brlt cmp_true_2356827523664
+    brlt cmp_true_1914515199712
     ldi r21, 0        ; Falso
-    rjmp cmp_end_2356827523664
-cmp_true_2356827523664:
+    rjmp cmp_end_1914515199712
+cmp_true_1914515199712:
     ldi r21, 1        ; Verdadeiro
-cmp_end_2356827523664:
+cmp_end_1914515199712:
 
     ; TAC: ifFalse t360 goto L16
     cpi r21, 0         ; Comparar com zero
@@ -776,12 +775,12 @@ cmp_end_2356827523664:
     ; TAC: t364 = t362 < t363
     mov r16, r22
     cp r22, r23   ; Comparar r22 com r23
-    brlt cmp_true_2356827523952
+    brlt cmp_true_1914515207632
     ldi r16, 0        ; Falso
-    rjmp cmp_end_2356827523952
-cmp_true_2356827523952:
+    rjmp cmp_end_1914515207632
+cmp_true_1914515207632:
     ldi r16, 1        ; Verdadeiro
-cmp_end_2356827523952:
+cmp_end_1914515207632:
 
     ; TAC: ifFalse t364 goto L18
     cpi r16, 0         ; Comparar com zero
@@ -806,12 +805,12 @@ L17:
     mov r18, r17
     cp r17, r25   ; Comparar r17 com r25
     cp r25, r17
-    brlt cmp_true_2356827524288
+    brlt cmp_true_1914515062096
     ldi r18, 0        ; Falso
-    rjmp cmp_end_2356827524288
-cmp_true_2356827524288:
+    rjmp cmp_end_1914515062096
+cmp_true_1914515062096:
     ldi r18, 1        ; Verdadeiro
-cmp_end_2356827524288:
+cmp_end_1914515062096:
 
     ; TAC: ifFalse t371 goto L20
     cpi r18, 0         ; Comparar com zero
@@ -825,12 +824,12 @@ cmp_end_2356827524288:
     mov r20, r19
     cp r19, r25   ; Comparar r19 com r25
     cp r25, r19
-    brlt cmp_true_2356827524480
+    brlt cmp_true_1914515062000
     ldi r20, 0        ; Falso
-    rjmp cmp_end_2356827524480
-cmp_true_2356827524480:
+    rjmp cmp_end_1914515062000
+cmp_true_1914515062000:
     ldi r20, 1        ; Verdadeiro
-cmp_end_2356827524480:
+cmp_end_1914515062000:
 
     ; TAC: ifFalse t375 goto L22
     cpi r20, 0         ; Comparar com zero
@@ -942,12 +941,12 @@ L24:
     mov r21, r20
     cp r20, r25   ; Comparar r20 com r25
     cp r25, r20
-    brlt cmp_true_2356827527120
+    brlt cmp_true_1914515276976
     ldi r21, 0        ; Falso
-    rjmp cmp_end_2356827527120
-cmp_true_2356827527120:
+    rjmp cmp_end_1914515276976
+cmp_true_1914515276976:
     ldi r21, 1        ; Verdadeiro
-cmp_end_2356827527120:
+cmp_end_1914515276976:
 
     ; TAC: ifFalse t440 goto L25
     cpi r21, 0         ; Comparar com zero
@@ -991,12 +990,12 @@ L26:
     ldi r25, 10
     mov r18, r17
     cp r17, r25   ; Comparar r17 com r25
-    brge cmp_true_2356827527840
+    brge cmp_true_1914515275968
     ldi r18, 0        ; Falso
-    rjmp cmp_end_2356827527840
-cmp_true_2356827527840:
+    rjmp cmp_end_1914515275968
+cmp_true_1914515275968:
     ldi r18, 1        ; Verdadeiro
-cmp_end_2356827527840:
+cmp_end_1914515275968:
 
     ; TAC: ifFalse t450 goto L27
     cpi r18, 0         ; Comparar com zero
@@ -1188,12 +1187,12 @@ L27:
     ldi r25, 0
     mov r23, r22
     cp r22, r25   ; Comparar r22 com r25
-    brlt cmp_true_2356827532160
+    brlt cmp_true_1914515282640
     ldi r23, 0        ; Falso
-    rjmp cmp_end_2356827532160
-cmp_true_2356827532160:
+    rjmp cmp_end_1914515282640
+cmp_true_1914515282640:
     ldi r23, 1        ; Verdadeiro
-cmp_end_2356827532160:
+cmp_end_1914515282640:
 
     ; TAC: ifFalse t566 goto L28
     cpi r23, 0         ; Comparar com zero
@@ -1357,12 +1356,12 @@ L30:
     mov r22, r21
     cp r21, r25   ; Comparar r21 com r25
     cp r25, r21
-    brlt cmp_true_2356827535472
+    brlt cmp_true_1914515286000
     ldi r22, 0        ; Falso
-    rjmp cmp_end_2356827535472
-cmp_true_2356827535472:
+    rjmp cmp_end_1914515286000
+cmp_true_1914515286000:
     ldi r22, 1        ; Verdadeiro
-cmp_end_2356827535472:
+cmp_end_1914515286000:
 
     ; TAC: ifFalse t635 goto L31
     cpi r22, 0         ; Comparar com zero
@@ -1410,12 +1409,12 @@ L31:
     mov r22, r21
     cp r21, r25   ; Comparar r21 com r25
     cp r25, r21
-    brlt cmp_true_2356827536336
+    brlt cmp_true_1914515286960
     ldi r22, 0        ; Falso
-    rjmp cmp_end_2356827536336
-cmp_true_2356827536336:
+    rjmp cmp_end_1914515286960
+cmp_true_1914515286960:
     ldi r22, 1        ; Verdadeiro
-cmp_end_2356827536336:
+cmp_end_1914515286960:
 
     ; TAC: ifFalse t646 goto L32
     cpi r22, 0         ; Comparar com zero
@@ -1458,12 +1457,12 @@ L34:
     ; TAC: t656 = t654 < t655
     mov r19, r17
     cp r17, r18   ; Comparar r17 com r18
-    brlt cmp_true_2356827537008
+    brlt cmp_true_1914515287632
     ldi r19, 0        ; Falso
-    rjmp cmp_end_2356827537008
-cmp_true_2356827537008:
+    rjmp cmp_end_1914515287632
+cmp_true_1914515287632:
     ldi r19, 1        ; Verdadeiro
-cmp_end_2356827537008:
+cmp_end_1914515287632:
 
     ; TAC: ifFalse t656 goto L35
     cpi r19, 0         ; Comparar com zero

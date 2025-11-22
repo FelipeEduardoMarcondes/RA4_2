@@ -83,7 +83,6 @@ class AVRAssemblyGenerator:
         """Gera o prólogo do programa Assembly."""
         self.assembly.extend([
             "; Prólogo do programa",
-            ".include \"m328Pdef.inc\"",
             "",
             ".org 0x0000",
             "    rjmp main",

@@ -5,7 +5,7 @@
 ## Estatísticas
 
 - **Instruções TAC:** 529
-- **Instruções Assembly:** 1501
+- **Instruções Assembly:** 1500
 - **Razão:** 2.84 instruções Assembly por TAC
 
 ## Convenções de Registradores
@@ -85,7 +85,6 @@ LIMITE: .byte 2  ; 0x012A
 ; Seção de código
 .text
 ; Prólogo do programa
-.include "m328Pdef.inc"
 
 .org 0x0000
     rjmp main
@@ -107,5 +106,6 @@ main:
 
 ; Linha 2
     ; TAC: MEM[Y] = 50
+    ldi r16, 50
 ...
 ```
