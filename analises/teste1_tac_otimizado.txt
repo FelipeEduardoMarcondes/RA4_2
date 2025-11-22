@@ -3,9 +3,43 @@
 
 
 # Linha 1
+MEM[A] = 0
 
 # Linha 2
+MEM[B] = 1
 
 # Linha 3
+MEM[N] = 2
 
 # Linha 4
+t3 = MEM[A]
+t4 = RES[t3]
+
+# Linha 5
+t5 = MEM[B]
+t6 = RES[t5]
+
+# Linha 6
+MEM[MAX] = 24
+
+# Linha 7
+L0:
+t9 = MEM[N]
+t10 = MEM[MAX]
+t11 = t9 < t10
+ifFalse t11 goto L1
+t12 = MEM[A]
+t13 = MEM[B]
+t14 = t12 + t13
+MEM[C] = t14
+t15 = MEM[C]
+t16 = RES[t15]
+t18 = MEM[B]
+MEM[A] = t18
+t19 = MEM[C]
+MEM[B] = t19
+t22 = MEM[N]
+t24 = t22 + 1
+MEM[N] = t24
+goto L0
+L1:

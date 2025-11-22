@@ -2,22 +2,28 @@
 # FELIPE EDUARDO MARCONDES
 # GRUPO 2
 # Gerador de código Assembly AVR para Arduino Uno (ATmega328P)
-# CORREÇÃO: Sintaxe GNU Assembler (lo8/hi8) e definições explícitas de constantes.
+# AJUSTE: Implementação de Ponto Fixo (Escalonamento), Comparações Signed e Toolchain
 
 import re
+import subprocess
+import os
 
 class AVRAssemblyGenerator:
     def __init__(self):
         self.assembly = []
         self.data_section = []
         self.vars_declared = set()
+        # Fator de escala para Ponto Fixo (Fixed Point)
+        # 100 significa que 1.00 será representado como 100
+        # Isso permite 2 casas de precisão.
+        self.SCALE = 100 
     
     def gerarAssembly(self, tac_instructions):
         self.assembly = []
         self.data_section = []
         self.vars_declared = set()
         
-        # Passo 1: Mapear variáveis para memória
+        # Passo 1: Mapear variáveis
         self._mapear_variaveis(tac_instructions)
         
         # Passo 2: Gerar Seção de Dados
@@ -59,7 +65,6 @@ class AVRAssemblyGenerator:
             self.data_section.append(f"{var}: .byte 2")
 
     def _gerar_prologo(self):
-        # Definições explícitas para o ATmega328P para evitar erros de 'garbage'
         self.assembly.extend([
             "; Definições de Hardware (ATmega328P)",
             ".equ RAMEND, 0x08FF",
@@ -71,13 +76,14 @@ class AVRAssemblyGenerator:
             "    rjmp main",
             "",
             "main:",
-            "    ; Inicializar pilha (Stack Pointer) usando sintaxe GNU (hi8/lo8)",
+            "    ; Inicializar pilha",
             "    ldi r16, hi8(RAMEND)",
             "    out SPH, r16",
             "    ldi r16, lo8(RAMEND)",
             "    out SPL, r16",
-            "    ; R1 deve ser zero para rotinas GCC",
             "    clr r1",
+            "    ; Inicializar Serial (9600 baud)",
+            "    call serial_init",
             ""
         ])
 
@@ -88,26 +94,38 @@ class AVRAssemblyGenerator:
         ])
 
     def _load_operand(self, operand, reg_low, reg_high):
-        # Literal
+        # === AJUSTE DE ESCALONAMENTO ===
+        
+        # Literal (Número)
         if re.match(r'^-?\d+(\.\d+)?$', operand):
             try:
-                val = float(operand)
-                val_int = int(val)
-                if val_int < 0: val_int = 65536 + val_int
+                val_float = float(operand)
                 
-                # Divide em bytes low/high
-                low_byte = val_int & 0xFF
-                high_byte = (val_int >> 8) & 0xFF
+                # Aplica o fator de escala (Fixed Point)
+                # Ex: 3.14 -> 314
+                val_scaled = int(val_float * self.SCALE)
+                
+                # Tratamento de complemento de dois para 16 bits
+                if val_scaled < 0:
+                    val_scaled = 65536 + val_scaled
+                
+                # Garante que cabe em 16 bits (máscara)
+                val_scaled = val_scaled & 0xFFFF
+                
+                low_byte = val_scaled & 0xFF
+                high_byte = (val_scaled >> 8) & 0xFF
                 
                 self.assembly.append(f"    ldi {reg_low}, {low_byte}")
                 self.assembly.append(f"    ldi {reg_high}, {high_byte}")
             except:
                 self.assembly.append(f"    ; Erro convertendo literal {operand}")
-        # Variável
+        
+        # Variável (Memória)
         else:
             mem_match = re.match(r'MEM\[(\w+)\]', operand)
             var_name = mem_match.group(1) if mem_match else operand
             
+            # Tratamento especial para RES (Histórico)
             if 'RES[' in var_name:
                  self.assembly.append(f"    ldi {reg_low}, 0")
                  self.assembly.append(f"    ldi {reg_high}, 0")
@@ -124,37 +142,58 @@ class AVRAssemblyGenerator:
         self.assembly.append(f"    sts {var_name} + 1, {reg_high}")
 
     def _processar_instrucao(self, inst):
+        # Detecção de RES (Impressão)
+        # Padrão TAC: tX = RES[tY] ou tX = RES[10]
+        match_res = re.match(r'(\w+)\s*=\s*RES\[(.*)\]', inst)
+        if match_res:
+            dest, src = match_res.groups()
+            # Carrega o valor que está dentro dos colchetes do RES
+            self._load_operand(src, 'r24', 'r25')
+            # Chama a função de impressão
+            self.assembly.append("    call print_uint16")
+            # Guarda 0 no destino (ou o próprio valor, se preferir)
+            self._store_result(dest, 'r24', 'r25')
+            return True
+
         # Atribuição
         match_assign = re.match(r'(MEM\[\w+\]|t\d+)\s*=\s*([a-zA-Z0-9_\.\[\]]+)$', inst)
         if match_assign:
             dest, src = match_assign.groups()
+            # Ignora se for RES (já tratado acima)
+            if 'RES[' in src: return False 
+            
             self._load_operand(src, 'r24', 'r25')
             self._store_result(dest, 'r24', 'r25')
             return True
 
-        # Binária
+        # Operação Binária
         match_bin = re.match(r'(MEM\[\w+\]|t\d+)\s*=\s*([a-zA-Z0-9_\.\[\]]+)\s*([+\-*/%^|]|==|!=|<=|>=|<|>)\s*([a-zA-Z0-9_\.\[\]]+)', inst)
         if match_bin:
             dest, op1, op, op2 = match_bin.groups()
-            self._load_operand(op1, 'r24', 'r25')
+            self._load_operand(op1, 'r24', 'r25') 
             self._load_operand(op2, 'r22', 'r23')
             self._aplicar_operacao(op)
             self._store_result(dest, 'r24', 'r25')
             return True
 
-        # Desvios
+        # Desvio Incondicional
         match_goto = re.match(r'goto\s+(\w+)', inst)
         if match_goto:
             self.assembly.append(f"    rjmp {match_goto.group(1)}")
             return True
 
-        # Condicional
+        # Desvio Condicional (com Trampolim Long Jump)
         match_if = re.match(r'ifFalse\s+(t\d+|MEM\[\w+\])\s+goto\s+(\w+)', inst)
         if match_if:
             cond_var, label = match_if.groups()
             self._load_operand(cond_var, 'r24', 'r25')
-            self.assembly.append("    or r24, r25")
-            self.assembly.append(f"    breq {label}")
+            self.assembly.append("    or r24, r25") 
+            
+            # AJUSTE LONG JUMP: breq label -> brne SKIP; rjmp label; SKIP:
+            lbl_no_jump = f"L_NO_JUMP_{len(self.assembly)}"
+            self.assembly.append(f"    brne {lbl_no_jump}") 
+            self.assembly.append(f"    rjmp {label}")       
+            self.assembly.append(f"{lbl_no_jump}:")
             return True
 
         return False
@@ -174,37 +213,60 @@ class AVRAssemblyGenerator:
             self.assembly.append("    call mod16u")
         elif op == '^':
             self.assembly.append("    call pow16u")
+        
+        # === CORREÇÃO DE COMPARAÇÕES (SIGNED + LONG JUMPS) ===
         elif op in ['==', '!=', '<', '>', '<=', '>=']:
-            self.assembly.append("    cp r24, r22")
-            self.assembly.append("    cpc r25, r23")
             
             lbl_true = f"L_TRUE_{len(self.assembly)}"
             lbl_end = f"L_END_{len(self.assembly)}"
+            lbl_skip_jump = f"L_SKIP_{len(self.assembly)}"
             
-            branch_map = {
-                '==': 'breq', '!=': 'brne',
-                '<': 'brcs', '>=': 'brcc',
-                '>': 'brne', '<=': 'breq' # Simplificado
+            # Mapeamento para instruções de desvio inverso (para criar o trampolim)
+            inverse_branch_map = {
+                'breq': 'brne',
+                'brne': 'breq',
+                'brlt': 'brge',
+                'brge': 'brlt'
             }
             
+            branch_instruction = 'breq' 
+            
             if op == '>':
-                self.assembly[-2] = "    cp r22, r24"
-                self.assembly[-1] = "    cpc r23, r25"
-                branch = 'brcs'
+                self.assembly.append("    cp r22, r24")
+                self.assembly.append("    cpc r23, r25")
+                branch_instruction = 'brlt' # Signed Less Than
+                
             elif op == '<=':
-                self.assembly[-2] = "    cp r22, r24"
-                self.assembly[-1] = "    cpc r23, r25"
-                branch = 'brcc'
+                self.assembly.append("    cp r22, r24")
+                self.assembly.append("    cpc r23, r25")
+                branch_instruction = 'brge' # Signed Greater or Equal
+                
             else:
-                branch = branch_map.get(op, 'breq')
+                self.assembly.append("    cp r24, r22")
+                self.assembly.append("    cpc r25, r23")
+                
+                mapping = {
+                    '==': 'breq',
+                    '!=': 'brne',
+                    '<':  'brlt',
+                    '>=': 'brge'
+                }
+                branch_instruction = mapping.get(op, 'breq')
 
-            self.assembly.append(f"    {branch} {lbl_true}")
+            inv_branch = inverse_branch_map.get(branch_instruction, 'brne')
+            
+            self.assembly.append(f"    {inv_branch} {lbl_skip_jump}") # Pula se condição FALSA
+            self.assembly.append(f"    rjmp {lbl_true}")              # Long jump se condição VERDADEIRA
+            self.assembly.append(f"{lbl_skip_jump}:")                 # Ponto de continuação (False)
+            
             self.assembly.append("    ldi r24, 0")
             self.assembly.append("    ldi r25, 0")
             self.assembly.append(f"    rjmp {lbl_end}")
+            
             self.assembly.append(f"{lbl_true}:")
             self.assembly.append("    ldi r24, 1")
             self.assembly.append("    ldi r25, 0")
+            
             self.assembly.append(f"{lbl_end}:")
 
 # Funções auxiliares
@@ -214,8 +276,114 @@ def salvarAssembly(instructions, filename):
             f.write(f"{line}\n")
 
 def gerarHex(asm_file, hex_file):
-    return False 
+    """
+    Compila o arquivo Assembly (.s) para HEX usando a toolchain AVR.
+    Requer que avr-gcc e avr-objcopy estejam instalados e no PATH.
+    """
+    # Deriva o nome do arquivo ELF temporário
+    base_name = os.path.splitext(hex_file)[0]
+    elf_file = f"{base_name}.elf"
+    
+    # Localiza a biblioteca matemática (necessária para mul16, div16u, etc.)
+    # Tenta achar no diretório atual ou um nível acima (caso esteja dentro de 'analises')
+    math_lib = "avr_math_lib.s"
+    if not os.path.exists(math_lib):
+        if os.path.exists(f"../{math_lib}"):
+            math_lib = f"../{math_lib}"
+        else:
+            # Se não achar, tenta usar o caminho relativo fixo para o envio do aluno
+            # Isso ajuda se estiver rodando de dentro de 'analises'
+            math_lib_alt = os.path.join(os.path.dirname(asm_file), "..", "avr_math_lib.s")
+            if os.path.exists(math_lib_alt):
+                 math_lib = math_lib_alt
+            else:
+                 print(f"[AVISO] Biblioteca 'avr_math_lib.s' não encontrada. Erros de 'undefined reference' podem ocorrer.")
+
+    # 1. Montagem e Ligação (Assembly -> ELF)
+    # -mmcu=atmega328p: Especifica o chip do Arduino Uno
+    # -nostartfiles:    Não usa o código de inicialização padrão do C (crt), 
+    #                   pois seu assembly já define o vetor de reset (.org 0x0000).
+    cmd_compile = [
+        "avr-gcc",
+        "-mmcu=atmega328p",
+        "-o", elf_file,
+        asm_file,
+        "-nostartfiles" 
+    ]
+    
+    # Inclui a biblioteca matemática na compilação se ela existir
+    if os.path.exists(math_lib):
+        cmd_compile.append(math_lib)
+
+    # 2. Geração do HEX (ELF -> HEX)
+    # Extrai apenas o código binário necessário para o upload
+    cmd_objcopy = [
+        "avr-objcopy",
+        "-O", "ihex",
+        "-R", ".eeprom",  # Remove seção da EEPROM (opcional, mas boa prática)
+        elf_file,
+        hex_file
+    ]
+
+    try:
+        # Passo 1: Compilar
+        print(f"   [CMD] {' '.join(cmd_compile)}")
+        result_compile = subprocess.run(cmd_compile, capture_output=True, text=True)
+        
+        if result_compile.returncode != 0:
+            print("   [ERRO] Falha no avr-gcc:")
+            print(result_compile.stderr)
+            return False
+
+        # Passo 2: Gerar HEX
+        print(f"   [CMD] {' '.join(cmd_objcopy)}")
+        result_objcopy = subprocess.run(cmd_objcopy, capture_output=True, text=True)
+        
+        if result_objcopy.returncode != 0:
+            print("   [ERRO] Falha no avr-objcopy:")
+            print(result_objcopy.stderr)
+            return False
+            
+        return True
+
+    except FileNotFoundError:
+        print("   [ERRO] Toolchain AVR não encontrada no PATH.")
+        print("          Certifique-se de ter instalado 'avr-gcc' e 'avr-binutils'.")
+        return False
+    except Exception as e:
+        print(f"   [ERRO] Exceção inesperada: {e}")
+        return False
+
+def uploadHex(hex_file, porta_serial, baud_rate=115200):
+    """
+    Faz o upload do arquivo .hex para o Arduino Uno usando o avrdude.
+    """
+    print(f"   [UPLOAD] Iniciando upload para {porta_serial}...")
+    
+    cmd_upload = [
+        "avrdude",
+        "-c", "arduino",
+        "-p", "ATMEGA328P",
+        "-P", porta_serial,
+        "-b", str(baud_rate),
+        "-U", f"flash:w:{hex_file}:i"
+    ]
+    
+    try:
+        result = subprocess.run(cmd_upload, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            print("   [ERRO] Falha no upload:")
+            print(result.stderr)
+            return False
+            
+        print("   [SUCESSO] Upload concluído!")
+        return True
+        
+    except FileNotFoundError:
+        print("   [ERRO] 'avrdude' não encontrado. Instale o Arduino IDE ou toolchain AVR.")
+        return False
 
 def gerarRelatorioAssembly(tac, asm, filename):
     with open(filename, 'w', encoding='utf-8') as f:
-        f.write("# Relatório Assembly\nGerado com arquitetura Load-Store 16-bit.\n")
+        f.write("# Relatório Assembly\nGerado com arquitetura Load-Store 16-bit (Escalonada).\n")

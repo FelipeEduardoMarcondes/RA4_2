@@ -4,9 +4,9 @@
 
 ## Estatísticas
 
-- **Instruções originais:** 16
-- **Instruções otimizadas:** 4
-- **Redução:** 12 instruções (75.0%)
+- **Instruções originais:** 45
+- **Instruções otimizadas:** 35
+- **Redução:** 10 instruções (22.2%)
 
 ## Otimizações Aplicadas
 
@@ -24,7 +24,7 @@ Depois: t1 = 5
 
 ### Constant Propagation
 
-**Aplicações:** 4
+**Aplicações:** 5
 
 **Descrição:** Propaga valores constantes através do código.
 
@@ -39,7 +39,7 @@ Depois: t1 = 5
 
 ### Dead Code Elimination
 
-**Aplicações:** 12
+**Aplicações:** 10
 
 **Descrição:** Remove código que não afeta o resultado do programa.
 
@@ -71,29 +71,51 @@ Depois: L1:
 
 ```
 # Linha 1
-t0 = 2
-t1 = 3
-t2 = t0 + t1
+t0 = 0
+MEM[A] = t0
 # Linha 2
-t3 = 10
-t4 = 5
-t5 = t3 - t4
+t1 = 1
+MEM[B] = t1
 # Linha 3
-t6 = 4.5
-t7 = 5.2
-t8 = t6 * t7
+t2 = 2
+MEM[N] = t2
 # Linha 4
-t9 = 100
-t10 = 12
-t11 = t9 | t10
+t3 = MEM[A]
+t4 = RES[t3]
+# Linha 5
+t5 = MEM[B]
+t6 = RES[t5]
+# Linha 6
+t7 = 24
+MEM[MAX] = t7
+# Linha 7
+L0:
+...
 ```
 
 ### TAC Otimizado (primeiras 20 linhas)
 
 ```
 # Linha 1
+MEM[A] = 0
 # Linha 2
+MEM[B] = 1
 # Linha 3
+MEM[N] = 2
 # Linha 4
+t3 = MEM[A]
+t4 = RES[t3]
+# Linha 5
+t5 = MEM[B]
+t6 = RES[t5]
+# Linha 6
+MEM[MAX] = 24
+# Linha 7
+L0:
+t9 = MEM[N]
+t10 = MEM[MAX]
+t11 = t9 < t10
+ifFalse t11 goto L1
+...
 ```
 

@@ -320,48 +320,50 @@ t96: .byte 2
     rjmp main
 
 main:
-    ; Inicializar pilha (Stack Pointer) usando sintaxe GNU (hi8/lo8)
+    ; Inicializar pilha
     ldi r16, hi8(RAMEND)
     out SPH, r16
     ldi r16, lo8(RAMEND)
     out SPL, r16
-    ; R1 deve ser zero para rotinas GCC
     clr r1
+    ; Inicializar Serial (9600 baud)
+    call serial_init
 
 ;  Linha 1
     ; TAC: MEM[X] = 100
-    ldi r24, 100
-    ldi r25, 0
+    ldi r24, 16
+    ldi r25, 39
     sts X, r24
     sts X + 1, r25
 ;  Linha 2
     ; TAC: MEM[Y] = 50
-    ldi r24, 50
-    ldi r25, 0
+    ldi r24, 136
+    ldi r25, 19
     sts Y, r24
     sts Y + 1, r25
 ;  Linha 3
     ; TAC: MEM[Z] = 25
-    ldi r24, 25
-    ldi r25, 0
+    ldi r24, 196
+    ldi r25, 9
     sts Z, r24
     sts Z + 1, r25
 ;  Linha 4
     ; TAC: MEM[PI] = 3.14159
-    ldi r24, 3
-    ldi r25, 0
+    ldi r24, 58
+    ldi r25, 1
     sts PI, r24
     sts PI + 1, r25
 ;  Linha 5
     ; TAC: MEM[E] = 2.71828
-    ldi r24, 2
-    ldi r25, 0
+    ldi r24, 15
+    ldi r25, 1
     sts E, r24
     sts E + 1, r25
 ;  Linha 6
     ; TAC: t6 = RES[4]
-    ldi r24, 0
-    ldi r25, 0
+    ldi r24, 144
+    ldi r25, 1
+    call print_uint16
     sts t6, r24
     sts t6 + 1, r25
 ;  Linha 7
@@ -495,7 +497,9 @@ main:
     lds r23, t54 + 1
     cp r22, r24
     cpc r23, r25
-    brcs L_TRUE_185
+    brge L_SKIP_185
+    rjmp L_TRUE_185
+L_SKIP_185:
     ldi r24, 0
     ldi r25, 0
     rjmp L_END_185
@@ -509,7 +513,9 @@ L_END_185:
     lds r24, t55
     lds r25, t55 + 1
     or r24, r25
-    breq L0
+    brne L_NO_JUMP_203
+    rjmp L0
+L_NO_JUMP_203:
     ; TAC: goto L1
     rjmp L1
     ; TAC: L0:
@@ -656,25 +662,29 @@ L1:
     ; TAC: t130 = t128 > 50
     lds r24, t128
     lds r25, t128 + 1
-    ldi r22, 50
-    ldi r23, 0
+    ldi r22, 136
+    ldi r23, 19
     cp r22, r24
     cpc r23, r25
-    brcs L_TRUE_350
+    brge L_SKIP_354
+    rjmp L_TRUE_354
+L_SKIP_354:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_350
-L_TRUE_350:
+    rjmp L_END_354
+L_TRUE_354:
     ldi r24, 1
     ldi r25, 0
-L_END_350:
+L_END_354:
     sts t130, r24
     sts t130 + 1, r25
     ; TAC: ifFalse t130 goto L2
     lds r24, t130
     lds r25, t130 + 1
     or r24, r25
-    breq L2
+    brne L_NO_JUMP_372
+    rjmp L2
+L_NO_JUMP_372:
     ; TAC: t132 = MEM[X]
     lds r24, X
     lds r25, X + 1
@@ -709,21 +719,25 @@ L3:
     lds r23, t139 + 1
     cp r24, r22
     cpc r25, r23
-    breq L_TRUE_399
+    brne L_SKIP_407
+    rjmp L_TRUE_407
+L_SKIP_407:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_399
-L_TRUE_399:
+    rjmp L_END_407
+L_TRUE_407:
     ldi r24, 1
     ldi r25, 0
-L_END_399:
+L_END_407:
     sts t140, r24
     sts t140 + 1, r25
     ; TAC: ifFalse t140 goto L4
     lds r24, t140
     lds r25, t140 + 1
     or r24, r25
-    breq L4
+    brne L_NO_JUMP_425
+    rjmp L4
+L_NO_JUMP_425:
     ; TAC: goto L5
     rjmp L5
     ; TAC: L4:
@@ -748,21 +762,25 @@ L5:
     lds r23, t145 + 1
     cp r22, r24
     cpc r23, r25
-    brcs L_TRUE_438
+    brge L_SKIP_450
+    rjmp L_TRUE_450
+L_SKIP_450:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_438
-L_TRUE_438:
+    rjmp L_END_450
+L_TRUE_450:
     ldi r24, 1
     ldi r25, 0
-L_END_438:
+L_END_450:
     sts t146, r24
     sts t146 + 1, r25
     ; TAC: ifFalse t146 goto L6
     lds r24, t146
     lds r25, t146 + 1
     or r24, r25
-    breq L6
+    brne L_NO_JUMP_468
+    rjmp L6
+L_NO_JUMP_468:
     ; TAC: t148 = MEM[X]
     lds r24, X
     lds r25, X + 1
@@ -792,21 +810,25 @@ L7:
     ldi r23, 0
     cp r24, r22
     cpc r25, r23
-    brne L_TRUE_482
+    breq L_SKIP_498
+    rjmp L_TRUE_498
+L_SKIP_498:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_482
-L_TRUE_482:
+    rjmp L_END_498
+L_TRUE_498:
     ldi r24, 1
     ldi r25, 0
-L_END_482:
+L_END_498:
     sts t152, r24
     sts t152 + 1, r25
     ; TAC: ifFalse t152 goto L8
     lds r24, t152
     lds r25, t152 + 1
     or r24, r25
-    breq L8
+    brne L_NO_JUMP_516
+    rjmp L8
+L_NO_JUMP_516:
     ; TAC: t154 = MEM[X]
     lds r24, X
     lds r25, X + 1
@@ -846,25 +868,29 @@ L9:
     ; TAC: t162 = t160 < 100
     lds r24, t160
     lds r25, t160 + 1
-    ldi r22, 100
-    ldi r23, 0
+    ldi r22, 16
+    ldi r23, 39
     cp r24, r22
     cpc r25, r23
-    brcs L_TRUE_540
+    brge L_SKIP_560
+    rjmp L_TRUE_560
+L_SKIP_560:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_540
-L_TRUE_540:
+    rjmp L_END_560
+L_TRUE_560:
     ldi r24, 1
     ldi r25, 0
-L_END_540:
+L_END_560:
     sts t162, r24
     sts t162 + 1, r25
     ; TAC: ifFalse t162 goto L10
     lds r24, t162
     lds r25, t162 + 1
     or r24, r25
-    breq L10
+    brne L_NO_JUMP_578
+    rjmp L10
+L_NO_JUMP_578:
     ; TAC: goto L11
     rjmp L11
     ; TAC: L10:
@@ -888,25 +914,29 @@ L12:
     ; TAC: t170 = t168 < 10
     lds r24, t168
     lds r25, t168 + 1
-    ldi r22, 10
-    ldi r23, 0
+    ldi r22, 232
+    ldi r23, 3
     cp r24, r22
     cpc r25, r23
-    brcs L_TRUE_582
+    brge L_SKIP_606
+    rjmp L_TRUE_606
+L_SKIP_606:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_582
-L_TRUE_582:
+    rjmp L_END_606
+L_TRUE_606:
     ldi r24, 1
     ldi r25, 0
-L_END_582:
+L_END_606:
     sts t170, r24
     sts t170 + 1, r25
     ; TAC: ifFalse t170 goto L13
     lds r24, t170
     lds r25, t170 + 1
     or r24, r25
-    breq L13
+    brne L_NO_JUMP_624
+    rjmp L13
+L_NO_JUMP_624:
     ; TAC: t171 = MEM[I]
     lds r24, I
     lds r25, I + 1
@@ -915,7 +945,7 @@ L_END_582:
     ; TAC: t173 = t171 + 1
     lds r24, t171
     lds r25, t171 + 1
-    ldi r22, 1
+    ldi r22, 100
     ldi r23, 0
     add r24, r22
     adc r25, r23
@@ -938,7 +968,7 @@ L13:
     sts t174 + 1, r25
 ;  Linha 35
     ; TAC: MEM[CONTADOR] = 1
-    ldi r24, 1
+    ldi r24, 100
     ldi r25, 0
     sts CONTADOR, r24
     sts CONTADOR + 1, r25
@@ -953,25 +983,29 @@ L14:
     ; TAC: t179 = t177 <= 5
     lds r24, t177
     lds r25, t177 + 1
-    ldi r22, 5
-    ldi r23, 0
+    ldi r22, 244
+    ldi r23, 1
     cp r22, r24
     cpc r23, r25
-    brcc L_TRUE_647
+    brlt L_SKIP_675
+    rjmp L_TRUE_675
+L_SKIP_675:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_647
-L_TRUE_647:
+    rjmp L_END_675
+L_TRUE_675:
     ldi r24, 1
     ldi r25, 0
-L_END_647:
+L_END_675:
     sts t179, r24
     sts t179 + 1, r25
     ; TAC: ifFalse t179 goto L15
     lds r24, t179
     lds r25, t179 + 1
     or r24, r25
-    breq L15
+    brne L_NO_JUMP_693
+    rjmp L15
+L_NO_JUMP_693:
     ; TAC: t180 = MEM[CONTADOR]
     lds r24, CONTADOR
     lds r25, CONTADOR + 1
@@ -980,7 +1014,7 @@ L_END_647:
     ; TAC: t182 = t180 * 2
     lds r24, t180
     lds r25, t180 + 1
-    ldi r22, 2
+    ldi r22, 200
     ldi r23, 0
     call mul16
     sts t182, r24
@@ -1264,32 +1298,32 @@ L15:
     sts t311 + 1, r25
 ;  Linha 55
     ; TAC: MEM[A] = 1
-    ldi r24, 1
+    ldi r24, 100
     ldi r25, 0
     sts A, r24
     sts A + 1, r25
 ;  Linha 56
     ; TAC: MEM[B] = 2
-    ldi r24, 2
+    ldi r24, 200
     ldi r25, 0
     sts B, r24
     sts B + 1, r25
 ;  Linha 57
     ; TAC: MEM[C] = 3
-    ldi r24, 3
-    ldi r25, 0
+    ldi r24, 44
+    ldi r25, 1
     sts C, r24
     sts C + 1, r25
 ;  Linha 58
     ; TAC: MEM[D] = 4
-    ldi r24, 4
-    ldi r25, 0
+    ldi r24, 144
+    ldi r25, 1
     sts D, r24
     sts D + 1, r25
 ;  Linha 59
     ; TAC: MEM[F] = 5
-    ldi r24, 5
-    ldi r25, 0
+    ldi r24, 244
+    ldi r25, 1
     sts F, r24
     sts F + 1, r25
 ;  Linha 60
@@ -1414,21 +1448,25 @@ L15:
     lds r23, t359 + 1
     cp r24, r22
     cpc r25, r23
-    brcs L_TRUE_1104
+    brge L_SKIP_1136
+    rjmp L_TRUE_1136
+L_SKIP_1136:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_1104
-L_TRUE_1104:
+    rjmp L_END_1136
+L_TRUE_1136:
     ldi r24, 1
     ldi r25, 0
-L_END_1104:
+L_END_1136:
     sts t360, r24
     sts t360 + 1, r25
     ; TAC: ifFalse t360 goto L16
     lds r24, t360
     lds r25, t360 + 1
     or r24, r25
-    breq L16
+    brne L_NO_JUMP_1154
+    rjmp L16
+L_NO_JUMP_1154:
     ; TAC: t362 = MEM[C]
     lds r24, C
     lds r25, C + 1
@@ -1446,21 +1484,25 @@ L_END_1104:
     lds r23, t363 + 1
     cp r24, r22
     cpc r25, r23
-    brcs L_TRUE_1136
+    brge L_SKIP_1172
+    rjmp L_TRUE_1172
+L_SKIP_1172:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_1136
-L_TRUE_1136:
+    rjmp L_END_1172
+L_TRUE_1172:
     ldi r24, 1
     ldi r25, 0
-L_END_1136:
+L_END_1172:
     sts t364, r24
     sts t364 + 1, r25
     ; TAC: ifFalse t364 goto L18
     lds r24, t364
     lds r25, t364 + 1
     or r24, r25
-    breq L18
+    brne L_NO_JUMP_1190
+    rjmp L18
+L_NO_JUMP_1190:
     ; TAC: goto L19
     rjmp L19
     ; TAC: L18:
@@ -1486,21 +1528,25 @@ L17:
     ldi r23, 0
     cp r22, r24
     cpc r23, r25
-    brcs L_TRUE_1176
+    brge L_SKIP_1216
+    rjmp L_TRUE_1216
+L_SKIP_1216:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_1176
-L_TRUE_1176:
+    rjmp L_END_1216
+L_TRUE_1216:
     ldi r24, 1
     ldi r25, 0
-L_END_1176:
+L_END_1216:
     sts t371, r24
     sts t371 + 1, r25
     ; TAC: ifFalse t371 goto L20
     lds r24, t371
     lds r25, t371 + 1
     or r24, r25
-    breq L20
+    brne L_NO_JUMP_1234
+    rjmp L20
+L_NO_JUMP_1234:
     ; TAC: t373 = MEM[B]
     lds r24, B
     lds r25, B + 1
@@ -1513,21 +1559,25 @@ L_END_1176:
     ldi r23, 0
     cp r22, r24
     cpc r23, r25
-    brcs L_TRUE_1203
+    brge L_SKIP_1247
+    rjmp L_TRUE_1247
+L_SKIP_1247:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_1203
-L_TRUE_1203:
+    rjmp L_END_1247
+L_TRUE_1247:
     ldi r24, 1
     ldi r25, 0
-L_END_1203:
+L_END_1247:
     sts t375, r24
     sts t375 + 1, r25
     ; TAC: ifFalse t375 goto L22
     lds r24, t375
     lds r25, t375 + 1
     or r24, r25
-    breq L22
+    brne L_NO_JUMP_1265
+    rjmp L22
+L_NO_JUMP_1265:
     ; TAC: t377 = MEM[A]
     lds r24, A
     lds r25, A + 1
@@ -1669,8 +1719,8 @@ L21:
     sts t434 + 1, r25
 ;  Linha 78
     ; TAC: MEM[N] = 10
-    ldi r24, 10
-    ldi r25, 0
+    ldi r24, 232
+    ldi r25, 3
     sts N, r24
     sts N + 1, r25
 ;  Linha 79
@@ -1688,21 +1738,25 @@ L24:
     ldi r23, 0
     cp r22, r24
     cpc r23, r25
-    brcs L_TRUE_1378
+    brge L_SKIP_1426
+    rjmp L_TRUE_1426
+L_SKIP_1426:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_1378
-L_TRUE_1378:
+    rjmp L_END_1426
+L_TRUE_1426:
     ldi r24, 1
     ldi r25, 0
-L_END_1378:
+L_END_1426:
     sts t440, r24
     sts t440 + 1, r25
     ; TAC: ifFalse t440 goto L25
     lds r24, t440
     lds r25, t440 + 1
     or r24, r25
-    breq L25
+    brne L_NO_JUMP_1444
+    rjmp L25
+L_NO_JUMP_1444:
     ; TAC: t441 = MEM[N]
     lds r24, N
     lds r25, N + 1
@@ -1711,7 +1765,7 @@ L_END_1378:
     ; TAC: t443 = t441 - 1
     lds r24, t441
     lds r25, t441 + 1
-    ldi r22, 1
+    ldi r22, 100
     ldi r23, 0
     sub r24, r22
     sbc r25, r23
@@ -1740,7 +1794,7 @@ L25:
     sts SOMA + 1, r25
 ;  Linha 82
     ; TAC: MEM[I] = 1
-    ldi r24, 1
+    ldi r24, 100
     ldi r25, 0
     sts I, r24
     sts I + 1, r25
@@ -1755,25 +1809,29 @@ L26:
     ; TAC: t450 = t448 <= 10
     lds r24, t448
     lds r25, t448 + 1
-    ldi r22, 10
-    ldi r23, 0
+    ldi r22, 232
+    ldi r23, 3
     cp r22, r24
     cpc r23, r25
-    brcc L_TRUE_1449
+    brlt L_SKIP_1501
+    rjmp L_TRUE_1501
+L_SKIP_1501:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_1449
-L_TRUE_1449:
+    rjmp L_END_1501
+L_TRUE_1501:
     ldi r24, 1
     ldi r25, 0
-L_END_1449:
+L_END_1501:
     sts t450, r24
     sts t450 + 1, r25
     ; TAC: ifFalse t450 goto L27
     lds r24, t450
     lds r25, t450 + 1
     or r24, r25
-    breq L27
+    brne L_NO_JUMP_1519
+    rjmp L27
+L_NO_JUMP_1519:
     ; TAC: t451 = MEM[SOMA]
     lds r24, SOMA
     lds r25, SOMA + 1
@@ -1806,7 +1864,7 @@ L_END_1449:
     ; TAC: t456 = t454 + 1
     lds r24, t454
     lds r25, t454 + 1
-    ldi r22, 1
+    ldi r22, 100
     ldi r23, 0
     add r24, r22
     adc r25, r23
@@ -2001,19 +2059,19 @@ L27:
     sts t544 + 1, r25
 ;  Linha 97
     ; TAC: MEM[A] = 1.0
-    ldi r24, 1
+    ldi r24, 100
     ldi r25, 0
     sts A, r24
     sts A + 1, r25
 ;  Linha 98
     ; TAC: MEM[B] = 5.0
-    ldi r24, 5
-    ldi r25, 0
+    ldi r24, 244
+    ldi r25, 1
     sts B, r24
     sts B + 1, r25
 ;  Linha 99
     ; TAC: MEM[C] = 2.0
-    ldi r24, 2
+    ldi r24, 200
     ldi r25, 0
     sts C, r24
     sts C + 1, r25
@@ -2040,8 +2098,9 @@ L27:
     sts t557, r24
     sts t557 + 1, r25
     ; TAC: t558 = RES[t557]
-    ldi r24, 0
-    ldi r25, 0
+    lds r24, t557
+    lds r25, t557 + 1
+    call print_uint16
     sts t558, r24
     sts t558 + 1, r25
 ;  Linha 102
@@ -2062,21 +2121,25 @@ L27:
     ldi r23, 0
     cp r24, r22
     cpc r25, r23
-    brcs L_TRUE_1752
+    brge L_SKIP_1809
+    rjmp L_TRUE_1809
+L_SKIP_1809:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_1752
-L_TRUE_1752:
+    rjmp L_END_1809
+L_TRUE_1809:
     ldi r24, 1
     ldi r25, 0
-L_END_1752:
+L_END_1809:
     sts t566, r24
     sts t566 + 1, r25
     ; TAC: ifFalse t566 goto L28
     lds r24, t566
     lds r25, t566 + 1
     or r24, r25
-    breq L28
+    brne L_NO_JUMP_1827
+    rjmp L28
+L_NO_JUMP_1827:
     ; TAC: goto L29
     rjmp L29
     ; TAC: L28:
@@ -2085,14 +2148,14 @@ L28:
 L29:
 ;  Linha 108
     ; TAC: MEM[R] = 10
-    ldi r24, 10
-    ldi r25, 0
+    ldi r24, 232
+    ldi r25, 3
     sts R, r24
     sts R + 1, r25
 ;  Linha 109
     ; TAC: MEM[PI] = 3.14159
-    ldi r24, 3
-    ldi r25, 0
+    ldi r24, 58
+    ldi r25, 1
     sts PI, r24
     sts PI + 1, r25
 ;  Linha 110
@@ -2118,8 +2181,9 @@ L29:
     sts t577, r24
     sts t577 + 1, r25
     ; TAC: t578 = RES[t577]
-    ldi r24, 0
-    ldi r25, 0
+    lds r24, t577
+    lds r25, t577 + 1
+    call print_uint16
     sts t578, r24
     sts t578 + 1, r25
 ;  Linha 112
@@ -2135,8 +2199,9 @@ L29:
     sts t584, r24
     sts t584 + 1, r25
     ; TAC: t585 = RES[t584]
-    ldi r24, 0
-    ldi r25, 0
+    lds r24, t584
+    lds r25, t584 + 1
+    call print_uint16
     sts t585, r24
     sts t585 + 1, r25
 ;  Linha 114
@@ -2162,8 +2227,9 @@ L29:
     sts t591, r24
     sts t591 + 1, r25
     ; TAC: t592 = RES[t591]
-    ldi r24, 0
-    ldi r25, 0
+    lds r24, t591
+    lds r25, t591 + 1
+    call print_uint16
     sts t592, r24
     sts t592 + 1, r25
 ;  Linha 116
@@ -2184,26 +2250,27 @@ L29:
     sts t596, r24
     sts t596 + 1, r25
     ; TAC: t597 = RES[t596]
-    ldi r24, 0
-    ldi r25, 0
+    lds r24, t596
+    lds r25, t596 + 1
+    call print_uint16
     sts t597, r24
     sts t597 + 1, r25
 ;  Linha 118
     ; TAC: MEM[X] = 10
-    ldi r24, 10
-    ldi r25, 0
+    ldi r24, 232
+    ldi r25, 3
     sts X, r24
     sts X + 1, r25
 ;  Linha 119
     ; TAC: MEM[Y] = 20
-    ldi r24, 20
-    ldi r25, 0
+    ldi r24, 208
+    ldi r25, 7
     sts Y, r24
     sts Y + 1, r25
 ;  Linha 120
     ; TAC: MEM[Z] = 30
-    ldi r24, 30
-    ldi r25, 0
+    ldi r24, 184
+    ldi r25, 11
     sts Z, r24
     sts Z + 1, r25
 ;  Linha 121
@@ -2235,8 +2302,9 @@ L29:
     sts t607, r24
     sts t607 + 1, r25
     ; TAC: t609 = RES[1]
-    ldi r24, 0
+    ldi r24, 100
     ldi r25, 0
+    call print_uint16
     sts t609, r24
     sts t609 + 1, r25
 ;  Linha 124
@@ -2246,8 +2314,9 @@ L29:
     sts t611, r24
     sts t611 + 1, r25
     ; TAC: t613 = RES[2]
-    ldi r24, 0
+    ldi r24, 200
     ldi r25, 0
+    call print_uint16
     sts t613, r24
     sts t613 + 1, r25
 ;  Linha 125
@@ -2283,13 +2352,13 @@ L29:
     sts t625 + 1, r25
 ;  Linha 126
     ; TAC: MEM[I] = 5
-    ldi r24, 5
-    ldi r25, 0
+    ldi r24, 244
+    ldi r25, 1
     sts I, r24
     sts I + 1, r25
 ;  Linha 127
     ; TAC: MEM[FAT] = 1
-    ldi r24, 1
+    ldi r24, 100
     ldi r25, 0
     sts FAT, r24
     sts FAT + 1, r25
@@ -2308,21 +2377,25 @@ L30:
     ldi r23, 0
     cp r22, r24
     cpc r23, r25
-    brcs L_TRUE_1998
+    brge L_SKIP_2065
+    rjmp L_TRUE_2065
+L_SKIP_2065:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_1998
-L_TRUE_1998:
+    rjmp L_END_2065
+L_TRUE_2065:
     ldi r24, 1
     ldi r25, 0
-L_END_1998:
+L_END_2065:
     sts t635, r24
     sts t635 + 1, r25
     ; TAC: ifFalse t635 goto L31
     lds r24, t635
     lds r25, t635 + 1
     or r24, r25
-    breq L31
+    brne L_NO_JUMP_2083
+    rjmp L31
+L_NO_JUMP_2083:
     ; TAC: t636 = MEM[FAT]
     lds r24, FAT
     lds r25, FAT + 1
@@ -2354,7 +2427,7 @@ L_END_1998:
     ; TAC: t641 = t639 - 1
     lds r24, t639
     lds r25, t639 + 1
-    ldi r22, 1
+    ldi r22, 100
     ldi r23, 0
     sub r24, r22
     sbc r25, r23
@@ -2384,25 +2457,29 @@ L31:
     ; TAC: t646 = t644 > 100
     lds r24, t644
     lds r25, t644 + 1
-    ldi r22, 100
-    ldi r23, 0
+    ldi r22, 16
+    ldi r23, 39
     cp r22, r24
     cpc r23, r25
-    brcs L_TRUE_2078
+    brge L_SKIP_2149
+    rjmp L_TRUE_2149
+L_SKIP_2149:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_2078
-L_TRUE_2078:
+    rjmp L_END_2149
+L_TRUE_2149:
     ldi r24, 1
     ldi r25, 0
-L_END_2078:
+L_END_2149:
     sts t646, r24
     sts t646 + 1, r25
     ; TAC: ifFalse t646 goto L32
     lds r24, t646
     lds r25, t646 + 1
     or r24, r25
-    breq L32
+    brne L_NO_JUMP_2167
+    rjmp L32
+L_NO_JUMP_2167:
     ; TAC: t648 = MEM[AREA]
     lds r24, AREA
     lds r25, AREA + 1
@@ -2421,8 +2498,8 @@ L32:
 L33:
 ;  Linha 131
     ; TAC: MEM[LIMITE] = 100
-    ldi r24, 100
-    ldi r25, 0
+    ldi r24, 16
+    ldi r25, 39
     sts LIMITE, r24
     sts LIMITE + 1, r25
 ;  Linha 132
@@ -2457,21 +2534,25 @@ L34:
     lds r23, t655 + 1
     cp r24, r22
     cpc r25, r23
-    brcs L_TRUE_2147
+    brge L_SKIP_2222
+    rjmp L_TRUE_2222
+L_SKIP_2222:
     ldi r24, 0
     ldi r25, 0
-    rjmp L_END_2147
-L_TRUE_2147:
+    rjmp L_END_2222
+L_TRUE_2222:
     ldi r24, 1
     ldi r25, 0
-L_END_2147:
+L_END_2222:
     sts t656, r24
     sts t656 + 1, r25
     ; TAC: ifFalse t656 goto L35
     lds r24, t656
     lds r25, t656 + 1
     or r24, r25
-    breq L35
+    brne L_NO_JUMP_2240
+    rjmp L35
+L_NO_JUMP_2240:
     ; TAC: t657 = MEM[SOMA]
     lds r24, SOMA
     lds r25, SOMA + 1

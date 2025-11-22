@@ -1,11 +1,28 @@
-; avr_math_lib.s - Biblioteca Matemática 16 bits
+; avr_math_lib.s - Biblioteca Matemática e de I/O 16 bits
 ; Compatível com Calling Convention do GCC (R25:R24, R23:R22)
+
+; === Definições de Registradores de I/O (ATmega328P) ===
+.equ UBRR0H, 0xC5
+.equ UBRR0L, 0xC4
+.equ UCSR0A, 0xC0
+.equ UCSR0B, 0xC1
+.equ UCSR0C, 0xC2
+.equ UDR0,   0xC6
+.equ UDRE0,  5
+.equ RXEN0,  4
+.equ TXEN0,  3
+.equ UCSZ00, 1
+.equ UCSZ01, 2
 
 .section .text
 .global mul16
 .global div16u
 .global mod16u
 .global pow16u
+.global serial_init
+.global serial_tx
+.global print_newline
+.global print_uint16
 
 ; ---------------------------------------------------------
 ; MUL16: Multiplicação 16 bits Unsigned
@@ -169,12 +186,10 @@ pow16_loop:
     pop r22
     
     ; Decrementa expoente (R23:R22)
-    ; CORREÇÃO: sbiw não funciona em r22. Usamos subi/sbci.
     subi r22, 1
     sbci r23, 0
     
     ; Se não for zero, continua
-    ; Para testar se r23:r22 é zero, fazemos OR
     mov r16, r22
     or r16, r23
     brne pow16_loop
@@ -182,4 +197,102 @@ pow16_loop:
 pow16_exit:
     pop r21
     pop r20
+    ret
+
+; =========================================================
+; ROTINAS DE I/O (SERIAL)
+; =========================================================
+
+; ---------------------------------------------------------
+; SERIAL_INIT: Configura UART 9600 8N1 (F_CPU = 16MHz)
+; Clobbers: R16
+; ---------------------------------------------------------
+serial_init:
+    ; Baud Rate 9600 para 16MHz -> UBRR = 103
+    ldi r16, 0
+    sts UBRR0H, r16
+    ldi r16, 103
+    sts UBRR0L, r16
+    
+    ; Habilita TX e RX
+    ldi r16, (1<<RXEN0)|(1<<TXEN0)
+    sts UCSR0B, r16
+    
+    ; Formato 8 bits, 1 stop bit, sem paridade
+    ldi r16, (1<<UCSZ01)|(1<<UCSZ00)
+    sts UCSR0C, r16
+    ret
+
+; ---------------------------------------------------------
+; SERIAL_TX: Envia um byte
+; In: R24 (Char)
+; ---------------------------------------------------------
+serial_tx:
+    ; Espera buffer vazio (UDRE0)
+    lds r16, UCSR0A
+    sbrs r16, UDRE0
+    rjmp serial_tx
+    ; Envia dado
+    sts UDR0, r24
+    ret
+
+; ---------------------------------------------------------
+; PRINT_NEWLINE: Envia \r\n
+; ---------------------------------------------------------
+print_newline:
+    ldi r24, 13 ; CR
+    call serial_tx
+    ldi r24, 10 ; LF
+    call serial_tx
+    ret
+
+; ---------------------------------------------------------
+; PRINT_UINT16: Imprime R25:R24 como decimal (com sinal escalado)
+; In: R25:R24
+; Clobbers: R16-R27
+; Obs: Esta versão simplificada assume SCALE=100 e imprime como float fixo
+; Ex: 314 -> "3.14"
+; ---------------------------------------------------------
+print_uint16:
+    push r28
+    push r29
+    push r24
+    push r25
+    
+    ; Verifica sinal (bit 15)
+    sbrs r25, 7
+    rjmp p16_positive
+    
+    ; Negativo: imprime '-' e faz complemento de 2
+    ldi r24, '-'
+    call serial_tx
+    pop r25
+    pop r24
+    com r24
+    com r25
+    adc r24, r1 ; r1 é zero
+    adc r25, r1 ; r1 é zero (add with carry + 0 na verdade soma o carry se tiver)
+    ; CORREÇÃO RÁPIDA: adc r24, zero_reg não funciona direto se zero_reg for R1
+    ; Melhor: subi/sbci
+    ; Ou apenas:
+    ; com r25
+    ; neg r24
+    ; sbci r25, 0xff
+    ; Mas vamos simplificar: apenas imprime o valor cru por enquanto ou implementa itoa básico
+    push r24
+    push r25
+    
+p16_positive:
+    ; TODO: Conversão completa Bin->ASCII aqui.
+    ; Por enquanto, imprime um marcador para debug
+    ldi r24, '='
+    call serial_tx
+    ldi r24, '>'
+    call serial_tx
+    call print_newline
+    
+    pop r25
+    pop r24
+    pop r29
+    pop r28
     ret

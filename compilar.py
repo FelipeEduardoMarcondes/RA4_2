@@ -23,7 +23,8 @@ from assembly_generator import (
     AVRAssemblyGenerator, 
     salvarAssembly, 
     gerarHex,
-    gerarRelatorioAssembly
+    gerarRelatorioAssembly,
+    uploadHex
 )
 
 
@@ -335,11 +336,16 @@ def main():
         print(f"Otimizações aplicadas:       {total_opts}")
         print(f"Linhas Assembly geradas:     {len(asm_instructions)}")
         
+        print("\n[FASE 4.3] Compilando Assembly para HEX...")
+    
+        hex_gerado = gerarHex(asm_file, hex_file)
         if hex_gerado:
-            print(f"Arquivo HEX:                 Gerado")
+            print(f"HEX gerado com sucesso: {hex_file}")
+            
+            uploadHex(hex_file, "COM4")
+            
         else:
-            print(f"Arquivo HEX:                 Não gerado (toolchain não disponível)")
-        
+            print("AVISO: Não foi possível gerar HEX...")
         if erros_semanticos:
             print("\nStatus: COMPILAÇÃO CONCLUÍDA COM ERROS")
         else:
