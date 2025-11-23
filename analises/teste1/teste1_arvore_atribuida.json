@@ -3,14 +3,14 @@
     "linha": 1,
     "tipo_vertice": "num",
     "tipo_inferido": "int",
-    "valor": 5,
+    "valor": -5,
     "filhos": []
   },
   {
     "linha": 2,
     "tipo_vertice": "num",
     "tipo_inferido": "int",
-    "valor": 10,
+    "valor": -10,
     "filhos": []
   },
   {
@@ -22,13 +22,13 @@
       {
         "tipo_vertice": "num",
         "tipo_inferido": "int",
-        "valor": 5,
+        "valor": -5,
         "filhos": []
       },
       {
         "tipo_vertice": "num",
         "tipo_inferido": "int",
-        "valor": 3,
+        "valor": -3,
         "filhos": []
       }
     ]
@@ -48,7 +48,7 @@
       {
         "tipo_vertice": "num",
         "tipo_inferido": "real",
-        "valor": 2.5,
+        "valor": -2.5,
         "filhos": []
       }
     ]
@@ -68,7 +68,7 @@
       {
         "tipo_vertice": "num",
         "tipo_inferido": "real",
-        "valor": 2.52,
+        "valor": -2.52,
         "filhos": []
       }
     ]

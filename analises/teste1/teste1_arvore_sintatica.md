@@ -1,4 +1,4 @@
-# Árvore Sintática Atribuída - .\teste1.txt
+# Árvore Sintática Atribuída - .\testes\teste1.txt
 
 **Gerado pelo compilador RPN - Fase 3**
 
@@ -7,7 +7,7 @@
 **Tipo inferido:** `int`
 
 ```
-num : int = 5
+num : int = -5
 ```
 
 ## Expressão 2
@@ -15,7 +15,7 @@ num : int = 5
 **Tipo inferido:** `int`
 
 ```
-num : int = 10
+num : int = -10
 ```
 
 ## Expressão 3
@@ -24,8 +24,8 @@ num : int = 10
 
 ```
 plus : int = +
-  ├─ num : int = 5
-  └─ num : int = 3
+  ├─ num : int = -5
+  └─ num : int = -3
 ```
 
 ## Expressão 4
@@ -35,7 +35,7 @@ plus : int = +
 ```
 mult : real = *
   ├─ num : int = 10
-  └─ num : real = 2.5
+  └─ num : real = -2.5
 ```
 
 ## Expressão 5
@@ -45,7 +45,7 @@ mult : real = *
 ```
 div_real : real = |
   ├─ num : int = 100
-  └─ num : real = 2.52
+  └─ num : real = -2.52
 ```
 
 ## Expressão 6

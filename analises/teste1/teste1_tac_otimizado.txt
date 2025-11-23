@@ -4,19 +4,19 @@
 
 
 # Linha 1
-t1 = PRINT[5]
+t1 = PRINT[-5]
 
 # Linha 2
-t3 = PRINT[10]
+t3 = PRINT[-10]
 
 # Linha 3
-t7 = PRINT[8]
+t7 = PRINT[-8]
 
 # Linha 4
-t11 = PRINT[25]
+t11 = PRINT[-25]
 
 # Linha 5
-t15 = PRINT[39.682539682539684]
+t15 = PRINT[-39.682539682539684]
 
 # Linha 6
 t17 = RES[1]

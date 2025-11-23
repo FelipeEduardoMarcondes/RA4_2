@@ -2,6 +2,7 @@
 # FELIPE EDUARDO MARCONDES - GRUPO 2
 # VERSÃO FINAL: Integração com Libs AVR (Q8.8, Runtime, Storage)
 # CORREÇÃO: Tratamento de inteiros puros para Potência e RES
+# CORREÇÃO 2: Fix para números negativos literais (evita garbage at end of line)
 
 import re
 import subprocess
@@ -106,9 +107,12 @@ class AVRAssemblyGenerator:
         is_raw=True: Carrega o número inteiro puro (ex: expoente 2 vira 2)
         is_raw=False: Carrega em Ponto Fixo Q8.8 (ex: 2 vira 512)
         """
+        # CORREÇÃO: .strip() remove espaços que podem vir do regex da operação binária
+        operand_str = str(operand).strip() 
+
         # Caso 1: Literal Numérico
-        if re.match(r'^-?\d+(\.\d+)?$', str(operand)):
-            val_float = float(operand)
+        if re.match(r'^-?\d+(\.\d+)?$', operand_str):
+            val_float = float(operand_str)
             
             if is_raw:
                 # Inteiro puro (sem escala)
@@ -126,9 +130,9 @@ class AVRAssemblyGenerator:
         
         # Caso 2: Variável MEM ou Temporária
         else:
-            var_name = operand
-            if 'MEM[' in operand:
-                var_name = re.match(r'MEM\[(\w+)\]', operand).group(1)
+            var_name = operand_str
+            if 'MEM[' in operand_str:
+                var_name = re.match(r'MEM\[(\w+)\]', operand_str).group(1)
             
             if var_name == "MEM":
                 self.assembly.append(f"    call mem_load")
@@ -182,40 +186,47 @@ class AVRAssemblyGenerator:
                 return True
 
         # 3. Operações Binárias
+        # Regex ajustado para evitar falso positivo com números negativos (ex: -1)
         match_bin = re.match(r'(\w+|MEM\[\w+\])\s*=\s*(.*)\s*([+\-*/%^|]|==|!=|<=|>=|<|>)\s*(.*)', inst)
         if match_bin and 'PRINT' not in inst and 'RES' not in inst and 'ifFalse' not in inst:
             dest, op1, op, op2 = match_bin.groups()
             
-            # Carrega OP1 (Sempre escalado/normal)
-            self._load_val(op1, 'r24', 'r25')
-            
-            # CORREÇÃO: Se for Potência (^), OP2 é RAW INT
-            is_power = (op == '^')
-            self._load_val(op2, 'r22', 'r23', is_raw=is_power)
-            
-            # Mapeamento para Libs
-            if op == '+':
-                self.assembly.append("    add r24, r22")
-                self.assembly.append("    adc r25, r23")
-            elif op == '-':
-                self.assembly.append("    sub r24, r22")
-                self.assembly.append("    sbc r25, r23")
-            elif op == '*': self.assembly.append("    call fx_mul")
-            elif op == '|': self.assembly.append("    call fx_div")
-            elif op == '/': self.assembly.append("    call div16s")
-            elif op == '%': self.assembly.append("    call op_mod")
-            elif op == '^': self.assembly.append("    call fx_pow") 
-            elif op == '==': self.assembly.append("    call op_eq")
-            elif op == '!=': self.assembly.append("    call op_neq")
-            elif op == '>':  self.assembly.append("    call op_gt")
-            elif op == '<':  self.assembly.append("    call op_lt")
-            elif op == '>=': self.assembly.append("    call op_ge")
-            elif op == '<=': self.assembly.append("    call op_le")
-            
-            self._store_val(dest)
-            return True
+            # CORREÇÃO: Se op1 estiver vazio, é um negativo literal (ex: t1 = -5)
+            # O regex captura "-5" como op="-" e op2="5" e op1=""
+            if not op1.strip():
+                # Não é binária, deixa cair para Atribuição Simples
+                pass
+            else:
+                # Carrega OP1 (Sempre escalado/normal)
+                self._load_val(op1, 'r24', 'r25')
+                
+                # CORREÇÃO: Se for Potência (^), OP2 é RAW INT
+                is_power = (op == '^')
+                self._load_val(op2, 'r22', 'r23', is_raw=is_power)
+                
+                # Mapeamento para Libs
+                if op == '+':
+                    self.assembly.append("    add r24, r22")
+                    self.assembly.append("    adc r25, r23")
+                elif op == '-':
+                    self.assembly.append("    sub r24, r22")
+                    self.assembly.append("    sbc r25, r23")
+                elif op == '*': self.assembly.append("    call fx_mul")
+                elif op == '|': self.assembly.append("    call fx_div")
+                elif op == '/': self.assembly.append("    call div16s")
+                elif op == '%': self.assembly.append("    call op_mod")
+                elif op == '^': self.assembly.append("    call fx_pow") 
+                elif op == '==': self.assembly.append("    call op_eq")
+                elif op == '!=': self.assembly.append("    call op_neq")
+                elif op == '>':  self.assembly.append("    call op_gt")
+                elif op == '<':  self.assembly.append("    call op_lt")
+                elif op == '>=': self.assembly.append("    call op_ge")
+                elif op == '<=': self.assembly.append("    call op_le")
+                
+                self._store_val(dest)
+                return True
 
-        # 4. Atribuição Simples (t1 = 10)
+        # 4. Atribuição Simples (t1 = 10 ou t1 = -10)
         match_assign = re.match(r'(\w+|MEM\[\w+\])\s*=\s*(.*)', inst)
         if match_assign and 'goto' not in inst and 'ifFalse' not in inst:
             dest, src = match_assign.groups()
@@ -279,7 +290,8 @@ def gerarHex(asm_file, hex_file):
     return res.returncode == 0
 
 def uploadHex(hex_file, port, baud):
-    cmd = f"avrdude -c arduino -p atmega328p -P {port} -b {baud} -D -U flash:w:{hex_file}:i"
+    # CORREÇÃO: Adicionadas aspas no caminho do arquivo para suportar espaços
+    cmd = f"avrdude -c arduino -p atmega328p -P {port} -b {baud} -D -U flash:w:\"{hex_file}\":i"
     subprocess.run(cmd, shell=True)
     return True
 

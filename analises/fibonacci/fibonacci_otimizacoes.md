@@ -4,15 +4,15 @@
 
 ## Estatísticas
 
-- **Instruções originais:** 29
-- **Instruções otimizadas:** 16
-- **Redução:** 13 instruções (44.8%)
+- **Instruções originais:** 57
+- **Instruções otimizadas:** 46
+- **Redução:** 11 instruções (19.3%)
 
 ## Otimizações Aplicadas
 
 ### Constant Folding
 
-**Aplicações:** 3
+**Aplicações:** 0
 
 **Descrição:** Avalia expressões constantes em tempo de compilação.
 
@@ -39,7 +39,7 @@ Depois: t1 = 5
 
 ### Dead Code Elimination
 
-**Aplicações:** 13
+**Aplicações:** 11
 
 **Descrição:** Remove código que não afeta o resultado do programa.
 
@@ -73,54 +73,112 @@ Depois: L1:
 
 ```
 # Linha 1
-t0 = -5
+t0 = 0
+MEM[A] = t0
 t1 = PRINT[t0]
 # Linha 2
-t2 = -10
+t2 = 1
+MEM[B] = t2
 t3 = PRINT[t2]
 # Linha 3
-t4 = -5
-t5 = -3
-t6 = t4 + t5
-t7 = PRINT[t6]
+t4 = 0
+MEM[I] = t4
+t5 = PRINT[t4]
 # Linha 4
-t8 = 10
-t9 = -2.5
-t10 = t8 * t9
-t11 = PRINT[t10]
+t6 = 12
+MEM[N] = t6
+t7 = PRINT[t6]
 # Linha 5
-t12 = 100
-t13 = -2.52
-t14 = t12 | t13
-t15 = PRINT[t14]
+t8 = MEM[A]
+t9 = PRINT[t8]
 # Linha 6
-t16 = 1
-t17 = RES[t16]
-t18 = PRINT[t17]
+t10 = MEM[B]
+t11 = PRINT[t10]
 # Linha 7
-t19 = 4
-t20 = RES[t19]
-t21 = PRINT[t20]
+L0:
+t13 = MEM[I]
+t14 = MEM[N]
+t15 = t13 < t14
+ifFalse t15 goto L1
+t16 = MEM[A]
+t17 = MEM[B]
+t18 = t16 + t17
+MEM[TEMP] = t18
+t19 = MEM[B]
+MEM[A] = t19
+t20 = t18 + t19
+t21 = MEM[TEMP]
+MEM[B] = t21
+t22 = MEM[I]
+t23 = 1
+t24 = t22 + t23
+MEM[I] = t24
+t25 = t21 + t24
+t26 = t20 + t25
+t27 = 0
+t28 = t26 > t27
+ifFalse t28 goto L2
+t30 = MEM[B]
+t29 = t30
+goto L3
+L2:
+t31 = MEM[B]
+t29 = t31
+L3:
+t12 = t29
+goto L0
+L1:
+t32 = PRINT[t12]
 ```
 
 ### TAC Otimizado
 
 ```
 # Linha 1
-t1 = PRINT[-5]
+MEM[A] = 0
+t1 = PRINT[0]
 # Linha 2
-t3 = PRINT[-10]
+MEM[B] = 1
+t3 = PRINT[1]
 # Linha 3
-t7 = PRINT[-8]
+MEM[I] = 0
+t5 = PRINT[0]
 # Linha 4
-t11 = PRINT[-25]
+MEM[N] = 12
+t7 = PRINT[12]
 # Linha 5
-t15 = PRINT[-39.682539682539684]
+t8 = MEM[A]
+t9 = PRINT[t8]
 # Linha 6
-t17 = RES[1]
-t18 = PRINT[t17]
+t10 = MEM[B]
+t11 = PRINT[t10]
 # Linha 7
-t20 = RES[4]
-t21 = PRINT[t20]
+L0:
+t13 = MEM[I]
+t14 = MEM[N]
+ifFalse t15 goto L1
+t16 = MEM[A]
+t17 = MEM[B]
+t18 = t16 + t17
+MEM[TEMP] = t18
+t19 = MEM[B]
+MEM[A] = t19
+t21 = MEM[TEMP]
+MEM[B] = t21
+t22 = MEM[I]
+t24 = t22 + 1
+MEM[I] = t24
+ifFalse t28 goto L2
+t30 = MEM[B]
+t29 = t30
+goto L3
+L2:
+t31 = MEM[B]
+t29 = t31
+L3:
+t12 = t29
+goto L0
+L1:
+t32 = PRINT[t12]
 ```
 
