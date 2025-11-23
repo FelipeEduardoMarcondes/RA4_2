@@ -33,7 +33,7 @@ t7:    .word 0    ; t7
 .org 0x0034
 
 reset_handler:
-    ; Configura pilha
+    ; Configura pilha (CRÍTICO para chamadas de função)
     ldi r16, hi8(RAMEND)
     out SPH, r16
     ldi r16, lo8(RAMEND)
@@ -42,7 +42,7 @@ reset_handler:
     ; Zera R1 (convenção AVR-GCC)
     clr r1
     
-    ; Inicializa UART
+    ; Inicializa UART (Nome corrigido para bater com avr_math_lib.s)
     call uart_init
     
     ; Delay para estabilização
@@ -62,8 +62,8 @@ main:
 ;  ====== LINHA 1 ======
     ; TAC: t1 = PRINT[5]
     ; >> PRINT(5)
-    ldi r24, 5    ; Literal 5 (low)
-    ldi r25, 0    ; (high)
+    ldi r24, 5      ; Literal 5 (low)
+    ldi r25, 0      ; Literal 5 (high)
     call print_int16
     call uart_newline
     sts t1, r24    ; Armazena em t1 (low)
@@ -72,8 +72,8 @@ main:
 ;  ====== LINHA 2 ======
     ; TAC: t3 = PRINT[10]
     ; >> PRINT(10)
-    ldi r24, 10    ; Literal 10 (low)
-    ldi r25, 0    ; (high)
+    ldi r24, 10      ; Literal 10 (low)
+    ldi r25, 0      ; Literal 10 (high)
     call print_int16
     call uart_newline
     sts t3, r24    ; Armazena em t3 (low)
@@ -82,8 +82,8 @@ main:
 ;  ====== LINHA 3 ======
     ; TAC: t7 = PRINT[8]
     ; >> PRINT(8)
-    ldi r24, 8    ; Literal 8 (low)
-    ldi r25, 0    ; (high)
+    ldi r24, 8      ; Literal 8 (low)
+    ldi r25, 0      ; Literal 8 (high)
     call print_int16
     call uart_newline
     sts t7, r24    ; Armazena em t7 (low)
@@ -92,8 +92,8 @@ main:
 ;  ====== LINHA 4 ======
     ; TAC: t11 = PRINT[20]
     ; >> PRINT(20)
-    ldi r24, 20    ; Literal 20 (low)
-    ldi r25, 0    ; (high)
+    ldi r24, 20      ; Literal 20 (low)
+    ldi r25, 0      ; Literal 20 (high)
     call print_int16
     call uart_newline
     sts t11, r24    ; Armazena em t11 (low)
@@ -102,8 +102,8 @@ main:
 ;  ====== LINHA 5 ======
     ; TAC: t15 = PRINT[10]
     ; >> PRINT(10)
-    ldi r24, 10    ; Literal 10 (low)
-    ldi r25, 0    ; (high)
+    ldi r24, 10      ; Literal 10 (low)
+    ldi r25, 0      ; Literal 10 (high)
     call print_int16
     call uart_newline
     sts t15, r24    ; Armazena em t15 (low)
@@ -112,14 +112,14 @@ main:
 ;  ====== LINHA 6 ======
     ; TAC: t17 = RES[1]
     ; >> RES(1) = t20
-    lds r24, t20    ; Carrega t20 (low)
-    lds r25, t20 + 1    ; (high)
+    lds r24, t20
+    lds r25, t20 + 1
     sts t17, r24    ; Armazena em t17 (low)
     sts t17 + 1, r25    ; (high)
     ; TAC: t18 = PRINT[t17]
     ; >> PRINT(t17)
-    lds r24, t17    ; Carrega t17 (low)
-    lds r25, t17 + 1    ; (high)
+    lds r24, t17
+    lds r25, t17 + 1
     call print_int16
     call uart_newline
     sts t18, r24    ; Armazena em t18 (low)
@@ -128,14 +128,14 @@ main:
 ;  ====== LINHA 7 ======
     ; TAC: t20 = RES[4]
     ; AVISO: RES(4) sem resultado válido
-    ldi r24, 0    ; Literal 0 (low)
-    ldi r25, 0    ; (high)
+    ldi r24, 0      ; Literal 0 (low)
+    ldi r25, 0      ; Literal 0 (high)
     sts t20, r24    ; Armazena em t20 (low)
     sts t20 + 1, r25    ; (high)
     ; TAC: t21 = PRINT[t20]
     ; >> PRINT(t20)
-    lds r24, t20    ; Carrega t20 (low)
-    lds r25, t20 + 1    ; (high)
+    lds r24, t20
+    lds r25, t20 + 1
     call print_int16
     call uart_newline
     sts t21, r24    ; Armazena em t21 (low)

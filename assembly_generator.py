@@ -149,7 +149,7 @@ class AVRAssemblyGenerator:
             ".org 0x0034",
             "",
             "reset_handler:",
-            "    ; Configura pilha",
+            "    ; Configura pilha (CRÍTICO para chamadas de função)",
             "    ldi r16, hi8(RAMEND)",
             "    out SPH, r16",
             "    ldi r16, lo8(RAMEND)",
@@ -158,8 +158,8 @@ class AVRAssemblyGenerator:
             "    ; Zera R1 (convenção AVR-GCC)",
             "    clr r1",
             "    ",
-            "    ; Inicializa UART",
-            "    call uart_init",
+            "    ; Inicializa UART (Nome corrigido para bater com avr_math_lib.s)",
+            "    call uart_init", 
             "    ",
             "    ; Delay para estabilização",
             "    ldi r17, 50",
@@ -175,7 +175,7 @@ class AVRAssemblyGenerator:
             "    ; === INÍCIO DO PROGRAMA PRINCIPAL ===",
             ""
         ])
-
+        
     def _gerar_epilogo(self):
         """Gera código de finalização."""
         self.assembly.extend([
@@ -203,44 +203,51 @@ class AVRAssemblyGenerator:
             "; === SEÇÃO DE CÓDIGO ===",
             ".text"
         ] + self.assembly
-
     def _load_operand(self, operand, reg_low, reg_high):
         """
         Carrega operando em par de registradores (16-bit).
-        
         Args:
-            operand: String (literal, variável ou MEM[X])
+            operand: String (literal '10', variável 't1' ou 'MEM[X]')
             reg_low: Registrador low byte (ex: 'r24')
             reg_high: Registrador high byte (ex: 'r25')
         """
-        # Literal numérico
-        if re.match(r'^-?\d+(\.\d+)?$', operand):
+        # Caso 1: Literal Numérico (ex: "10", "-5", "3.14")
+        if re.match(r'^-?\d+(\.\d+)?$', str(operand)):
             try:
                 val_float = float(operand)
+                # Aplica escala se for ponto fixo (se SCALE=1, mantém inteiro)
                 val_scaled = int(val_float * self.SCALE)
                 
-                # Tratamento de negativos (complemento de 2 em 16 bits)
+                # Tratamento de negativos (Complemento de 2 em 16 bits)
                 if val_scaled < 0:
                     val_scaled = 65536 + val_scaled
                 
+                # Garante que cabe em 16 bits (máscara 0xFFFF)
                 val_scaled = val_scaled & 0xFFFF
+                
                 low_byte = val_scaled & 0xFF
                 high_byte = (val_scaled >> 8) & 0xFF
                 
-                self.assembly.append(f"    ldi {reg_low}, {low_byte}    ; Literal {operand} (low)")
-                self.assembly.append(f"    ldi {reg_high}, {high_byte}    ; (high)")
+                self.assembly.append(f"    ldi {reg_low}, {low_byte}      ; Literal {operand} (low)")
+                self.assembly.append(f"    ldi {reg_high}, {high_byte}      ; Literal {operand} (high)")
             except Exception as e:
                 self.assembly.append(f"    ; ERRO ao carregar literal {operand}: {e}")
                 self.assembly.append(f"    clr {reg_low}")
                 self.assembly.append(f"    clr {reg_high}")
+        
+        # Caso 2: Variável ou Memória (ex: "t1", "MEM[X]")
         else:
-            # Variável ou MEM[X]
+            # Limpa o nome se for MEM[X] -> vira apenas X
+            var_name = operand
             mem_match = re.match(r'MEM\[(\w+)\]', operand)
-            var_name = mem_match.group(1) if mem_match else operand
+            if mem_match:
+                var_name = mem_match.group(1)
             
-            self.assembly.append(f"    lds {reg_low}, {var_name}    ; Carrega {var_name} (low)")
-            self.assembly.append(f"    lds {reg_high}, {var_name} + 1    ; (high)")
-
+            # Carrega da RAM usando LDS (Load Direct from Data Space)
+            # AVR é little-endian: low byte no endereço X, high byte em X+1
+            self.assembly.append(f"    lds {reg_low}, {var_name}")
+            self.assembly.append(f"    lds {reg_high}, {var_name} + 1")
+            
     def _store_result(self, dest_var, reg_low, reg_high):
         """Armazena resultado em variável."""
         mem_match = re.match(r'MEM\[(\w+)\]', dest_var)
@@ -250,10 +257,7 @@ class AVRAssemblyGenerator:
         self.assembly.append(f"    sts {var_name} + 1, {reg_high}    ; (high)")
 
     def _processar_instrucao(self, inst):
-        """
-        Processa uma instrução TAC e gera Assembly correspondente.
-        Retorna True se reconheceu a instrução.
-        """
+        """Processa uma instrução TAC e gera Assembly."""
         
         # ========== PRINT[X] ==========
         match_print = re.match(r'(\w+)\s*=\s*PRINT\[(.*)\]', inst)
@@ -261,14 +265,18 @@ class AVRAssemblyGenerator:
             dest, src = match_print.groups()
             
             self.assembly.append(f"    ; >> PRINT({src})")
+            
+            # 1. Carrega o valor nos registradores de argumento (r25:r24)
             self._load_operand(src, 'r24', 'r25')
+            
+            # 2. Chama a função de impressão da biblioteca
             self.assembly.append("    call print_int16")
             self.assembly.append("    call uart_newline")
             
-            # Armazena resultado (mesmo valor que foi impresso)
+            # 3. Armazena o resultado (o PRINT também retorna o valor impresso)
+            # Isso é útil se o TAC usar o resultado do print depois
             self._store_result(dest, 'r24', 'r25')
             return True
-
         # ========== RES[N] ==========
         match_res = re.match(r'(\w+)\s*=\s*RES\[(.*)\]', inst)
         if match_res:
