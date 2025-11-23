@@ -23,8 +23,7 @@ BAUD_RATE_MONITOR = 9600
 
 # Fator de escala para ponto fixo (Fixed Point)
 # 100 significa: 1.00 → 100, 0.5 → 50
-SCALE_FACTOR = 100
-
+SCALE_FACTOR = 256
 # Habilitar otimizações
 ENABLE_OPTIMIZATIONS = True
 
@@ -55,8 +54,7 @@ HISTORY_SIZE = 16
 SERIAL_TIMEOUT = 2
 
 # Caminho da biblioteca matemática AVR
-MATH_LIB_PATH = "avr_math_lib.s"
-
+MATH_LIB_PATH = "lib_avr/"
 # ============================================
 # FUNÇÕES AUXILIARES
 # ============================================

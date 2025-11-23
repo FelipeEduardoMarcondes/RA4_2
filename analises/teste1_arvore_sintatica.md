@@ -7,7 +7,9 @@
 **Tipo inferido:** `int`
 
 ```
-num : int = 5
+store : int
+  ├─ num : int = 0
+  └─ id = A
 ```
 
 ## Expressão 2
@@ -15,7 +17,9 @@ num : int = 5
 **Tipo inferido:** `int`
 
 ```
-num : int = 10
+store : int
+  ├─ num : int = 1
+  └─ id = B
 ```
 
 ## Expressão 3
@@ -23,9 +27,9 @@ num : int = 10
 **Tipo inferido:** `int`
 
 ```
-plus : int = +
-  ├─ num : int = 5
-  └─ num : int = 3
+store : int
+  ├─ num : int = 0
+  └─ id = CONT
 ```
 
 ## Expressão 4
@@ -33,9 +37,9 @@ plus : int = +
 **Tipo inferido:** `int`
 
 ```
-mult : int = *
-  ├─ num : int = 10
-  └─ num : int = 2
+store : int
+  ├─ num : int = 0
+  └─ id = TEMP
 ```
 
 ## Expressão 5
@@ -43,9 +47,31 @@ mult : int = *
 **Tipo inferido:** `int`
 
 ```
-div_int : int = /
-  ├─ num : int = 100
-  └─ num : int = 10
+while : int = while
+  ├─ lt : booleano = <
+    ├─ id : int = CONT
+    └─ num : int = 12
+  └─ plus : int = +
+    ├─ store : int
+      ├─ plus : int = +
+        ├─ id : int = A
+        └─ id : int = B
+      └─ id = TEMP
+    └─ plus : int = +
+      ├─ store : int
+        ├─ id : int = B
+        └─ id = A
+      └─ plus : int = +
+        ├─ store : int
+          ├─ id : int = TEMP
+          └─ id = B
+        └─ plus : int = +
+          ├─ store : int
+            ├─ plus : int = +
+              ├─ id : int = CONT
+              └─ num : int = 1
+            └─ id = CONT
+          └─ id : int = A
 ```
 
 ## Expressão 6
@@ -53,16 +79,6 @@ div_int : int = /
 **Tipo inferido:** `int`
 
 ```
-res : int = RES
-  └─ num : int = 1
-```
-
-## Expressão 7
-
-**Tipo inferido:** `int`
-
-```
-res : int = RES
-  └─ num : int = 4
+id : int = A
 ```
 
