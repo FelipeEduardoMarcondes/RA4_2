@@ -2,7 +2,7 @@
 # FELIPE EDUARDO MARCONDES
 # GRUPO 2
 # Compilador completo: Fases 1-4 (Léxico + Sintático + Semântico + TAC + Otimização + Assembly)
-# VERSÃO CORRIGIDA COM IMPRESSÃO SERIAL
+# VERSÃO CORRIGIDA COM IMPRESSÃO SERIAL E SEM EMOJIS
 
 import sys
 import json
@@ -117,13 +117,20 @@ def main():
     
     filename = sys.argv[1]
     
-    output_dir = config.get('output_dir', 'analises')
+    # 1. Pega o diretório base das configurações (padrão 'analises')
+    base_output_dir = config.get('output_dir', 'analises')
+    
+    # 2. Extrai o nome do arquivo sem extensão (ex: 'teste1' de 'teste1.txt')
+    base_name = os.path.splitext(os.path.basename(filename))[0]
+    
+    # 3. Define o novo diretório específico (ex: 'analises/teste1')
+    output_dir = os.path.join(base_output_dir, base_name)
+    
+    # 4. Cria a pasta específica se não existir
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         
-    base_name = os.path.splitext(os.path.basename(filename))[0]
-    
-    # Arquivos de saída
+    # Arquivos de saída (Agora usam o novo output_dir que aponta para a subpasta)
     gramatica_file = os.path.join(output_dir, 'gramatica_atributos_gerada.md')
     relatorio_tipos_file = os.path.join(output_dir, f"{base_name}_julgamento_tipos.md")
     relatorio_erros_file = os.path.join(output_dir, f"{base_name}_erros_semanticos.md")
@@ -145,7 +152,7 @@ def main():
         print("\n[FASE 1] Análise Léxica...")
         tokens = lerTokens(filename)
         num_tokens = len([t for t in tokens if t['type'] != 'eof'])
-        print(f"✓ {num_tokens} token(s) identificado(s)")
+        print(f"[OK] {num_tokens} token(s) identificado(s)")
         
         # FASE 2: ANÁLISE SINTÁTICA
         print("\n[FASE 2] Análise Sintática...")
@@ -157,13 +164,13 @@ def main():
         ast_list, erros_sintaticos = parsear(tokens, tabela_ll1)
         
         if erros_sintaticos:
-            print(f"✗ {len(erros_sintaticos)} erro(s) sintático(s) encontrado(s):")
+            print(f"[ERRO] {len(erros_sintaticos)} erro(s) sintático(s) encontrado(s):")
             for erro in erros_sintaticos:
                 print(f"  - {erro}")
-            print("\n⛔ Compilação interrompida devido a erros sintáticos.")
+            print("\n[ERRO FATAL] Compilação interrompida devido a erros sintáticos.")
             sys.exit(1)
         
-        print(f"✓ {len(ast_list)} expressão(ões) válida(s)")
+        print(f"[OK] {len(ast_list)} expressão(ões) válida(s)")
         
         # FASE 3: ANÁLISE SEMÂNTICA
         print("\n[FASE 3] Análise Semântica...")
@@ -173,9 +180,9 @@ def main():
         arvore_anotada, erros_semanticos = analisarSemantica(ast_list, tabela_simbolos)
         
         if erros_semanticos:
-            print(f"⚠ {len(erros_semanticos)} erro(s) semântico(s) encontrado(s)")
+            print(f"[AVISO] {len(erros_semanticos)} erro(s) semântico(s) encontrado(s)")
         else:
-            print("✓ Nenhum erro semântico detectado")
+            print("[OK] Nenhum erro semântico detectado")
         
         arvore_atribuida_final = gerarArvoreAtribuida(arvore_anotada)
         
@@ -183,7 +190,7 @@ def main():
         print("\n[FASE 4] Geração de Código Intermediário (TAC)...")
         tac_generator = TACGenerator()
         tac_instructions = tac_generator.gerarTAC(arvore_anotada)
-        print(f"✓ {len(tac_instructions)} instruções TAC geradas")
+        print(f"[OK] {len(tac_instructions)} instruções TAC geradas")
         
         # FASE 4.1: OTIMIZAÇÃO
         print("\n[FASE 4.1] Otimizando código TAC...")
@@ -192,63 +199,63 @@ def main():
         stats = optimizer.get_optimization_stats()
         
         total_opts = sum(stats.values())
-        print(f"✓ {total_opts} otimizações aplicadas:")
+        print(f"[OK] {total_opts} otimizações aplicadas:")
         for opt_name, count in stats.items():
             if count > 0:
                 print(f"  - {opt_name.replace('_', ' ').title()}: {count}")
         
         reducao = len(tac_instructions) - len(tac_otimizado)
         if reducao > 0:
-            print(f"✓ Redução: {reducao} instruções ({100 * reducao / len(tac_instructions):.1f}%)")
+            print(f"[OK] Redução: {reducao} instruções ({100 * reducao / len(tac_instructions):.1f}%)")
         
         # FASE 4.2: GERAÇÃO DE ASSEMBLY
         print("\n[FASE 4.2] Gerando código Assembly AVR...")
         asm_generator = AVRAssemblyGenerator()
         asm_instructions = asm_generator.gerarAssembly(tac_otimizado)
-        print(f"✓ {len(asm_instructions)} linhas de Assembly geradas")
+        print(f"[OK] {len(asm_instructions)} linhas de Assembly geradas")
         
         # FASE 4.3: COMPILAÇÃO PARA HEX
         print("\n[FASE 4.3] Compilando Assembly para HEX...")
         salvarAssembly(asm_instructions, asm_file)
-        print(f"✓ Assembly salvo: {asm_file}")
+        print(f"[OK] Assembly salvo: {asm_file}")
         
         hex_gerado = gerarHex(asm_file, hex_file)
         if hex_gerado:
-            print(f"✓ HEX gerado com sucesso: {hex_file}")
+            print(f"[OK] HEX gerado com sucesso: {hex_file}")
             
             # UPLOAD AUTOMÁTICO (se configurado)
             if config.get('auto_upload', False):
                 print(f"\n[UPLOAD] Fazendo upload para {config['porta_serial']}...")
                 upload_ok = uploadHex(hex_file, config['porta_serial'], config.get('baud_upload', 115200))
                 if upload_ok:
-                    print("✓ Upload concluído!")
-                    print(f"\n💡 Abra o monitor serial em {config.get('baud_monitor', 9600)} baud para ver os resultados")
+                    print("[OK] Upload concluído!")
+                    print(f"\n[INFO] Abra o monitor serial em {config.get('baud_monitor', 9600)} baud para ver os resultados")
                 else:
-                    print("⚠ Upload falhou. Tente manualmente:")
+                    print("[AVISO] Upload falhou. Tente manualmente:")
                     print(f"   avrdude -c arduino -p ATMEGA328P -P {config['porta_serial']} -b 115200 -U flash:w:{hex_file}:i")
             else:
-                print(f"\n💡 Para fazer upload manualmente:")
+                print(f"\n[INFO] Para fazer upload manualmente:")
                 print(f"   avrdude -c arduino -p ATMEGA328P -P {config['porta_serial']} -b 115200 -U flash:w:{hex_file}:i")
-                print(f"\n💡 Ou configure AUTO_UPLOAD=True em config.py")
+                print(f"\n[INFO] Ou configure AUTO_UPLOAD=True em config.py")
         else:
-            print("⚠ Não foi possível gerar HEX (toolchain AVR pode não estar instalada)")
+            print("[ERRO] Não foi possível gerar HEX (toolchain AVR pode não estar instalada)")
             print("   O arquivo Assembly (.s) foi gerado e pode ser compilado manualmente")
         
         # GERAÇÃO DE RELATÓRIOS
         print("\n[SAÍDA] Gerando relatórios...")
         
         gerarGramaticaAtributosMd(gramatica_atributos, gramatica_file)
-        print(f"  ✓ {gramatica_file}")
+        print(f"  - {gramatica_file}")
         
         gerarRelatorioTipos(arvore_anotada, relatorio_tipos_file)
-        print(f"  ✓ {relatorio_tipos_file}")
+        print(f"  - {relatorio_tipos_file}")
         
         gerarRelatorioErros(erros_semanticos, relatorio_erros_file)
-        print(f"  ✓ {relatorio_erros_file}")
+        print(f"  - {relatorio_erros_file}")
         
         with open(arvore_json_file, 'w', encoding='utf-8') as f:
             json.dump(arvore_atribuida_final, f, indent=2, ensure_ascii=False)
-        print(f"  ✓ {arvore_json_file}")
+        print(f"  - {arvore_json_file}")
         
         with open(arvore_md_file, 'w', encoding='utf-8') as f:
             f.write(f"# Árvore Sintática Atribuída - {filename}\n\n")
@@ -267,19 +274,19 @@ def main():
                 
                 f.write(output)
                 f.write("```\n\n")
-        print(f"  ✓ {arvore_md_file}")
+        print(f"  - {arvore_md_file}")
         
         salvarTAC(tac_instructions, tac_file)
-        print(f"  ✓ {tac_file}")
+        print(f"  - {tac_file}")
         
         salvarTACOtimizado(tac_otimizado, tac_otimizado_file)
-        print(f"  ✓ {tac_otimizado_file}")
+        print(f"  - {tac_otimizado_file}")
         
         gerarRelatorioOtimizacoes(tac_instructions, tac_otimizado, stats, otimizacoes_file)
-        print(f"  ✓ {otimizacoes_file}")
+        print(f"  - {otimizacoes_file}")
         
         gerarRelatorioAssembly(tac_otimizado, asm_instructions, relatorio_asm_file)
-        print(f"  ✓ {relatorio_asm_file}")
+        print(f"  - {relatorio_asm_file}")
         
         # RESUMO
         print("\n" + "=" * 60)
@@ -295,29 +302,29 @@ def main():
         print(f"Linhas Assembly geradas:     {len(asm_instructions)}")
         
         if erros_semanticos:
-            print("\n⚠ Status: COMPILAÇÃO CONCLUÍDA COM ERROS")
+            print("\n[STATUS] COMPILAÇÃO CONCLUÍDA COM ERROS")
         else:
-            print("\n✅ Status: COMPILAÇÃO BEM-SUCEDIDA")
+            print("\n[STATUS] COMPILAÇÃO BEM-SUCEDIDA")
         
         print("=" * 60)
         
         if hex_gerado and not config.get('auto_upload', False):
-            print("\n📌 PRÓXIMOS PASSOS:")
+            print("\n[PRÓXIMOS PASSOS]")
             print(f"   1. Faça upload: avrdude -c arduino -p ATMEGA328P -P {config['porta_serial']} -b 115200 -U flash:w:{hex_file}:i")
             print(f"   2. Monitore serial: python monitor_serial.py")
             print(f"   3. Configure baud rate: 9600")
         
     except FileNotFoundError as e:
-        print(f"\n❌ ERRO: Arquivo não encontrado - {e}")
+        print(f"\n[ERRO] Arquivo não encontrado - {e}")
         sys.exit(1)
     except SyntaxError as e:
-        print(f"\n❌ ERRO DE SINTAXE: {e}")
+        print(f"\n[ERRO DE SINTAXE] {e}")
         sys.exit(1)
     except ValueError as e:
-        print(f"\n❌ ERRO DE VALOR: {e}")
+        print(f"\n[ERRO DE VALOR] {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ ERRO INESPERADO: {e}")
+        print(f"\n[ERRO INESPERADO] {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
