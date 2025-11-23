@@ -1,32 +1,7 @@
-# Serie de Taylor: cos(0.5)
-# cos(x) = 1 - x^2/2! + x^4/4! - x^6/6!
-# X = 0.5
-
-# 1. Termo 0 (1.0)
-(1.0 ACC)
-(0.5 X)
-
-# 2. Termo 1: - (x^2 / 2.0)
-# Estrutura: ((ValorCalculado) VariavelDestino)
-(
-    (ACC ((X 2 ^) 2.0 |) -) 
-    ACC
-)
-
-# 3. Termo 2: + (x^4 / 24.0)
-(
-    (ACC ((X 4 ^) 24.0 |) +) 
-    ACC
-)
-
-# 4. Termo 3: - (x^6 / 720.0)
-# Nota: 720.0 estoura 16 bits em Q8.8 (720*256 > 65535).
-# Solucao: Dividir por 24.0 e depois por 30.0 (24*30=720)
-# Aninhamento: ( ( (X^6 / 24) / 30 ) )
-(
-    (ACC (( ((X 6 ^) 24.0 |) ) 30.0 |) -) 
-    ACC
-)
-
-# Resultado Final
-(ACC)
+(5)
+(10)
+(5 3 +)
+(10 2.5 *)
+(100 2.52 |)
+(1 RES)
+(4 RES)

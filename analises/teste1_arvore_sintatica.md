@@ -7,9 +7,7 @@
 **Tipo inferido:** `int`
 
 ```
-store : int
-  ├─ num : int = 0
-  └─ id = A
+num : int = 5
 ```
 
 ## Expressão 2
@@ -17,9 +15,7 @@ store : int
 **Tipo inferido:** `int`
 
 ```
-store : int
-  ├─ num : int = 1
-  └─ id = B
+num : int = 10
 ```
 
 ## Expressão 3
@@ -27,58 +23,46 @@ store : int
 **Tipo inferido:** `int`
 
 ```
-store : int
-  ├─ num : int = 0
-  └─ id = CONT
+plus : int = +
+  ├─ num : int = 5
+  └─ num : int = 3
 ```
 
 ## Expressão 4
 
-**Tipo inferido:** `int`
+**Tipo inferido:** `real`
 
 ```
-store : int
-  ├─ num : int = 0
-  └─ id = TEMP
+mult : real = *
+  ├─ num : int = 10
+  └─ num : real = 2.5
 ```
 
 ## Expressão 5
 
-**Tipo inferido:** `int`
+**Tipo inferido:** `real`
 
 ```
-while : int = while
-  ├─ lt : booleano = <
-    ├─ id : int = CONT
-    └─ num : int = 12
-  └─ plus : int = +
-    ├─ store : int
-      ├─ plus : int = +
-        ├─ id : int = A
-        └─ id : int = B
-      └─ id = TEMP
-    └─ plus : int = +
-      ├─ store : int
-        ├─ id : int = B
-        └─ id = A
-      └─ plus : int = +
-        ├─ store : int
-          ├─ id : int = TEMP
-          └─ id = B
-        └─ plus : int = +
-          ├─ store : int
-            ├─ plus : int = +
-              ├─ id : int = CONT
-              └─ num : int = 1
-            └─ id = CONT
-          └─ id : int = A
+div_real : real = |
+  ├─ num : int = 100
+  └─ num : real = 2.52
 ```
 
 ## Expressão 6
 
+**Tipo inferido:** `real`
+
+```
+res : real = RES
+  └─ num : int = 1
+```
+
+## Expressão 7
+
 **Tipo inferido:** `int`
 
 ```
-id : int = A
+res : int = RES
+  └─ num : int = 4
 ```
 

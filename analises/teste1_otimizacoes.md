@@ -4,15 +4,15 @@
 
 ## Estatísticas
 
-- **Instruções originais:** 46
-- **Instruções otimizadas:** 39
-- **Redução:** 7 instruções (15.2%)
+- **Instruções originais:** 29
+- **Instruções otimizadas:** 16
+- **Redução:** 13 instruções (44.8%)
 
 ## Otimizações Aplicadas
 
 ### Constant Folding
 
-**Aplicações:** 0
+**Aplicações:** 3
 
 **Descrição:** Avalia expressões constantes em tempo de compilação.
 
@@ -39,7 +39,7 @@ Depois: t1 = 5
 
 ### Dead Code Elimination
 
-**Aplicações:** 7
+**Aplicações:** 13
 
 **Descrição:** Remove código que não afeta o resultado do programa.
 
@@ -73,94 +73,54 @@ Depois: L1:
 
 ```
 # Linha 1
-t0 = 0
-MEM[A] = t0
+t0 = 5
 t1 = PRINT[t0]
 # Linha 2
-t2 = 1
-MEM[B] = t2
+t2 = 10
 t3 = PRINT[t2]
 # Linha 3
-t4 = 0
-MEM[CONT] = t4
-t5 = PRINT[t4]
-# Linha 4
-t6 = 0
-MEM[TEMP] = t6
+t4 = 5
+t5 = 3
+t6 = t4 + t5
 t7 = PRINT[t6]
+# Linha 4
+t8 = 10
+t9 = 2.5
+t10 = t8 * t9
+t11 = PRINT[t10]
 # Linha 5
-L0:
-t9 = MEM[CONT]
-t10 = 12
-t11 = t9 < t10
-ifFalse t11 goto L1
-t12 = MEM[A]
-t13 = MEM[B]
-t14 = t12 + t13
-MEM[TEMP] = t14
-t15 = MEM[B]
-MEM[A] = t15
-t16 = MEM[TEMP]
-MEM[B] = t16
-t17 = MEM[CONT]
-t18 = 1
-t19 = t17 + t18
-MEM[CONT] = t19
-t20 = MEM[A]
-t21 = t19 + t20
-t22 = t16 + t21
-t23 = t15 + t22
-t24 = t14 + t23
-t8 = t24
-goto L0
-L1:
-t25 = PRINT[t8]
+t12 = 100
+t13 = 2.52
+t14 = t12 | t13
+t15 = PRINT[t14]
 # Linha 6
-t26 = MEM[A]
-t27 = PRINT[t26]
+t16 = 1
+t17 = RES[t16]
+t18 = PRINT[t17]
+# Linha 7
+t19 = 4
+t20 = RES[t19]
+t21 = PRINT[t20]
 ```
 
 ### TAC Otimizado
 
 ```
 # Linha 1
-MEM[A] = 0
-t1 = PRINT[0]
+t1 = PRINT[5]
 # Linha 2
-MEM[B] = 1
-t3 = PRINT[1]
+t3 = PRINT[10]
 # Linha 3
-MEM[CONT] = 0
-t5 = PRINT[0]
+t7 = PRINT[8]
 # Linha 4
-MEM[TEMP] = 0
-t7 = PRINT[0]
+t11 = PRINT[25]
 # Linha 5
-L0:
-t9 = MEM[CONT]
-ifFalse t11 goto L1
-t12 = MEM[A]
-t13 = MEM[B]
-t14 = t12 + t13
-MEM[TEMP] = t14
-t15 = MEM[B]
-MEM[A] = t15
-t16 = MEM[TEMP]
-MEM[B] = t16
-t17 = MEM[CONT]
-t19 = t17 + 1
-MEM[CONT] = t19
-t20 = MEM[A]
-t21 = t19 + t20
-t22 = t16 + t21
-t23 = t15 + t22
-t24 = t14 + t23
-t8 = t24
-goto L0
-L1:
-t25 = PRINT[t8]
+t15 = PRINT[39.682539682539684]
 # Linha 6
-t26 = MEM[A]
-t27 = PRINT[t26]
+t17 = RES[1]
+t18 = PRINT[t17]
+# Linha 7
+t20 = RES[4]
+t21 = PRINT[t20]
 ```
 
