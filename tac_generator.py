@@ -1,7 +1,6 @@
 # tac_generator.py
-# FELIPE EDUARDO MARCONDES
-# GRUPO 2
-# Gerador de Three Address Code (TAC)
+# FELIPE EDUARDO MARCONDES - GRUPO 2
+# Gerador de Three Address Code (TAC) - CORRIGIDO COM IMPRESSÃO AUTOMÁTICA
 
 class TACGenerator:
     def __init__(self):
@@ -42,7 +41,21 @@ class TACGenerator:
         
         for linha_num, ast in arvore_atribuida:
             self.emit(f"# Linha {linha_num}")
-            self._gerar_expressao(ast)
+            
+            # Gera código para a expressão
+            resultado_temp = self._gerar_expressao(ast)
+            
+            # **CRÍTICO: Sempre imprime o resultado de cada linha**
+            if resultado_temp:
+                # Verifica se já é um RES (que já adiciona ao histórico)
+                if ast['type'] == 'res':
+                    # RES já busca do histórico, apenas imprime
+                    print_temp = self.new_temp()
+                    self.emit(f"{print_temp} = PRINT[{resultado_temp}]")
+                else:
+                    # Expressão normal: adiciona ao histórico E imprime
+                    print_temp = self.new_temp()
+                    self.emit(f"{print_temp} = PRINT[{resultado_temp}]")
             
         return self.instructions
     
@@ -85,6 +98,7 @@ class TACGenerator:
             n_temp = self._gerar_expressao(n_node)
             
             temp = self.new_temp()
+            # RES busca do histórico (a impressão é feita em gerarTAC)
             self.emit(f"{temp} = RES[{n_temp}]")
             return temp
         
@@ -181,7 +195,8 @@ def salvarTAC(instructions, filename):
     """Salva instruções TAC em arquivo."""
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("# Three Address Code (TAC)\n")
-        f.write("# Gerado automaticamente\n\n")
+        f.write("# Gerado automaticamente\n")
+        f.write("# CADA LINHA DE CÓDIGO GERA UMA IMPRESSÃO AUTOMÁTICA\n\n")
         
         for inst in instructions:
             if inst.startswith('#'):

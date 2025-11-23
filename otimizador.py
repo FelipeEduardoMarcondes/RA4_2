@@ -1,7 +1,6 @@
 # otimizador.py
-# FELIPE EDUARDO MARCONDES
-# GRUPO 2
-# Otimizador de Three Address Code (TAC)
+# FELIPE EDUARDO MARCONDES - GRUPO 2
+# Otimizador de Three Address Code (TAC) - CORRIGIDO
 
 import re
 
@@ -185,6 +184,12 @@ class TACOptimizer:
     def _dead_code_elimination(self, instructions):
         """
         Remove código morto (variáveis que nunca são usadas).
+        
+        CRÍTICO: NÃO remove instruções com efeitos colaterais:
+        - PRINT[...]
+        - MEM[...]
+        - RES[...]
+        - goto/ifFalse
         """
         # Primeira passagem: encontrar todas as variáveis usadas
         used_vars = set()
@@ -193,11 +198,19 @@ class TACOptimizer:
             if inst.startswith('#') or ':' in inst:
                 continue
             
+            # **CRÍTICO: Instruções com efeitos colaterais SEMPRE são consideradas usadas**
+            if any(keyword in inst for keyword in ['PRINT[', 'MEM[', 'RES[', 'goto', 'ifFalse']):
+                # Marca TODAS as variáveis do lado direito como usadas
+                parts = inst.split('=')
+                if len(parts) > 1:
+                    right_side = parts[1]
+                    used_in_right = re.findall(r'\b(t\d+|[A-Z_][A-Z0-9_]*)\b', right_side)
+                    used_vars.update(used_in_right)
+                continue
+            
             # Variáveis usadas no lado direito
-            # Padrão: var = ... ou goto/ifFalse usando var
             if '=' in inst:
                 _, right_side = inst.split('=', 1)
-                # Encontrar todas as variáveis (t0, t1, etc)
                 used_in_right = re.findall(r'\b(t\d+)\b', right_side)
                 used_vars.update(used_in_right)
             
@@ -205,11 +218,6 @@ class TACOptimizer:
             if 'ifFalse' in inst or 'goto' in inst:
                 used_in_cond = re.findall(r'\b(t\d+)\b', inst)
                 used_vars.update(used_in_cond)
-            
-            # Variáveis armazenadas em memória
-            if 'MEM[' in inst:
-                used_in_mem = re.findall(r'\b(t\d+)\b', inst)
-                used_vars.update(used_in_mem)
         
         # Segunda passagem: remover atribuições a variáveis não usadas
         optimized = []
@@ -219,13 +227,18 @@ class TACOptimizer:
                 optimized.append(inst)
                 continue
             
+            # **NUNCA remover instruções com efeitos colaterais**
+            if any(keyword in inst for keyword in ['PRINT[', 'MEM[', 'RES[', 'goto', 'ifFalse']):
+                optimized.append(inst)
+                continue
+            
             # Verificar se é uma atribuição simples a uma temporária
             match = re.match(r'(t\d+)\s*=', inst)
             if match:
                 var = match.group(1)
                 
-                # Se a variável não é usada, remover (exceto se grava em memória ou tem efeitos colaterais)
-                if var not in used_vars and 'MEM[' not in inst and 'RES[' not in inst:
+                # Se a variável não é usada E não tem efeitos colaterais, remover
+                if var not in used_vars:
                     self.optimizations_applied['dead_code_elimination'] += 1
                     continue
             
@@ -266,7 +279,8 @@ def salvarTACOtimizado(instructions, filename):
     """Salva instruções TAC otimizadas em arquivo."""
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("# Three Address Code (TAC) - Otimizado\n")
-        f.write("# Gerado automaticamente\n\n")
+        f.write("# Gerado automaticamente\n")
+        f.write("# INSTRUÇÕES PRINT E RES SÃO PRESERVADAS\n\n")
         
         for inst in instructions:
             if inst.startswith('#'):
@@ -284,8 +298,14 @@ def gerarRelatorioOtimizacoes(tac_original, tac_otimizado, stats, filename):
         f.write("## Estatísticas\n\n")
         f.write(f"- **Instruções originais:** {len(tac_original)}\n")
         f.write(f"- **Instruções otimizadas:** {len(tac_otimizado)}\n")
-        f.write(f"- **Redução:** {len(tac_original) - len(tac_otimizado)} instruções "
-                f"({100 * (len(tac_original) - len(tac_otimizado)) / len(tac_original):.1f}%)\n\n")
+        
+        reducao = len(tac_original) - len(tac_otimizado)
+        if len(tac_original) > 0:
+            perc = 100 * reducao / len(tac_original)
+        else:
+            perc = 0
+            
+        f.write(f"- **Redução:** {reducao} instruções ({perc:.1f}%)\n\n")
         
         f.write("## Otimizações Aplicadas\n\n")
         
@@ -315,6 +335,7 @@ def gerarRelatorioOtimizacoes(tac_original, tac_otimizado, stats, filename):
             
             elif opt_name == 'dead_code_elimination':
                 f.write("**Descrição:** Remove código que não afeta o resultado do programa.\n\n")
+                f.write("**IMPORTANTE:** Preserva instruções com efeitos colaterais (PRINT, MEM, RES).\n\n")
                 f.write("**Exemplo:**\n")
                 f.write("```\n")
                 f.write("Antes: t1 = 5\n")
@@ -334,18 +355,14 @@ def gerarRelatorioOtimizacoes(tac_original, tac_otimizado, stats, filename):
                 f.write("```\n\n")
         
         f.write("## Comparação de Código\n\n")
-        f.write("### TAC Original (primeiras 20 linhas)\n\n")
+        f.write("### TAC Original\n\n")
         f.write("```\n")
-        for inst in tac_original[:20]:
+        for inst in tac_original:
             f.write(f"{inst}\n")
-        if len(tac_original) > 20:
-            f.write("...\n")
         f.write("```\n\n")
         
-        f.write("### TAC Otimizado (primeiras 20 linhas)\n\n")
+        f.write("### TAC Otimizado\n\n")
         f.write("```\n")
-        for inst in tac_otimizado[:20]:
+        for inst in tac_otimizado:
             f.write(f"{inst}\n")
-        if len(tac_otimizado) > 20:
-            f.write("...\n")
         f.write("```\n\n")

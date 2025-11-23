@@ -1,12 +1,28 @@
 # compilar.py
 # FELIPE EDUARDO MARCONDES
 # GRUPO 2
-# Compilador completo: Fases 1-4 (Léxico + Sintático + Semântico + TAC + Otimização)
+# Compilador completo: Fases 1-4 (Léxico + Sintático + Semântico + TAC + Otimização + Assembly)
+# VERSÃO CORRIGIDA COM IMPRESSÃO SERIAL
 
 import sys
 import json
 import io
 import os
+
+# Importa configurações
+try:
+    from config import get_config
+    config = get_config()
+except ImportError:
+    print("AVISO: arquivo config.py não encontrado, usando configurações padrão")
+    config = {
+        'porta_serial': 'COM4',
+        'baud_upload': 115200,
+        'auto_upload': False,
+        'output_dir': 'analises',
+        'verbose': 1
+    }
+
 from leitor import lerTokens
 from parser import parsear, construirGramatica, calcularFirst, calcularFollow, construirTabelaLL1
 from semantico import (
@@ -29,6 +45,7 @@ from assembly_generator import (
 
 
 def imprimirArvore(node, indent=0, prefix=""):
+    """Imprime árvore sintática de forma hierárquica."""
     if node is None:
         return
     
@@ -49,7 +66,8 @@ def imprimirArvore(node, indent=0, prefix=""):
         imprimirArvore(child, indent + 1, child_prefix)
 
 
-def gerarGramaticaAtributosMd(gramatica_atributos, filename='analises/gramatica_atributos_gerada.md'):
+def gerarGramaticaAtributosMd(gramatica_atributos, filename):
+    """Gera documentação da gramática de atributos."""
     descricao = gramatica_atributos.get('descricao', "Gramática de Atributos RPN")
     regras = gramatica_atributos.get('regras_tipo', {})
 
@@ -76,112 +94,36 @@ def gerarGramaticaAtributosMd(gramatica_atributos, filename='analises/gramatica_
         f.write("\n---\n\n")
 
         f.write("### 2.2 Identificadores (EXPR -> id)\n\n")
-        f.write("- **Regra:** `Γ(x) = T, Γ(x).inicializada = true ──────────────── Γ ⊢ x : T`\n")
+        f.write("- **Regra:** `Γ(x) = T, Γ(x).inicializada = true ──────────── Γ ⊢ x : T`\n")
         f.write("- **RPN:** `(X)` -> `tipo: Γ(X).tipo`\n")
         f.write("- **Sintetizado:** `EXPR.tipo` = `TabelaSimbolos[id.nome].tipo`\n")
         f.write("- **Restrição:** ERRO se `id.nome` não inicializado.\n")
 
         f.write("\n---\n\n")
         
-        f.write("### 2.3 Operações Aritméticas (STMT -> EXPR₁ EXPR₂ op_bin) (op ∈ {+, -, *, |})\n\n")
-        f.write("- **Regra:** `Γ ⊢ e₁ : T₁, Γ ⊢ e₂ : T₂ ──────────────── Γ ⊢ (e₁ e₂ op) : promover_tipo(T₁, T₂)`\n")
-        f.write("- **RPN:** `(3.0 5 +)` -> `tipo: real`\n")
-        f.write("- **Sintetizado:** `STMT.tipo` = `promover_tipo(EXPR₁.tipo, EXPR₂.tipo)`.\n")
-        f.write("- **Restrição:** ERRO se `T₁` ou `T₂` for `booleano`.\n")
-        
-        f.write("\n---\n\n")
-
-        f.write("### 2.4 Divisão Inteira/Módulo (STMT -> EXPR₁ EXPR₂ op_bin) (op ∈ {/, %})\n\n")
-        f.write("- **Regra:** `Γ ⊢ e₁ : int, Γ ⊢ e₂ : int, e₂.valor ≠ 0 ──────────────── Γ ⊢ (e₁ e₂ op) : int`\n")
-        f.write("- **RPN:** `(10 3 /)` -> `tipo: int`\n")
-        f.write("- **Sintetizado:** `STMT.tipo` = `int`\n")
-        f.write("- **Restrição:** ERRO se `EXPR₁.tipo ≠ int` ou `EXPR₂.tipo ≠ int`.\n")
-
-        f.write("\n---\n\n")
-
-        f.write("### 2.5 Potenciação (STMT -> EXPR₁ EXPR₂ pow)\n\n")
-        f.write("- **Regra:** `Γ ⊢ e₁ : T, Γ ⊢ e₂ : int, e₂.valor > 0 ──────────────── Γ ⊢ (e₁ e₂ ^) : T`\n")
-        f.write("- **RPN:** `(2.0 3 ^)` -> `tipo: real`\n")
-        f.write("- **Sintetizado:** `STMT.tipo` = `EXPR₁.tipo`\n")
-        f.write("- **Restrição:** ERRO se `EXPR₂.tipo ≠ int` ou `EXPR₂.valor ≤ 0`.\n")
-
-        f.write("\n---\n\n")
-
-        f.write("### 2.6 Operadores Relacionais (STMT -> EXPR₁ EXPR₂ op_rel)\n\n")
-        f.write("- **Regra:** `Γ ⊢ e₁ : T₁, Γ ⊢ e₂ : T₂, T₁,T₂ ∈ {int, real} ──────────────── Γ ⊢ (e₁ e₂ op) : booleano`\n")
-        f.write("- **RPN:** `(X 10 <)` -> `tipo: booleano`\n")
-        f.write("- **Sintetizado:** `STMT.tipo` = `booleano`\n")
-        f.write("- **Restrição:** ERRO se `T₁` ou `T₂` ∉ `{int, real}`.\n")
-
-        f.write("\n---\n\n")
-
-        f.write("### 2.7 Armazenamento (STMT -> EXPR id)\n\n")
-        f.write("- **Regra:** `Γ ⊢ e : T, T ∈ {int, real} ──────────────── Γ[id ↦ {tipo:T}] ⊢ (e id) : T`\n")
-        f.write("- **RPN:** `(42 X)` -> `tipo: int` (Efeito colateral: atualiza `Γ(X)`)\n")
-        f.write("- **Sintetizado:** `STMT.tipo` = `EXPR.tipo`\n")
-        f.write("- **Restrição:** ERRO se `EXPR.tipo = booleano`.\n")
-
-        f.write("\n---\n\n")
-
-        f.write("### 2.8 Histórico (STMT -> EXPR res)\n\n")
-        f.write("- **Regra:** `Γ ⊢ e : int, e.valor ≥ 1, ... ──────────────── Γ ⊢ (e RES) : T` (onde T = tipo da linha referenciada)\n")
-        f.write("- **RPN:** `(1 RES)` -> `tipo: T` (tipo da linha anterior)\n")
-        f.write("- **Sintetizado:** `STMT.tipo` = `historico[tamanho - EXPR.valor].tipo`\n")
-        f.write("- **Restrição:** ERRO se `EXPR.tipo ≠ int` ou `EXPR.valor < 1`.\n")
-
-        f.write("\n---\n\n")
-
-        f.write("### 2.9 Condicional (STMT -> EXPR₁ EXPR₂ EXPR₃ if)\n\n")
-        f.write("- **Regra:** `Γ ⊢ e₁ : booleano, Γ ⊢ e₂ : T, Γ ⊢ e₃ : T ──────────────── Γ ⊢ (e₁ e₂ e₃ if) : T`\n")
-        f.write("- **RPN:** `((X 0 >) (1) (0) if)` -> `tipo: int`\n")
-        f.write("- **Sintetizado:** `STMT.tipo` = `EXPR₂.tipo`\n")
-        f.write("- **Restrição:** ERRO se `EXPR₁.tipo ≠ booleano` ou `EXPR₂.tipo ≠ EXPR₃.tipo`.\n")
-
-        f.write("\n---\n\n")
-
-        f.write("### 2.10 Laço (STMT -> EXPR₁ EXPR₂ while)\n\n")
-        f.write("- **Regra:** `Γ ⊢ e₁ : booleano, Γ ⊢ e₂ : T ──────────────── Γ ⊢ (e₁ e₂ while) : T`\n")
-        f.write("- **RPN:** `((I 10 <) ((I 1 +) I) while)` -> `tipo: int` (tipo do corpo `T`)\n")
-        f.write("- **Sintetizado:** `STMT.tipo` = `EXPR₂.tipo`\n")
-        f.write("- **Restrição:** ERRO se `EXPR₁.tipo ≠ booleano`.\n")
-        
-        f.write("\n---\n\n")
-
-        f.write("## 3. Tabela de Operadores (Extraída de `definirGramaticaAtributos`)\n\n")
-        f.write("| Operador | Função de Tipo |\n")
-        f.write("|----------|----------------|\n")
-        
-        for op, func in regras.items():
-            if op in ['plus', 'minus', 'mult', 'div_real']:
-                f.write(f"| `{op}` | promover_tipo(T₁, T₂) |\n")
-            elif op == 'div_int':
-                f.write(f"| `{op}` | int se T₁=int ∧ T₂=int |\n")
-            elif op == 'mod':
-                f.write(f"| `{op}` | int se T₁=int ∧ T₂=int |\n")
-            elif op == 'pow':
-                f.write(f"| `{op}` | T₁ se T₂=int |\n")
-            elif op in ['lt', 'gt', 'lte', 'gte', 'eq', 'neq']:
-                f.write(f"| `{op}` | booleano se T₁,T₂ ∈ {{int,real}} |\n")
+        f.write("### 2.3 Operações Aritméticas\n\n")
+        f.write("- **Regra:** `Γ ⊢ e₁ : T₁, Γ ⊢ e₂ : T₂ ──────────── Γ ⊢ (e₁ e₂ op) : promover_tipo(T₁, T₂)`\n")
 
 
 def main():
     if len(sys.argv) != 2:
         print("=" * 60)
-        print("COMPILADOR RPN - Fases 1-4")
+        print("COMPILADOR RPN - Fases 1-4 (VERSÃO CORRIGIDA)")
         print("=" * 60)
         print("\nUso: python compilar.py <arquivo.txt>")
-        print("\nExemplo: python compilar.py teste1.txt")
+        print("\nExemplo: python compilar.py teste_print.txt")
         print("=" * 60)
         sys.exit(1)
     
     filename = sys.argv[1]
     
-    output_dir = 'analises'
+    output_dir = config.get('output_dir', 'analises')
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         
     base_name = os.path.splitext(os.path.basename(filename))[0]
     
+    # Arquivos de saída
     gramatica_file = os.path.join(output_dir, 'gramatica_atributos_gerada.md')
     relatorio_tipos_file = os.path.join(output_dir, f"{base_name}_julgamento_tipos.md")
     relatorio_erros_file = os.path.join(output_dir, f"{base_name}_erros_semanticos.md")
@@ -203,7 +145,7 @@ def main():
         print("\n[FASE 1] Análise Léxica...")
         tokens = lerTokens(filename)
         num_tokens = len([t for t in tokens if t['type'] != 'eof'])
-        print(f"{num_tokens} token(s) identificado(s)")
+        print(f"✓ {num_tokens} token(s) identificado(s)")
         
         # FASE 2: ANÁLISE SINTÁTICA
         print("\n[FASE 2] Análise Sintática...")
@@ -215,13 +157,13 @@ def main():
         ast_list, erros_sintaticos = parsear(tokens, tabela_ll1)
         
         if erros_sintaticos:
-            print(f"{len(erros_sintaticos)} erro(s) sintático(s) encontrado(s):")
+            print(f"✗ {len(erros_sintaticos)} erro(s) sintático(s) encontrado(s):")
             for erro in erros_sintaticos:
                 print(f"  - {erro}")
-            print("\nCompilação interrompida devido a erros sintáticos.")
+            print("\n⛔ Compilação interrompida devido a erros sintáticos.")
             sys.exit(1)
         
-        print(f"{len(ast_list)} expressão(ões) válida(s)")
+        print(f"✓ {len(ast_list)} expressão(ões) válida(s)")
         
         # FASE 3: ANÁLISE SEMÂNTICA
         print("\n[FASE 3] Análise Semântica...")
@@ -231,9 +173,9 @@ def main():
         arvore_anotada, erros_semanticos = analisarSemantica(ast_list, tabela_simbolos)
         
         if erros_semanticos:
-            print(f"{len(erros_semanticos)} erro(s) semântico(s) encontrado(s)")
+            print(f"⚠ {len(erros_semanticos)} erro(s) semântico(s) encontrado(s)")
         else:
-            print("Nenhum erro semântico detectado")
+            print("✓ Nenhum erro semântico detectado")
         
         arvore_atribuida_final = gerarArvoreAtribuida(arvore_anotada)
         
@@ -241,7 +183,7 @@ def main():
         print("\n[FASE 4] Geração de Código Intermediário (TAC)...")
         tac_generator = TACGenerator()
         tac_instructions = tac_generator.gerarTAC(arvore_anotada)
-        print(f"{len(tac_instructions)} instruções TAC geradas")
+        print(f"✓ {len(tac_instructions)} instruções TAC geradas")
         
         # FASE 4.1: OTIMIZAÇÃO
         print("\n[FASE 4.1] Otimizando código TAC...")
@@ -250,47 +192,63 @@ def main():
         stats = optimizer.get_optimization_stats()
         
         total_opts = sum(stats.values())
-        print(f"{total_opts} otimizações aplicadas:")
+        print(f"✓ {total_opts} otimizações aplicadas:")
         for opt_name, count in stats.items():
             if count > 0:
                 print(f"  - {opt_name.replace('_', ' ').title()}: {count}")
         
         reducao = len(tac_instructions) - len(tac_otimizado)
-        print(f"Redução: {reducao} instruções ({100 * reducao / len(tac_instructions):.1f}%)")
+        if reducao > 0:
+            print(f"✓ Redução: {reducao} instruções ({100 * reducao / len(tac_instructions):.1f}%)")
         
         # FASE 4.2: GERAÇÃO DE ASSEMBLY
         print("\n[FASE 4.2] Gerando código Assembly AVR...")
         asm_generator = AVRAssemblyGenerator()
         asm_instructions = asm_generator.gerarAssembly(tac_otimizado)
-        print(f"{len(asm_instructions)} linhas de Assembly geradas")
+        print(f"✓ {len(asm_instructions)} linhas de Assembly geradas")
         
         # FASE 4.3: COMPILAÇÃO PARA HEX
         print("\n[FASE 4.3] Compilando Assembly para HEX...")
         salvarAssembly(asm_instructions, asm_file)
-        print(f"Assembly salvo: {asm_file}")
+        print(f"✓ Assembly salvo: {asm_file}")
         
         hex_gerado = gerarHex(asm_file, hex_file)
         if hex_gerado:
-            print(f"HEX gerado com sucesso: {hex_file}")
+            print(f"✓ HEX gerado com sucesso: {hex_file}")
+            
+            # UPLOAD AUTOMÁTICO (se configurado)
+            if config.get('auto_upload', False):
+                print(f"\n[UPLOAD] Fazendo upload para {config['porta_serial']}...")
+                upload_ok = uploadHex(hex_file, config['porta_serial'], config.get('baud_upload', 115200))
+                if upload_ok:
+                    print("✓ Upload concluído!")
+                    print(f"\n💡 Abra o monitor serial em {config.get('baud_monitor', 9600)} baud para ver os resultados")
+                else:
+                    print("⚠ Upload falhou. Tente manualmente:")
+                    print(f"   avrdude -c arduino -p ATMEGA328P -P {config['porta_serial']} -b 115200 -U flash:w:{hex_file}:i")
+            else:
+                print(f"\n💡 Para fazer upload manualmente:")
+                print(f"   avrdude -c arduino -p ATMEGA328P -P {config['porta_serial']} -b 115200 -U flash:w:{hex_file}:i")
+                print(f"\n💡 Ou configure AUTO_UPLOAD=True em config.py")
         else:
-            print("AVISO: Não foi possível gerar HEX (toolchain AVR pode não estar instalada)")
-            print("       O arquivo Assembly (.s) foi gerado e pode ser compilado manualmente")
+            print("⚠ Não foi possível gerar HEX (toolchain AVR pode não estar instalada)")
+            print("   O arquivo Assembly (.s) foi gerado e pode ser compilado manualmente")
         
         # GERAÇÃO DE RELATÓRIOS
         print("\n[SAÍDA] Gerando relatórios...")
         
         gerarGramaticaAtributosMd(gramatica_atributos, gramatica_file)
-        print(f"{gramatica_file}")
+        print(f"  ✓ {gramatica_file}")
         
         gerarRelatorioTipos(arvore_anotada, relatorio_tipos_file)
-        print(f"{relatorio_tipos_file}")
+        print(f"  ✓ {relatorio_tipos_file}")
         
         gerarRelatorioErros(erros_semanticos, relatorio_erros_file)
-        print(f"{relatorio_erros_file}")
+        print(f"  ✓ {relatorio_erros_file}")
         
         with open(arvore_json_file, 'w', encoding='utf-8') as f:
             json.dump(arvore_atribuida_final, f, indent=2, ensure_ascii=False)
-        print(f"{arvore_json_file}")
+        print(f"  ✓ {arvore_json_file}")
         
         with open(arvore_md_file, 'w', encoding='utf-8') as f:
             f.write(f"# Árvore Sintática Atribuída - {filename}\n\n")
@@ -309,19 +267,19 @@ def main():
                 
                 f.write(output)
                 f.write("```\n\n")
-        print(f"{arvore_md_file}")
+        print(f"  ✓ {arvore_md_file}")
         
         salvarTAC(tac_instructions, tac_file)
-        print(f"{tac_file}")
+        print(f"  ✓ {tac_file}")
         
         salvarTACOtimizado(tac_otimizado, tac_otimizado_file)
-        print(f"{tac_otimizado_file}")
+        print(f"  ✓ {tac_otimizado_file}")
         
         gerarRelatorioOtimizacoes(tac_instructions, tac_otimizado, stats, otimizacoes_file)
-        print(f"{otimizacoes_file}")
+        print(f"  ✓ {otimizacoes_file}")
         
         gerarRelatorioAssembly(tac_otimizado, asm_instructions, relatorio_asm_file)
-        print(f"{relatorio_asm_file}")
+        print(f"  ✓ {relatorio_asm_file}")
         
         # RESUMO
         print("\n" + "=" * 60)
@@ -336,34 +294,30 @@ def main():
         print(f"Otimizações aplicadas:       {total_opts}")
         print(f"Linhas Assembly geradas:     {len(asm_instructions)}")
         
-        print("\n[FASE 4.3] Compilando Assembly para HEX...")
-    
-        hex_gerado = gerarHex(asm_file, hex_file)
-        if hex_gerado:
-            print(f"HEX gerado com sucesso: {hex_file}")
-            
-            uploadHex(hex_file, "COM4")
-            
-        else:
-            print("AVISO: Não foi possível gerar HEX...")
         if erros_semanticos:
-            print("\nStatus: COMPILAÇÃO CONCLUÍDA COM ERROS")
+            print("\n⚠ Status: COMPILAÇÃO CONCLUÍDA COM ERROS")
         else:
-            print("\nStatus: COMPILAÇÃO BEM-SUCEDIDA")
+            print("\n✅ Status: COMPILAÇÃO BEM-SUCEDIDA")
         
         print("=" * 60)
         
+        if hex_gerado and not config.get('auto_upload', False):
+            print("\n📌 PRÓXIMOS PASSOS:")
+            print(f"   1. Faça upload: avrdude -c arduino -p ATMEGA328P -P {config['porta_serial']} -b 115200 -U flash:w:{hex_file}:i")
+            print(f"   2. Monitore serial: python monitor_serial.py")
+            print(f"   3. Configure baud rate: 9600")
+        
     except FileNotFoundError as e:
-        print(f"\nERRO: Arquivo não encontrado - {e}")
+        print(f"\n❌ ERRO: Arquivo não encontrado - {e}")
         sys.exit(1)
     except SyntaxError as e:
-        print(f"\nERRO DE SINTAXE: {e}")
+        print(f"\n❌ ERRO DE SINTAXE: {e}")
         sys.exit(1)
     except ValueError as e:
-        print(f"\nERRO DE VALOR: {e}")
+        print(f"\n❌ ERRO DE VALOR: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"\nERRO INESPERADO: {e}")
+        print(f"\n❌ ERRO INESPERADO: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

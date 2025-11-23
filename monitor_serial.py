@@ -1,3 +1,7 @@
+# monitor_serial.py
+# FELIPE EDUARDO MARCONDES - GRUPO 2
+# Monitor Serial com Debug Aprimorado
+
 import serial
 import serial.tools.list_ports
 import time
@@ -6,66 +10,148 @@ import sys
 # ==========================================
 # CONFIGURAÇÕES
 # ==========================================
-BAUD_RATE = 9600       # Deve ser o mesmo configurado no código do Arduino
-PORTA_PADRAO = 'COM3'  # Altere se souber sua porta (ex: 'COM3' no Windows, '/dev/ttyUSB0' no Linux)
-TIMEOUT = 2            # Tempo de espera para leitura
+BAUD_RATE = 9600
+PORTA_PADRAO = 'COM4'
+TIMEOUT = 1
 # ==========================================
 
+def listar_portas():
+    """Lista todas as portas seriais disponíveis."""
+    print("\n=== PORTAS SERIAIS DISPONÍVEIS ===")
+    ports = list(serial.tools.list_ports.comports())
+    
+    if not ports:
+        print("Nenhuma porta serial encontrada!")
+        return None
+    
+    for i, p in enumerate(ports, 1):
+        print(f"{i}. {p.device}")
+        print(f"   Descrição: {p.description}")
+        print(f"   Hardware ID: {p.hwid}")
+        print()
+    
+    return ports
+
 def encontrar_porta_arduino():
-    """Tenta encontrar automaticamente uma porta que pareça ser um Arduino."""
+    """Tenta encontrar automaticamente uma porta Arduino."""
     ports = list(serial.tools.list_ports.comports())
     for p in ports:
-        # Filtro simples: geralmente Arduinos têm "Arduino", "USB Serial" ou "USB-SERIAL" na descrição
-        if "Arduino" in p.description or "CH340" in p.description or "USB" in p.description:
+        desc = p.description.lower()
+        if any(x in desc for x in ["arduino", "ch340", "usb-serial", "atmega"]):
             return p.device
     return None
 
+def selecionar_porta():
+    """Permite ao usuário selecionar uma porta."""
+    ports = listar_portas()
+    
+    if not ports:
+        return None
+    
+    while True:
+        try:
+            escolha = input(f"\nEscolha uma porta (1-{len(ports)}) ou Enter para usar padrão ({PORTA_PADRAO}): ").strip()
+            
+            if not escolha:
+                return PORTA_PADRAO
+            
+            idx = int(escolha) - 1
+            if 0 <= idx < len(ports):
+                return ports[idx].device
+            else:
+                print("Escolha inválida!")
+        except ValueError:
+            print("Digite um número válido!")
+
 def monitorar_serial():
-    # Tenta usar a porta configurada ou encontrar uma automaticamente
+    print("=" * 60)
+    print("MONITOR SERIAL - COMPILADOR RPN")
+    print("=" * 60)
+    
+    # Tentativas de encontrar porta
     porta = PORTA_PADRAO
     
-    # Se a porta padrão não existir, tenta achar
+    # 1. Tenta usar porta padrão
     try:
-        s = serial.Serial(porta)
-        s.close()
+        test_serial = serial.Serial(porta, BAUD_RATE, timeout=TIMEOUT)
+        test_serial.close()
+        print(f"✓ Porta padrão encontrada: {porta}")
     except serial.SerialException:
-        print(f"Porta {porta} não encontrada ou ocupada. Procurando automaticamente...")
-        detectada = encontrar_porta_arduino()
-        if detectada:
-            porta = detectada
-            print(f"Dispositivo encontrado em: {porta}")
+        print(f"✗ Porta padrão ({porta}) não disponível")
+        
+        # 2. Tenta encontrar automaticamente
+        porta_auto = encontrar_porta_arduino()
+        if porta_auto:
+            porta = porta_auto
+            print(f"✓ Arduino detectado em: {porta}")
         else:
-            print("Nenhum dispositivo serial óbvio encontrado.")
-            print("Liste as portas disponíveis com: python -m serial.tools.list_ports")
-            porta = input("Digite o nome da porta manualmente (ex: COM3): ").strip()
-
-    print(f"\n--- Iniciando Monitor Serial na {porta} ({BAUD_RATE} baud) ---")
-    print("Pressione Ctrl+C para sair.\n")
+            # 3. Pede ao usuário para escolher
+            print("\nNão foi possível detectar o Arduino automaticamente.")
+            porta = selecionar_porta()
+            
+            if not porta:
+                print("\n✗ Nenhuma porta disponível. Saindo...")
+                sys.exit(1)
+    
+    print(f"\n{'=' * 60}")
+    print(f"Conectando em: {porta} ({BAUD_RATE} baud)")
+    print(f"Pressione Ctrl+C para sair")
+    print(f"{'=' * 60}\n")
 
     try:
-        # Abre a conexão serial
+        # Abre conexão serial
         ser = serial.Serial(porta, BAUD_RATE, timeout=TIMEOUT)
-        time.sleep(2)  # Espera o Arduino reiniciar após abrir a serial (comportamento padrão do Uno)
-
+        
+        # Aguarda reset do Arduino
+        print("[INFO] Aguardando reset do Arduino...")
+        time.sleep(2)
+        
+        # Limpa buffer
+        ser.reset_input_buffer()
+        ser.reset_output_buffer()
+        
+        print("[INFO] Conectado! Aguardando dados...\n")
+        
+        linha_count = 0
+        tempo_inicio = time.time()
+        
         # Loop de leitura
         while True:
-            # Lê uma linha da serial (bytes)
             if ser.in_waiting > 0:
                 try:
-                    # decodifica bytes para string (utf-8 ou ascii) e remove espaços/quebras de linha extras
-                    linha = ser.readline().decode('utf-8', errors='ignore').strip()
+                    # Lê linha
+                    linha = ser.readline().decode('utf-8', errors='replace').strip()
+                    
                     if linha:
-                        print(f"[Arduino]: {linha}")
+                        linha_count += 1
+                        timestamp = time.time() - tempo_inicio
+                        
+                        # Formatação da saída
+                        print(f"[{timestamp:7.2f}s] {linha}")
+                        sys.stdout.flush()
+                        
+                except UnicodeDecodeError as e:
+                    print(f"[ERRO] Decodificação: {e}")
                 except Exception as e:
-                    print(f"[Erro de Leitura]: {e}")
+                    print(f"[ERRO] Leitura: {e}")
             
-            time.sleep(0.01) # Pequena pausa para não fritar a CPU do PC
+            time.sleep(0.01)
 
     except serial.SerialException as e:
-        print(f"\nErro ao conectar na porta {porta}: {e}")
-        print("Verifique se o cabo está conectado e se nenhuma outra janela (como o VS Code ou Arduino IDE) está usando a porta.")
+        print(f"\n✗ ERRO ao conectar em {porta}:")
+        print(f"   {e}")
+        print("\nVerifique:")
+        print("  1. Cabo USB conectado corretamente")
+        print("  2. Driver CH340/FTDI instalado")
+        print("  3. Arduino IDE ou outras ferramentas não estão usando a porta")
+        print("  4. Porta correta selecionada")
+        
     except KeyboardInterrupt:
-        print("\n--- Monitor encerrado pelo usuário ---")
+        print(f"\n\n{'=' * 60}")
+        print(f"Monitor encerrado pelo usuário")
+        print(f"Total de linhas recebidas: {linha_count}")
+        print(f"{'=' * 60}")
+        
     finally:
         if 'ser' in locals() and ser.is_open:
             ser.close()

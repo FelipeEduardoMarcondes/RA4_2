@@ -4,15 +4,15 @@
 
 ## Estatísticas
 
-- **Instruções originais:** 45
-- **Instruções otimizadas:** 35
-- **Redução:** 10 instruções (22.2%)
+- **Instruções originais:** 29
+- **Instruções otimizadas:** 16
+- **Redução:** 13 instruções (44.8%)
 
 ## Otimizações Aplicadas
 
 ### Constant Folding
 
-**Aplicações:** 0
+**Aplicações:** 3
 
 **Descrição:** Avalia expressões constantes em tempo de compilação.
 
@@ -24,7 +24,7 @@ Depois: t1 = 5
 
 ### Constant Propagation
 
-**Aplicações:** 5
+**Aplicações:** 10
 
 **Descrição:** Propaga valores constantes através do código.
 
@@ -39,9 +39,11 @@ Depois: t1 = 5
 
 ### Dead Code Elimination
 
-**Aplicações:** 10
+**Aplicações:** 13
 
 **Descrição:** Remove código que não afeta o resultado do programa.
+
+**IMPORTANTE:** Preserva instruções com efeitos colaterais (PRINT, MEM, RES).
 
 **Exemplo:**
 ```
@@ -67,55 +69,58 @@ Depois: L1:
 
 ## Comparação de Código
 
-### TAC Original (primeiras 20 linhas)
+### TAC Original
 
 ```
 # Linha 1
-t0 = 0
-MEM[A] = t0
+t0 = 5
+t1 = PRINT[t0]
 # Linha 2
-t1 = 1
-MEM[B] = t1
+t2 = 10
+t3 = PRINT[t2]
 # Linha 3
-t2 = 2
-MEM[N] = t2
+t4 = 5
+t5 = 3
+t6 = t4 + t5
+t7 = PRINT[t6]
 # Linha 4
-t3 = MEM[A]
-t4 = RES[t3]
+t8 = 10
+t9 = 2
+t10 = t8 * t9
+t11 = PRINT[t10]
 # Linha 5
-t5 = MEM[B]
-t6 = RES[t5]
+t12 = 100
+t13 = 10
+t14 = t12 / t13
+t15 = PRINT[t14]
 # Linha 6
-t7 = 24
-MEM[MAX] = t7
+t16 = 1
+t17 = RES[t16]
+t18 = PRINT[t17]
 # Linha 7
-L0:
-...
+t19 = 4
+t20 = RES[t19]
+t21 = PRINT[t20]
 ```
 
-### TAC Otimizado (primeiras 20 linhas)
+### TAC Otimizado
 
 ```
 # Linha 1
-MEM[A] = 0
+t1 = PRINT[5]
 # Linha 2
-MEM[B] = 1
+t3 = PRINT[10]
 # Linha 3
-MEM[N] = 2
+t7 = PRINT[8]
 # Linha 4
-t3 = MEM[A]
-t4 = RES[t3]
+t11 = PRINT[20]
 # Linha 5
-t5 = MEM[B]
-t6 = RES[t5]
+t15 = PRINT[10]
 # Linha 6
-MEM[MAX] = 24
+t17 = RES[1]
+t18 = PRINT[t17]
 # Linha 7
-L0:
-t9 = MEM[N]
-t10 = MEM[MAX]
-t11 = t9 < t10
-ifFalse t11 goto L1
-...
+t20 = RES[4]
+t21 = PRINT[t20]
 ```
 
