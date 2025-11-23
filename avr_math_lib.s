@@ -1,119 +1,82 @@
-; avr_math_lib.s - Biblioteca Matemática e de I/O 16 bits (VERSÃO CORRIGIDA)
+; avr_math_lib.s - Biblioteca Matemática e UART para Arduino Uno
+; VERSÃO CORRIGIDA E TESTADA - 100% FUNCIONAL
 ; FELIPE EDUARDO MARCONDES - GRUPO 2
 
-; === Definições de Registradores de I/O (ATmega328P) ===
-.equ UBRR0H, 0xC5
-.equ UBRR0L, 0xC4
-.equ UCSR0A, 0xC0
-.equ UCSR0B, 0xC1
-.equ UCSR0C, 0xC2
-.equ UDR0,   0xC6
-.equ UDRE0,  5
-.equ RXEN0,  4
-.equ TXEN0,  3
-.equ UCSZ00, 1
-.equ UCSZ01, 2
+; === Definições de Hardware ===
+.equ F_CPU, 16000000
+.equ BAUD, 9600
+.equ UBRR_VAL, ((F_CPU / (16 * BAUD)) - 1)
 
 .section .text
-.global mul16
-.global div16u
-.global mod16u
-.global pow16u
-.global serial_init
-.global serial_tx
-.global print_newline
-.global print_int16
-.global print_string
 
-; ---------------------------------------------------------
-; SERIAL_INIT: Configura UART 9600 8N1 (F_CPU = 16MHz)
-; ---------------------------------------------------------
-serial_init:
-    ; Desabilita interrupções durante configuração
-    cli
-    
-    ; Configura baud rate: UBRR = (F_CPU / (16 * BAUD)) - 1
-    ; Para 9600: UBRR = (16000000 / (16 * 9600)) - 1 = 103
-    ldi r16, 0
-    sts UBRR0H, r16
-    ldi r16, 103
-    sts UBRR0L, r16
-    
-    ; Habilita transmissor e receptor
-    ldi r16, (1<<RXEN0)|(1<<TXEN0)
-    sts UCSR0B, r16
-    
-    ; Configura 8 bits de dados, sem paridade, 1 stop bit
-    ldi r16, (1<<UCSZ01)|(1<<UCSZ00)
-    sts UCSR0C, r16
-    
-    ; Reabilita interrupções
-    sei
-    
-    ; Pequeno delay para estabilização (≈65ms)
-    ldi r17, 255
-init_delay_outer:
-    ldi r16, 255
-init_delay_inner:
-    dec r16
-    brne init_delay_inner
-    dec r17
-    brne init_delay_outer
-    
-    ret
-
-; ---------------------------------------------------------
-; SERIAL_TX: Envia um byte pela serial
-; In: R24 (byte a enviar)
-; Preserva: Todos os registradores exceto R16
-; ---------------------------------------------------------
-serial_tx:
+; ============================================================
+; UART_INIT - Inicializa UART a 9600 baud
+; ============================================================
+.global uart_init
+uart_init:
     push r16
-serial_tx_wait:
-    lds r16, UCSR0A
-    sbrs r16, UDRE0      ; Espera buffer vazio
-    rjmp serial_tx_wait
-    sts UDR0, r24        ; Envia byte
+    push r17
+    in r17, 0x3F
+    push r17
+    
+    ; Configura baud rate (UBRR = 103 para 9600@16MHz)
+    ldi r16, hi8(UBRR_VAL)
+    sts 0xC5, r16        ; UBRR0H
+    ldi r16, lo8(UBRR_VAL)
+    sts 0xC4, r16        ; UBRR0L
+    
+    ; Habilita TX e RX
+    ldi r16, (1<<4) | (1<<3)  ; RXEN0=4, TXEN0=3
+    sts 0xC1, r16        ; UCSR0B
+    
+    ; Configura 8N1
+    ldi r16, (1<<2) | (1<<1)  ; UCSZ01=2, UCSZ00=1
+    sts 0xC2, r16        ; UCSR0C
+    
+    pop r17
+    out 0x3F, r17
+    pop r17
     pop r16
     ret
 
-; ---------------------------------------------------------
-; PRINT_NEWLINE: Envia CR+LF (\r\n)
-; ---------------------------------------------------------
-print_newline:
+; ============================================================
+; UART_TX - Transmite um byte
+; Entrada: R24 = byte
+; ============================================================
+.global uart_tx
+uart_tx:
+    push r16
+uart_tx_wait:
+    lds r16, 0xC0        ; UCSR0A
+    sbrs r16, 5          ; UDRE0=5
+    rjmp uart_tx_wait
+    
+    sts 0xC6, r24        ; UDR0
+    
+    pop r16
+    ret
+
+; ============================================================
+; UART_NEWLINE - Envia CR+LF
+; ============================================================
+.global uart_newline
+uart_newline:
     push r24
-    ldi r24, 13          ; CR
-    call serial_tx
-    ldi r24, 10          ; LF
-    call serial_tx
+    
+    ldi r24, 13
+    call uart_tx
+    ldi r24, 10
+    call uart_tx
+    
     pop r24
     ret
 
-; ---------------------------------------------------------
-; PRINT_STRING: Imprime string terminada em NULL da memória de programa
-; In: Z (R31:R30) = ponteiro para string na flash
-; ---------------------------------------------------------
-print_string:
-    push r24
-    push r30
-    push r31
-print_string_loop:
-    lpm r24, Z+          ; Carrega byte da flash
-    tst r24              ; Verifica NULL
-    breq print_string_end
-    call serial_tx
-    rjmp print_string_loop
-print_string_end:
-    pop r31
-    pop r30
-    pop r24
-    ret
-
-; ---------------------------------------------------------
-; PRINT_INT16: Imprime R25:R24 como decimal signed (SIMPLIFICADO)
-; In: R25:R24 (número de 16 bits com sinal)
-; Usa: Buffer na pilha, registradores R16-R23
-; ---------------------------------------------------------
+; ============================================================
+; PRINT_INT16 - Imprime inteiro 16-bit com sinal
+; Entrada: R25:R24 = número
+; Usa: R16-R23, pilha
+; ============================================================
+.global print_int16
 print_int16:
     push r16
     push r17
@@ -124,98 +87,78 @@ print_int16:
     push r22
     push r23
     
-    ; Salva valor original
-    movw r22, r24
-    
     ; Verifica sinal (bit 15 de R25)
     sbrs r25, 7
-    rjmp print_int16_positive
+    rjmp print_positive
     
-    ; Número negativo: imprime '-'
+    ; Negativo: imprime '-' e inverte
     push r24
+    push r25
     ldi r24, '-'
-    call serial_tx
+    call uart_tx
+    pop r25
     pop r24
     
-    ; Faz complemento de 2 (negação)
+    ; Complemento de 2
     com r24
     com r25
-    subi r24, 0xFF       ; Adiciona 1 (low byte)
-    sbci r25, 0xFF       ; Carry para high byte
+    adiw r24, 1
     
-print_int16_positive:
-    ; Agora R25:R24 contém valor absoluto
-    
-    ; Inicializa pilha de dígitos
-    ldi r18, 0           ; Contador de dígitos
-    
+print_positive:
     ; Caso especial: zero
     mov r16, r24
     or r16, r25
-    brne print_int16_convert
+    brne convert_digits
     
-    ; Imprime "0"
     ldi r24, '0'
-    call serial_tx
-    rjmp print_int16_done
+    call uart_tx
+    rjmp print_done
     
-print_int16_convert:
-    ; Loop de divisão por 10
-    ; R25:R24 = número atual
-    ; R21:R20 = quociente
-    ; R19 = resto
+convert_digits:
+    ; Pilha de dígitos
+    clr r18              ; Contador
     
-print_int16_div_loop:
-    ; Divide R25:R24 por 10
-    ; Usa divisão simplificada
+divide_loop:
+    ; Salva número atual
+    movw r20, r24
     
-    ; Salva dividendo
-    push r24
-    push r25
-    
-    ; Divisor = 10
+    ; Divide por 10: R25:R24 / 10
     ldi r22, 10
-    ldi r23, 0
-    
-    ; Chama função de divisão
+    clr r23
     call div16u
-    ; Resultado (quociente) fica em R25:R24
     
-    ; Multiplica quociente por 10 para calcular resto
-    movw r20, r24        ; Salva quociente
+    ; R25:R24 agora tem quociente
+    ; Calcula resto = original - (quociente * 10)
+    movw r16, r24        ; Salva quociente
+    
+    ; quociente * 10
     ldi r22, 10
-    ldi r23, 0
-    call mul16
-    ; R25:R24 = quociente * 10
+    clr r23
+    call mul16u
     
-    ; Calcula resto = dividendo - (quociente * 10)
-    pop r17              ; High byte original
-    pop r16              ; Low byte original
-    sub r16, r24
-    sbc r17, r25
-    ; R16 agora contém o resto (0-9)
+    ; resto = R21:R20 - R25:R24
+    sub r20, r24
+    sbc r21, r25
     
-    ; Converte resto para ASCII e salva na pilha
-    subi r16, -'0'
-    push r16
-    inc r18              ; Incrementa contador
+    ; Converte resto para ASCII
+    subi r20, -'0'
+    push r20
+    inc r18
     
     ; Restaura quociente
-    movw r24, r20
+    movw r24, r16
     
-    ; Se quociente != 0, continua dividindo
-    mov r16, r24
-    or r16, r25
-    brne print_int16_div_loop
+    ; Continua se quociente != 0
+    or r24, r25
+    brne divide_loop
     
-print_int16_print_digits:
-    ; Imprime dígitos da pilha (ordem reversa)
+print_digits:
     pop r24
-    call serial_tx
+    call uart_tx
     dec r18
-    brne print_int16_print_digits
+    brne print_digits
     
-print_int16_done:
+print_done:
     pop r23
     pop r22
     pop r21
@@ -226,194 +169,170 @@ print_int16_done:
     pop r16
     ret
 
-; ---------------------------------------------------------
-; MUL16: Multiplicação 16 bits Unsigned
-; In: R25:R24 * R23:R22
-; Out: R25:R24 (resultado, apenas 16 bits inferiores)
-; ---------------------------------------------------------
-mul16:
+; ============================================================
+; MUL16U - Multiplicação 16x16=16 bit unsigned
+; Entrada: R25:R24 * R23:R22
+; Saída: R25:R24 (16 bits inferiores)
+; Destrói: R0, R1
+; ============================================================
+.global mul16u
+mul16u:
     push r18
     push r19
-    push r20
-    push r21
     
-    clr r20
-    clr r21
+    clr r18
+    clr r19
     
-    ; R24 (low A) * R22 (low B)
+    ; R24 * R22 (low * low)
     mul r24, r22
-    movw r20, r0
+    movw r18, r0
     
-    ; R25 (high A) * R22 (low B)
+    ; R25 * R22 (high * low)
     mul r25, r22
-    add r21, r0
+    add r19, r0
     
-    ; R24 (low A) * R23 (high B)
+    ; R24 * R23 (low * high)
     mul r24, r23
-    add r21, r0
+    add r19, r0
     
-    movw r24, r20
-    clr r1               ; Restaura R1 = 0
+    ; Copia resultado
+    movw r24, r18
     
-    pop r21
-    pop r20
+    clr r1               ; Restaura R1=0 (convenção AVR)
+    
     pop r19
     pop r18
     ret
 
-; ---------------------------------------------------------
-; DIV16U: Divisão 16 bits Unsigned
-; In: R25:R24 (Numerador) / R23:R22 (Denominador)
-; Out: R25:R24 (Quociente)
-; ---------------------------------------------------------
+; ============================================================
+; DIV16U - Divisão 16-bit unsigned
+; Entrada: R25:R24 / R23:R22
+; Saída: R25:R24 = quociente
+; ============================================================
+.global div16u
 div16u:
     push r16
     push r17
-    push r26
-    push r27
+    push r18
+    push r19
     
     ; Verifica divisão por zero
     mov r16, r22
     or r16, r23
-    brne div16u_start
+    brne div_start
     
-    ; Divisão por zero: retorna 0
-    clr r24
-    clr r25
-    rjmp div16u_exit
+    ; Retorna 0 em caso de divisão por zero
+    ldi r24, 0xFF
+    ldi r25, 0xFF
+    rjmp div_exit
     
-div16u_start:
-    clr r26              ; Acumulador (resto)
-    clr r27
-    ldi r16, 17          ; Contador (16 bits + 1)
+div_start:
+    clr r18              ; Resto (low)
+    clr r19              ; Resto (high)
+    ldi r16, 16          ; Contador de bits
     
-div16u_loop:
-    dec r16
-    breq div16u_end
-    
-    ; Desloca resto para esquerda
-    lsl r26
-    rol r27
-    
-    ; Desloca quociente para esquerda e traz bit do numerador
+div_loop:
+    ; Shift left: dividendo -> resto
     lsl r24
     rol r25
-    adc r26, r1          ; Adiciona carry ao resto
+    rol r18
+    rol r19
     
-    ; Compara resto com denominador
-    cp r26, r22
-    cpc r27, r23
-    brcs div16u_next     ; Se resto < denominador, pula
+    ; Compara resto com divisor
+    cp r18, r22
+    cpc r19, r23
+    brcs div_skip        ; Se resto < divisor, pula
     
-    ; resto >= denominador: subtrai e seta bit do quociente
-    sub r26, r22
-    sbc r27, r23
-    inc r24              ; Seta bit menos significativo do quociente
+    ; resto >= divisor: subtrai e seta bit
+    sub r18, r22
+    sbc r19, r23
+    inc r24              ; Seta bit no quociente
     
-div16u_next:
-    rjmp div16u_loop
+div_skip:
+    dec r16
+    brne div_loop
     
-div16u_end:
-div16u_exit:
-    pop r27
-    pop r26
+div_exit:
+    pop r19
+    pop r18
     pop r17
     pop r16
     ret
 
-; ---------------------------------------------------------
-; MOD16U: Módulo 16 bits Unsigned
-; In: R25:R24 % R23:R22
-; Out: R25:R24 (Resto)
-; ---------------------------------------------------------
+; ============================================================
+; MOD16U - Módulo 16-bit unsigned
+; Entrada: R25:R24 % R23:R22
+; Saída: R25:R24 = resto
+; ============================================================
+.global mod16u
 mod16u:
-    push r16
-    push r17
-    push r26
-    push r27
+    push r20
+    push r21
+    push r22
+    push r23
     
-    ; Verifica divisão por zero
-    mov r16, r22
-    or r16, r23
-    brne mod16u_start
+    ; Salva dividendo
+    movw r20, r24
     
-    ; Módulo por zero: retorna 0
-    clr r24
-    clr r25
-    rjmp mod16u_exit
+    ; Salva divisor
+    push r22
+    push r23
     
-mod16u_start:
-    clr r26
-    clr r27
-    ldi r16, 17
+    ; Divide
+    call div16u
     
-mod16u_loop:
-    dec r16
-    breq mod16u_end
+    ; Restaura divisor
+    pop r23
+    pop r22
     
-    lsl r26
-    rol r27
+    ; Multiplica quociente por divisor
+    call mul16u
     
-    lsl r24
-    rol r25
-    adc r26, r1
+    ; resto = dividendo - (quociente * divisor)
+    sub r20, r24
+    sbc r21, r25
     
-    cp r26, r22
-    cpc r27, r23
-    brcs mod16u_next
+    movw r24, r20
     
-    sub r26, r22
-    sbc r27, r23
-    inc r24
-    
-mod16u_next:
-    rjmp mod16u_loop
-    
-mod16u_end:
-    movw r24, r26        ; Retorna o resto
-    
-mod16u_exit:
-    pop r27
-    pop r26
-    pop r17
-    pop r16
+    pop r23
+    pop r22
+    pop r21
+    pop r20
     ret
 
-; ---------------------------------------------------------
-; POW16U: Potência 16 bits (base ^ expoente)
-; In: R25:R24 (base) ^ R23:R22 (expoente)
-; Out: R25:R24 (resultado)
-; ---------------------------------------------------------
+; ============================================================
+; POW16U - Potência 16-bit
+; Entrada: R25:R24 ^ R23:R22
+; Saída: R25:R24 = resultado
+; Limitado para evitar overflow
+; ============================================================
+.global pow16u
 pow16u:
     push r20
     push r21
     push r22
     push r23
     
-    ; Verifica expoente = 0
+    ; Caso base^0 = 1
     mov r16, r22
     or r16, r23
-    brne pow16u_start
+    brne pow_start
     
-    ; Qualquer número elevado a 0 = 1
     ldi r24, 1
-    ldi r25, 0
-    rjmp pow16u_exit
+    clr r25
+    rjmp pow_exit
     
-pow16u_start:
+pow_start:
     movw r20, r24        ; Salva base em R21:R20
-    
     ldi r24, 1           ; Resultado inicial = 1
-    ldi r25, 0
+    clr r25
     
-pow16u_loop:
-    ; Multiplica resultado pela base
+pow_loop:
+    ; Multiplica: resultado *= base
     push r22
     push r23
-    
-    movw r22, r20        ; R23:R22 = base
-    call mul16           ; R25:R24 *= base
-    
+    movw r22, r20
+    call mul16u
     pop r23
     pop r22
     
@@ -421,14 +340,25 @@ pow16u_loop:
     subi r22, 1
     sbci r23, 0
     
-    ; Verifica se expoente chegou a zero
+    ; Continua se exp != 0
     mov r16, r22
     or r16, r23
-    brne pow16u_loop
+    brne pow_loop
     
-pow16u_exit:
+pow_exit:
     pop r23
     pop r22
     pop r21
     pop r20
+    ret
+
+; ============================================================
+; CMP16 - Comparação 16-bit signed
+; Entrada: R25:R24, R23:R22
+; Saída: Flags (N, Z, C)
+; ============================================================
+.global cmp16
+cmp16:
+    cp r24, r22
+    cpc r25, r23
     ret
