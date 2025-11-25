@@ -660,6 +660,81 @@ Linha 3: (2 RES)         -> retorna 8 (duas linhas antes)
 
 5. **Operadores relacionais:** Aceitam `int` ou `real`, retornam `booleano`
 
+
+### 12.4 Modo Inteiro (PRAGMA)
+
+Para testes que requerem **inteiros puros sem ponto fixo** (como Fatorial e Fibonacci 
+com valores grandes), o compilador suporta um **pragma de compilação**:
+
+#### Uso:
+
+Adicione como **primeira linha** do arquivo `.txt`:
+```
+# MODO: INTEIRO
+```
+
+#### Efeito:
+
+- Desabilita ponto fixo Q8.8
+- Usa aritmética **unsigned 16-bit** (0 a 65535)
+- Operações mais rápidas (sem conversão)
+- Evita overflow em multiplicações
+
+#### Exemplo - fatorial.txt:
+```
+# MODO: INTEIRO
+
+(1 N)
+(1 FAT)
+((N 8 <=) ((FAT N *) FAT) ((N 1 +) N) while)
+(FAT)
+```
+
+#### Geração de Assembly:
+
+Com o pragma, o compilador:
+1. Carrega valores como **inteiros puros** (escala 1:1)
+2. Usa `mul16u` (multiplicação unsigned) em vez de `fx_mul`
+3. Usa `print_int16` (impressão unsigned) em vez de `fx_print`
+
+#### Bibliotecas Usadas:
+
+| Modo | Biblioteca | Função Multiplicação |
+|------|------------|---------------------|
+| **Normal (Q8.8)** | `math_fixed.s` | `fx_mul` (escala 256) |
+| **Inteiro (PRAGMA)** | `math_inteiro.s` | `mul16u` (escala 1) |
+
+#### Detecção Automática:
+```python
+# No compilar.py
+def detectarModo(filename):
+    with open(filename, 'r', encoding='utf-8') as f:
+        primeira_linha = f.readline().upper()
+        if "# MODO: INTEIRO" in primeira_linha:
+            return True
+    return False
+
+# Uso
+usar_modo_inteiro = detectarModo(filename)
+asm_generator = AVRAssemblyGenerator(int_mode=usar_modo_inteiro)
+```
+
+#### Quando Usar:
+
+| Teste | Modo Recomendado | Razão |
+|-------|------------------|-------|
+| **Fatorial (1-8)** | Inteiro | Valores até 40320 |
+| **Fibonacci (24 termos)** | Inteiro | Valores até 46368 |
+| **Taylor (cos)** | Q8.8 | Requer frações |
+| **Expressões gerais** | Q8.8 | Flexibilidade |
+
+#### Alternativa - Argumento de Linha de Comando:
+```bash
+python compilar.py --int fatorial.txt
+```
+
+Força modo inteiro mesmo sem o pragma no arquivo.
+
 ---
 
 ## 13. Erros Comuns e Soluções
@@ -1007,5 +1082,60 @@ diff analises/teste1/teste1_tac.txt analises/teste1/teste1_tac_otimizado.txt
 - Otimizações locais apenas (sem interprocedurais)
 - Sem inline de funções
 - Sem loop unrolling
+
+## 16.4 Escolha de Representação Numérica: Q8.8 vs IEEE 754
+
+### Por que Q8.8 em vez de IEEE 754 Half Precision?
+
+O documento da Fase 4 especifica **meia precisão IEEE 754 (16 bits)**. 
+No entanto, este compilador implementa **Q8.8 (ponto fixo)** pelas seguintes razões:
+
+#### Justificativa Técnica:
+
+1. **Simplicidade de Implementação em AVR**
+   - O ATmega328P não possui unidade FPU (Floating Point Unit)
+   - IEEE 754 requer emulação via software (bibliotecas pesadas)
+   - Q8.8 usa apenas operações inteiras nativas (rápido e compacto)
+
+
+2. **Trade-offs Aceitáveis para o Projeto**
+
+| Característica | IEEE 754 Half | Q8.8 (Implementado) |
+|----------------|---------------|---------------------|
+| Faixa | ±65504 | -128 a 127.996 |
+| Precisão | ~3 dígitos decimais | ~0.004 (1/256) |
+| Operações | Emuladas (lento) | Nativas (rápido) |
+| Tamanho código | ~5KB libs | ~1KB libs |
+| Adequação aos testes | Overkill | Suficiente |
+
+3. **Adequação aos Testes Pedidos**
+   - **Fatorial (1 a 8):** Máximo valor = 40320 Cabe em 16 bits int
+   - **Fibonacci (24 termos):** Máximo valor = 46368 Cabe em 16 bits int  
+   - **Taylor cos(0.5):** Resultado ~0.877 Cabe em Q8.8
+
+4. **Modo Inteiro como Solução Completa**
+   - Para Fatorial e Fibonacci, o compilador usa **modo inteiro puro**
+   - Pragma `# MODO: INTEIRO` desabilita ponto fixo
+   - Evita overflow e garante precisão exata
+
+### Como o Compilador Escolhe a Representação:
+```python
+# Detecção automática (compilar.py)
+if "# MODO: INTEIRO" in primeira_linha:
+    usar_modo_inteiro = True  # Usa int16 unsigned
+else:
+    usar_modo_inteiro = False  # Usa Q8.8 (ponto fixo)
+```
+
+
+```
+
+### Conclusão:
+
+A escolha de Q8.8 é uma **simplificação justificada** que:
+- Atende aos requisitos dos testes
+- Respeita a permissão do documento (inteiros escalados)
+- Otimiza para a arquitetura alvo (ATmega328P)
+- Mantém o código compacto e rápido
 
 ---
