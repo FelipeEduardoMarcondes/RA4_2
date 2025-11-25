@@ -11,12 +11,12 @@ import sys
 # CONFIGURAÇÕES
 # ==========================================
 BAUD_RATE = 9600
-PORTA_PADRAO = 'COM4'
+PORTA_PADRAO = '/dev/ttyACM0'
 TIMEOUT = 1
 # ==========================================
 
 def listar_portas():
-    """Lista todas as portas seriais disponíveis."""
+    # Lista todas as portas seriais disponíveis.
     print("\n=== PORTAS SERIAIS DISPONÍVEIS ===")
     ports = list(serial.tools.list_ports.comports())
     
@@ -33,7 +33,7 @@ def listar_portas():
     return ports
 
 def encontrar_porta_arduino():
-    """Tenta encontrar automaticamente uma porta Arduino."""
+    # Tenta encontrar automaticamente uma porta Arduino.
     ports = list(serial.tools.list_ports.comports())
     for p in ports:
         desc = p.description.lower()
@@ -42,7 +42,7 @@ def encontrar_porta_arduino():
     return None
 
 def selecionar_porta():
-    """Permite ao usuário selecionar uma porta."""
+    # Permite ao usuário selecionar uma porta.
     ports = listar_portas()
     
     if not ports:
@@ -81,9 +81,11 @@ def monitorar_serial():
         
         # 2. Tenta encontrar automaticamente
         porta_auto = encontrar_porta_arduino()
+
         if porta_auto:
             porta = porta_auto
             print(f"✓ Arduino detectado em: {porta}")
+
         else:
             # 3. Pede ao usuário para escolher
             print("\nNão foi possível detectar o Arduino automaticamente.")
@@ -117,6 +119,7 @@ def monitorar_serial():
         
         # Loop de leitura
         while True:
+
             if ser.in_waiting > 0:
                 try:
                     # Lê linha
@@ -132,6 +135,7 @@ def monitorar_serial():
                         
                 except UnicodeDecodeError as e:
                     print(f"[ERRO] Decodificação: {e}")
+
                 except Exception as e:
                     print(f"[ERRO] Leitura: {e}")
             

@@ -1,6 +1,6 @@
 # tac_generator.py
 # FELIPE EDUARDO MARCONDES - GRUPO 2
-# Gerador de Three Address Code (TAC) - CORRIGIDO COM IMPRESSÃO AUTOMÁTICA
+# Gerador de Three Address Code (TAC)
 
 class TACGenerator:
     def __init__(self):
@@ -9,20 +9,23 @@ class TACGenerator:
         self.instructions = []
         
     def new_temp(self):
-        """Cria uma nova variável temporária."""
+        # Cria uma nova variável temporária.
         temp = f"t{self.temp_counter}"
         self.temp_counter += 1
+
         return temp
     
     def new_label(self):
-        """Cria um novo rótulo."""
+        # Cria um novo rótulo.
         label = f"L{self.label_counter}"
         self.label_counter += 1
+
         return label
     
     def emit(self, instruction):
-        """Adiciona uma instrução TAC."""
+        # Adiciona uma instrução TAC.
         self.instructions.append(instruction)
+
         return instruction
     
     def gerarTAC(self, arvore_atribuida):
@@ -45,26 +48,29 @@ class TACGenerator:
             # Gera código para a expressão
             resultado_temp = self._gerar_expressao(ast)
             
-            # **CRÍTICO: Sempre imprime o resultado de cada linha**
+            # Sempre imprime o resultado de cada linha
             if resultado_temp:
                 # Verifica se já é um RES (que já adiciona ao histórico)
+
                 if ast['type'] == 'res':
                     # RES já busca do histórico, apenas imprime
                     print_temp = self.new_temp()
                     self.emit(f"{print_temp} = PRINT[{resultado_temp}]")
+                
                 else:
-                    # Expressão normal: adiciona ao histórico E imprime
+                    # Expressão normal: adiciona ao histórico e imprime
                     print_temp = self.new_temp()
                     self.emit(f"{print_temp} = PRINT[{resultado_temp}]")
             
         return self.instructions
     
     def _gerar_expressao(self, node):
-        """
-        Gera TAC para um nó da árvore recursivamente.
-        Retorna o nome da variável/temporária que contém o resultado.
-        """
+        
+        # Gera TAC para um nó da árvore recursivamente.
+        # Retorna o nome da variável/temporária que contém o resultado.
+        
         if node is None:
+
             return None
         
         node_type = node['type']
@@ -73,12 +79,14 @@ class TACGenerator:
         if node_type == 'num':
             temp = self.new_temp()
             self.emit(f"{temp} = {node['value']}")
+
             return temp
         
         # Identificadores (recuperação de memória)
         if node_type == 'id':
             temp = self.new_temp()
             self.emit(f"{temp} = MEM[{node['value']}]")
+
             return temp
         
         # Armazenamento (V MEM)
@@ -98,8 +106,9 @@ class TACGenerator:
             n_temp = self._gerar_expressao(n_node)
             
             temp = self.new_temp()
-            # RES busca do histórico (a impressão é feita em gerarTAC)
+            # RES busca do histórico
             self.emit(f"{temp} = RES[{n_temp}]")
+
             return temp
         
         # Operadores binários aritméticos
@@ -120,6 +129,7 @@ class TACGenerator:
             op = op_map[node_type]
             temp = self.new_temp()
             self.emit(f"{temp} = {left} {op} {right}")
+
             return temp
         
         # Operadores relacionais
@@ -139,6 +149,7 @@ class TACGenerator:
             op = op_map[node_type]
             temp = self.new_temp()
             self.emit(f"{temp} = {left} {op} {right}")
+
             return temp
         
         # Condicional (IF)
@@ -192,14 +203,16 @@ class TACGenerator:
 
 
 def salvarTAC(instructions, filename):
-    """Salva instruções TAC em arquivo."""
+    # Salva instruções TAC em arquivo.
+    
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("# Three Address Code (TAC)\n")
         f.write("# Gerado automaticamente\n")
-        f.write("# CADA LINHA DE CÓDIGO GERA UMA IMPRESSÃO AUTOMÁTICA\n\n")
         
         for inst in instructions:
+
             if inst.startswith('#'):
                 f.write(f"\n{inst}\n")
+
             else:
                 f.write(f"{inst}\n")

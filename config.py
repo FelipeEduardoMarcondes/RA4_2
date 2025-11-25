@@ -60,7 +60,7 @@ MATH_LIB_PATH = "lib_avr/"
 # ============================================
 
 def get_config():
-    """Retorna todas as configurações como dicionário."""
+    # Retorna todas as configurações como dicionário.
     return {
         'porta_serial': PORTA_SERIAL,
         'baud_upload': BAUD_RATE_UPLOAD,
@@ -78,13 +78,15 @@ def get_config():
 
 
 def print_config():
-    """Imprime configurações atuais."""
+    # Imprime configurações atuais.
     print("=" * 60)
     print("CONFIGURAÇÕES DO COMPILADOR")
     print("=" * 60)
     config = get_config()
+    
     for key, value in config.items():
         print(f"{key:20s}: {value}")
+
     print("=" * 60)
 
 

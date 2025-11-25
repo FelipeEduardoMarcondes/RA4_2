@@ -1,6 +1,5 @@
 # assembly_generator.py
 # FELIPE EDUARDO MARCONDES - GRUPO 2
-# VERSÃO UNIFICADA: Suporta Modo Inteiro (Fatorial/Fibo) e Ponto Fixo (Taylor)
 
 import re
 import subprocess
@@ -41,13 +40,16 @@ class AVRAssemblyGenerator:
             
             if inst.strip().startswith('#'):
                 self.assembly.append(f"\n    ; {inst.strip()}")
+
                 continue
             
             if not clean_inst:
+
                 continue
             
             if clean_inst.endswith(':'):
                 self.assembly.append(clean_inst)
+
                 continue
             
             self.assembly.append(f"    ; TAC: {clean_inst}")
@@ -66,6 +68,7 @@ class AVRAssemblyGenerator:
             self.vars_declared.update(temps)
             self.vars_declared.update(mems)
             assign = re.match(r'([A-Z_][A-Z0-9_]*)\s*=', inst)
+
             if assign:
                 self.vars_declared.update([assign.group(1)])
 
@@ -73,6 +76,7 @@ class AVRAssemblyGenerator:
         self.bss_section.append(".section .bss")
         for var in sorted(list(self.vars_declared)):
             if var == "MEM": continue
+
             self.bss_section.append(f"    .lcomm {var}, 2")
 
     def _gerar_prologo(self):
@@ -97,6 +101,7 @@ class AVRAssemblyGenerator:
         ])
 
     def _montar_codigo_completo(self):
+
         return self.bss_section + self.assembly
 
     def _load_val(self, operand, reg_L='r24', reg_H='r25', is_raw=False):
@@ -107,6 +112,7 @@ class AVRAssemblyGenerator:
             
             if is_raw:
                 val_int = int(val_float)
+
             else:
                 # Usa self.scale (1 ou 256 dependendo do modo)
                 val_int = int(val_float * self.scale)
@@ -119,25 +125,30 @@ class AVRAssemblyGenerator:
         
         else:
             var_name = operand_str
+
             if 'MEM[' in operand_str:
                 var_name = re.match(r'MEM\[(\w+)\]', operand_str).group(1)
             
             if var_name == "MEM":
                 self.assembly.append(f"    call mem_load")
+
                 if reg_L != 'r24':
                     self.assembly.append(f"    mov {reg_L}, r24")
                     self.assembly.append(f"    mov {reg_H}, r25")
+
             else:
                 self.assembly.append(f"    lds {reg_L}, {var_name}")
                 self.assembly.append(f"    lds {reg_H}, {var_name} + 1")
 
     def _store_val(self, dest):
         var_name = dest
+
         if 'MEM[' in dest:
             var_name = re.match(r'MEM\[(\w+)\]', dest).group(1)
             
         if var_name == "MEM":
             self.assembly.append("    call mem_store")
+
         else:
             self.assembly.append(f"    sts {var_name}, r24")
             self.assembly.append(f"    sts {var_name} + 1, r25")
@@ -152,32 +163,39 @@ class AVRAssemblyGenerator:
             # DECISÃO DE MODO: Imprime Inteiro ou Fixo
             if self.int_mode:
                 self.assembly.append("    call print_int16")
+
             else:
                 self.assembly.append("    call fx_print")
                 
             self.assembly.append("    call uart_newline")
             
             dest_match = re.match(r'(\w+)\s*=', inst)
+
             if dest_match:
                 self._store_val(dest_match.group(1))
+
             return True
 
         # 2. RES (Histórico)
         if 'RES[' in inst:
             match = re.match(r'(\w+)\s*=\s*RES\[(.*)\]', inst)
+
             if match:
                 dest, n_operand = match.groups()
                 self._load_val(n_operand, 'r22', 'r23', is_raw=True)
                 self.assembly.append("    call res_fetch")
                 self._store_val(dest)
+
                 return True
 
         # 3. Operações Binárias
         match_bin = re.match(r'(\w+|MEM\[\w+\])\s*=\s*(.*)\s*([+\-*/%^|]|==|!=|<=|>=|<|>)\s*(.*)', inst)
+
         if match_bin and 'PRINT' not in inst and 'RES' not in inst and 'ifFalse' not in inst:
             dest, op1, op, op2 = match_bin.groups()
             
             if not op1.strip(): pass # Negativo literal
+
             else:
                 self._load_val(op1, 'r24', 'r25')
                 is_power = (op == '^')
@@ -186,6 +204,7 @@ class AVRAssemblyGenerator:
                 if op == '+':
                     self.assembly.append("    add r24, r22")
                     self.assembly.append("    adc r25, r23")
+
                 elif op == '-':
                     self.assembly.append("    sub r24, r22")
                     self.assembly.append("    sbc r25, r23")
@@ -200,13 +219,15 @@ class AVRAssemblyGenerator:
                     else: self.assembly.append("    call fx_div")
                 
                 elif op == '/': 
-                    self.assembly.append("    call div16s") # Ambos usam div16s (que no int_mode redireciona pra unsigned)
+                    self.assembly.append("    call div16s")
                 
                 elif op == '%': 
                     self.assembly.append("    call op_mod")
                 
-                elif op == '^': 
+                elif op == '^':
+
                     if self.int_mode: self.assembly.append("    call op_pow_int")
+                    
                     else: self.assembly.append("    call fx_pow")
                 
                 # Relacionais
@@ -218,14 +239,17 @@ class AVRAssemblyGenerator:
                 elif op == '<=': self.assembly.append("    call op_le")
                 
                 self._store_val(dest)
+
                 return True
 
         # 4. Atribuição Simples
         match_assign = re.match(r'(\w+|MEM\[\w+\])\s*=\s*(.*)', inst)
+
         if match_assign and 'goto' not in inst and 'ifFalse' not in inst:
             dest, src = match_assign.groups()
             self._load_val(src, 'r24', 'r25')
             self._store_val(dest)
+
             return True
             
         # 5. Controle de Fluxo (COM FIX DO TRAMPOLIM)
@@ -240,16 +264,17 @@ class AVRAssemblyGenerator:
             self.assembly.append(f"    brne {skip_label}")
             self.assembly.append(f"    rjmp {label}")
             self.assembly.append(f"{skip_label}:")
+
             return True
             
         if 'goto' in inst:
             label = re.match(r'goto\s+(\w+)', inst).group(1)
             self.assembly.append(f"    rjmp {label}")
+
             return True
             
         return False
 
-# Funções auxiliares de I/O
 def salvarAssembly(instructions, filename, int_mode=False):
     libs_content = ""
     # Bibliotecas comuns
@@ -262,9 +287,9 @@ def salvarAssembly(instructions, filename, int_mode=False):
     
     # Seleção de Bibliotecas baseada no Modo
     if int_mode:
-        # Modo Inteiro: Usa math_inteiro e NÃO usa math_fixed/signed
         lib_files.append("lib_avr/math_inteiro.s")
         print("[ASM] Incluindo libs para MODO INTEIRO (Unsigned)")
+
     else:
         # Modo Normal: Usa math_signed e math_fixed
         lib_files.append("lib_avr/math_signed.s")
@@ -272,15 +297,19 @@ def salvarAssembly(instructions, filename, int_mode=False):
         print("[ASM] Incluindo libs para MODO PONTO FIXO (Q8.8)")
     
     for lib in lib_files:
+
         if os.path.exists(lib):
             with open(lib, 'r') as f:
                 libs_content += f"\n; === LIB: {lib} ===\n" + f.read() + "\n"
+
         else:
             print(f"AVISO: Biblioteca {lib} não encontrada!")
 
     with open(filename, 'w') as f:
+
         for line in instructions:
             f.write(line + '\n')
+
         f.write("\n; === BIBLIOTECAS AVR ===\n")
         f.write(libs_content)
 
@@ -291,14 +320,17 @@ def gerarHex(asm_file, hex_file):
     
     print(f"Compilando ELF...")
     res = subprocess.run(cmd1, shell=True)
+
     if res.returncode != 0: return False
     
     print(f"Gerando HEX...")
     res = subprocess.run(cmd2, shell=True)
+
     return res.returncode == 0
 
 def uploadHex(hex_file, port, baud):
     cmd = f"avrdude -c arduino -p atmega328p -P {port} -b {baud} -D -U flash:w:\"{hex_file}\":i"
+    
     subprocess.run(cmd, shell=True)
     return True
 

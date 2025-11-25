@@ -1,9 +1,8 @@
 # otimizador.py
 # FELIPE EDUARDO MARCONDES - GRUPO 2
-# Otimizador de Three Address Code (TAC) - CORRIGIDO
+# Otimizador de Three Address Code (TAC)
 
 import re
-
 
 class TACOptimizer:
     def __init__(self):

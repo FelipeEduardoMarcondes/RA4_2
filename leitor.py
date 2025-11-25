@@ -2,7 +2,7 @@
 # GRUPO 2
 
 def lerTokens(filename):
-    # Lê um arquivo e retorna uma lista de tokens (representados como dicionários).
+    # Lê um arquivo e retorna uma lista de tokens.
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             return tokenizar(f.read())
@@ -81,14 +81,17 @@ def tokenizar(text):
                 if id_str in KEYWORDS:
                     token_type = KEYWORDS[id_str]
                     tokens.append({'type': token_type, 'value': id_str, 'line': line_num, 'col': col})
+
                 # Verifica se é keyword case-insensitive (if, while)
                 elif id_str.lower() in KEYWORDS_CASE_INSENSITIVE:
                     token_type = KEYWORDS_CASE_INSENSITIVE[id_str.lower()]
                     tokens.append({'type': token_type, 'value': id_str.lower(), 'line': line_num, 'col': col})
+
                 else:
                     # Identificadores devem estar em MAIÚSCULAS
                     if id_str != id_str.upper():
                         raise SyntaxError(f"Identificador '{id_str}' deve estar em MAIÚSCULAS na linha {line_num}, coluna {col}")
+                    
                     tokens.append({'type': 'id', 'value': id_str, 'line': line_num, 'col': col})
                 
                 continue
@@ -97,6 +100,7 @@ def tokenizar(text):
             if char in SINGLE_OPS:
                 tokens.append({'type': SINGLE_OPS[char], 'value': char, 'line': line_num, 'col': col})
                 i += 1
+                
                 continue
 
             raise SyntaxError(f"Token inválido '{char}' na linha {line_num}, coluna {col}")

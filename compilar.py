@@ -2,7 +2,6 @@
 # FELIPE EDUARDO MARCONDES
 # GRUPO 2
 # Compilador completo: Fases 1-4 (Léxico + Sintático + Semântico + TAC + Otimização + Assembly)
-# VERSÃO CORRIGIDA COM IMPRESSÃO SERIAL E SEM EMOJIS
 
 import sys
 import json
@@ -13,8 +12,10 @@ import os
 try:
     from config import get_config
     config = get_config()
+
 except ImportError:
     print("AVISO: arquivo config.py não encontrado, usando configurações padrão")
+
     config = {
         'porta_serial': '/dev/ttyUSB0',
         'baud_upload': 115200,
@@ -45,11 +46,12 @@ from assembly_generator import (
 
 
 def imprimirArvore(node, indent=0, prefix=""):
-    """Imprime árvore sintática de forma hierárquica."""
+    # Imprime árvore sintática de forma hierárquica.
     if node is None:
         return
     
     tipo_info = ""
+
     if 'tipo_inferido' in node and node['tipo_inferido']:
         tipo_info = f" : {node['tipo_inferido']}"
     
@@ -57,6 +59,7 @@ def imprimirArvore(node, indent=0, prefix=""):
 
     if node['value'] is not None:
         print(f" = {node['value']}")
+
     else:
         print()
 
@@ -67,7 +70,7 @@ def imprimirArvore(node, indent=0, prefix=""):
 
 
 def gerarGramaticaAtributosMd(gramatica_atributos, filename):
-    """Gera documentação da gramática de atributos."""
+    # Gera documentação da gramática de atributos.
     descricao = gramatica_atributos.get('descricao', "Gramática de Atributos RPN")
     regras = gramatica_atributos.get('regras_tipo', {})
 
@@ -105,17 +108,19 @@ def gerarGramaticaAtributosMd(gramatica_atributos, filename):
         f.write("- **Regra:** `Γ ⊢ e₁ : T₁, Γ ⊢ e₂ : T₂ ──────────── Γ ⊢ (e₁ e₂ op) : promover_tipo(T₁, T₂)`\n")
 
 
-def detectar_modo_pelo_arquivo(filename):
-    """Lê a primeira linha do arquivo para buscar diretivas de compilação."""
+def detectarModo(filename):
+    # Lê a primeira linha do arquivo para buscar diretivas de compilação.
     try:
         with open(filename, 'r', encoding='utf-8') as f:
-            primeira_linha = f.readline().upper() # Lê e converte para maiúsculas
+            primeira_linha = f.readline().upper()
             
-            # Verifica se existe a tag mágica
             if "# MODO: INTEIRO" in primeira_linha or "# PRAGMA: INTEIRO" in primeira_linha:
+
                 return True
+            
     except Exception:
         pass
+
     return False
 
 def main():
@@ -126,20 +131,20 @@ def main():
         print("\nUso: python compilar.py <arquivo.txt>")
         print("\nExemplo: python compilar.py teste_print.txt")
         print("=" * 60)
+
         sys.exit(1)
 
     filename = sys.argv[1]
     
-    # --- LÓGICA DE DETECÇÃO INTELIGENTE ---
     usar_modo_inteiro = False
     
-    # 1. Prioridade: Argumento de linha de comando (se você forçar --int)
+    # 1. Prioridade: Argumento de linha de comando
     if "--int" in sys.argv:
         usar_modo_inteiro = True
         print("\n>>> MODO: INTEIRO (Forçado via argumento) <<<")
         
     # 2. Automático: Verifica se o arquivo pede modo inteiro
-    elif detectar_modo_pelo_arquivo(filename):
+    elif detectarModo(filename):
         usar_modo_inteiro = True
         print(f"\n>>> MODO: INTEIRO (Detectado automaticamente em {filename}) <<<")
         
@@ -163,7 +168,7 @@ def main():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         
-    # Arquivos de saída (Agora usam o novo output_dir que aponta para a subpasta)
+    # Arquivos de saída
     gramatica_file = os.path.join(output_dir, 'gramatica_atributos_gerada.md')
     relatorio_tipos_file = os.path.join(output_dir, f"{base_name}_julgamento_tipos.md")
     relatorio_erros_file = os.path.join(output_dir, f"{base_name}_erros_semanticos.md")
@@ -198,9 +203,12 @@ def main():
         
         if erros_sintaticos:
             print(f"[ERRO] {len(erros_sintaticos)} erro(s) sintático(s) encontrado(s):")
+
             for erro in erros_sintaticos:
                 print(f"  - {erro}")
+
             print("\n[ERRO FATAL] Compilação interrompida devido a erros sintáticos.")
+
             sys.exit(1)
         
         print(f"[OK] {len(ast_list)} expressão(ões) válida(s)")
@@ -214,6 +222,7 @@ def main():
         
         if erros_semanticos:
             print(f"[AVISO] {len(erros_semanticos)} erro(s) semântico(s) encontrado(s)")
+
         else:
             print("[OK] Nenhum erro semântico detectado")
         
@@ -233,11 +242,14 @@ def main():
         
         total_opts = sum(stats.values())
         print(f"[OK] {total_opts} otimizações aplicadas:")
+
         for opt_name, count in stats.items():
+
             if count > 0:
                 print(f"  - {opt_name.replace('_', ' ').title()}: {count}")
         
         reducao = len(tac_instructions) - len(tac_otimizado)
+
         if reducao > 0:
             print(f"[OK] Redução: {reducao} instruções ({100 * reducao / len(tac_instructions):.1f}%)")
         
@@ -252,23 +264,28 @@ def main():
         salvarAssembly(asm_instructions, asm_file, int_mode=usar_modo_inteiro)
         
         hex_gerado = gerarHex(asm_file, hex_file)
+
         if hex_gerado:
             print(f"[OK] HEX gerado com sucesso: {hex_file}")
             
-            # UPLOAD AUTOMÁTICO (se configurado)
+            # UPLOAD AUTOMÁTICO SE CONFIGURADO
             if config.get('auto_upload', False):
                 print(f"\n[UPLOAD] Fazendo upload para {config['porta_serial']}...")
                 upload_ok = uploadHex(hex_file, config['porta_serial'], config.get('baud_upload', 115200))
+
                 if upload_ok:
                     print("[OK] Upload concluído!")
                     print(f"\n[INFO] Abra o monitor serial em {config.get('baud_monitor', 9600)} baud para ver os resultados")
+
                 else:
                     print("[AVISO] Upload falhou. Tente manualmente:")
                     print(f"   avrdude -c arduino -p ATMEGA328P -P {config['porta_serial']} -b 115200 -U flash:w:{hex_file}:i")
+                    
             else:
                 print(f"\n[INFO] Para fazer upload manualmente:")
                 print(f"   avrdude -c arduino -p ATMEGA328P -P {config['porta_serial']} -b 115200 -U flash:w:{hex_file}:i")
                 print(f"\n[INFO] Ou configure AUTO_UPLOAD=True em config.py")
+
         else:
             print("[ERRO] Não foi possível gerar HEX (toolchain AVR pode não estar instalada)")
             print("   O arquivo Assembly (.s) foi gerado e pode ser compilado manualmente")
@@ -300,12 +317,15 @@ def main():
                 
                 old_stdout = sys.stdout
                 sys.stdout = buffer = io.StringIO()
+
                 imprimirArvore(ast)
+
                 output = buffer.getvalue()
                 sys.stdout = old_stdout
                 
                 f.write(output)
                 f.write("```\n\n")
+
         print(f"  - {arvore_md_file}")
         
         salvarTAC(tac_instructions, tac_file)
@@ -335,6 +355,7 @@ def main():
         
         if erros_semanticos:
             print("\n[STATUS] COMPILAÇÃO CONCLUÍDA COM ERROS")
+
         else:
             print("\n[STATUS] COMPILAÇÃO BEM-SUCEDIDA")
         
@@ -349,14 +370,18 @@ def main():
     except FileNotFoundError as e:
         print(f"\n[ERRO] Arquivo não encontrado - {e}")
         sys.exit(1)
+
     except SyntaxError as e:
         print(f"\n[ERRO DE SINTAXE] {e}")
         sys.exit(1)
+
     except ValueError as e:
         print(f"\n[ERRO DE VALOR] {e}")
         sys.exit(1)
+
     except Exception as e:
         print(f"\n[ERRO INESPERADO] {e}")
+        
         import traceback
         traceback.print_exc()
         sys.exit(1)

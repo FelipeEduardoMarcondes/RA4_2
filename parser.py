@@ -327,12 +327,14 @@ def calcularFollow(gramatica, first):
 
                         if 'epsilon' in first[symbol]:
                             trailer.update(s for s in first[symbol] if s != 'epsilon')
+
                         else:
                             trailer = set(first.get(symbol, set()))
                     else:
                         trailer = first.get(symbol, set())
 
         if not updated:
+
             break
 
     return follow
@@ -361,13 +363,17 @@ def construirTabelaLL1(gramatica, first, follow):
 
             for terminal in first_prod:
                 if terminal != 'epsilon':
+
                     if terminal in table[A]:
                         raise ValueError(f"Conflito LL(1) em ({A}, {terminal})")
+                    
                     table[A][terminal] = prod
 
             if 'epsilon' in first_prod:
                 for terminal in follow[A]:
+
                     if terminal in table[A]:
+                        
                         raise ValueError(f"Conflito LL(1) em ({A}, {terminal}) para epsilon")
                     
                     table[A][terminal] = ['epsilon']

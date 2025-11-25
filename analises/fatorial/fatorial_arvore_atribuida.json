@@ -8,7 +8,7 @@
       {
         "tipo_vertice": "num",
         "tipo_inferido": "int",
-        "valor": 5,
+        "valor": 1,
         "filhos": []
       },
       {
@@ -46,9 +46,9 @@
     "valor": "while",
     "filhos": [
       {
-        "tipo_vertice": "gt",
+        "tipo_vertice": "lte",
         "tipo_inferido": "booleano",
-        "valor": ">",
+        "valor": "<=",
         "filhos": [
           {
             "tipo_vertice": "id",
@@ -59,72 +59,79 @@
           {
             "tipo_vertice": "num",
             "tipo_inferido": "int",
-            "valor": 1,
+            "valor": 8,
             "filhos": []
           }
         ]
       },
       {
-        "tipo_vertice": "store",
+        "tipo_vertice": "mult",
         "tipo_inferido": "int",
-        "valor": null,
+        "valor": "*",
         "filhos": [
           {
-            "tipo_vertice": "mult",
+            "tipo_vertice": "store",
             "tipo_inferido": "int",
-            "valor": "*",
+            "valor": null,
             "filhos": [
               {
-                "tipo_vertice": "id",
+                "tipo_vertice": "mult",
                 "tipo_inferido": "int",
+                "valor": "*",
+                "filhos": [
+                  {
+                    "tipo_vertice": "id",
+                    "tipo_inferido": "int",
+                    "valor": "FAT",
+                    "filhos": []
+                  },
+                  {
+                    "tipo_vertice": "id",
+                    "tipo_inferido": "int",
+                    "valor": "N",
+                    "filhos": []
+                  }
+                ]
+              },
+              {
+                "tipo_vertice": "id",
+                "tipo_inferido": null,
                 "valor": "FAT",
                 "filhos": []
-              },
-              {
-                "tipo_vertice": "id",
-                "tipo_inferido": "int",
-                "valor": "N",
-                "filhos": []
               }
             ]
           },
           {
-            "tipo_vertice": "id",
-            "tipo_inferido": null,
-            "valor": "FAT",
-            "filhos": []
-          }
-        ]
-      },
-      {
-        "tipo_vertice": "store",
-        "tipo_inferido": null,
-        "valor": null,
-        "filhos": [
-          {
-            "tipo_vertice": "minus",
-            "tipo_inferido": null,
-            "valor": "-",
+            "tipo_vertice": "store",
+            "tipo_inferido": "int",
+            "valor": null,
             "filhos": [
               {
+                "tipo_vertice": "plus",
+                "tipo_inferido": "int",
+                "valor": "+",
+                "filhos": [
+                  {
+                    "tipo_vertice": "id",
+                    "tipo_inferido": "int",
+                    "valor": "N",
+                    "filhos": []
+                  },
+                  {
+                    "tipo_vertice": "num",
+                    "tipo_inferido": "int",
+                    "valor": 1,
+                    "filhos": []
+                  }
+                ]
+              },
+              {
                 "tipo_vertice": "id",
                 "tipo_inferido": null,
                 "valor": "N",
                 "filhos": []
-              },
-              {
-                "tipo_vertice": "num",
-                "tipo_inferido": null,
-                "valor": 1,
-                "filhos": []
               }
             ]
-          },
-          {
-            "tipo_vertice": "id",
-            "tipo_inferido": null,
-            "valor": "N",
-            "filhos": []
           }
         ]
       }
@@ -136,5 +143,19 @@
     "tipo_inferido": "int",
     "valor": "FAT",
     "filhos": []
+  },
+  {
+    "linha": 5,
+    "tipo_vertice": "res",
+    "tipo_inferido": "int",
+    "valor": "RES",
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 1,
+        "filhos": []
+      }
+    ]
   }
 ]

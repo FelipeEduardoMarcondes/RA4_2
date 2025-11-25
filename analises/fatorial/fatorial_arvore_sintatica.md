@@ -8,7 +8,7 @@
 
 ```
 store : int
-  ├─ num : int = 5
+  ├─ num : int = 1
   └─ id = N
 ```
 
@@ -28,19 +28,20 @@ store : int
 
 ```
 while : int = while
-  ├─ gt : booleano = >
+  ├─ lte : booleano = <=
     ├─ id : int = N
-    └─ num : int = 1
-  ├─ store : int
-    ├─ mult : int = *
-      ├─ id : int = FAT
-      └─ id : int = N
-    └─ id = FAT
-  └─ store
-    ├─ minus = -
-      ├─ id = N
-      └─ num = 1
-    └─ id = N
+    └─ num : int = 8
+  └─ mult : int = *
+    ├─ store : int
+      ├─ mult : int = *
+        ├─ id : int = FAT
+        └─ id : int = N
+      └─ id = FAT
+    └─ store : int
+      ├─ plus : int = +
+        ├─ id : int = N
+        └─ num : int = 1
+      └─ id = N
 ```
 
 ## Expressão 4
@@ -49,5 +50,14 @@ while : int = while
 
 ```
 id : int = FAT
+```
+
+## Expressão 5
+
+**Tipo inferido:** `int`
+
+```
+res : int = RES
+  └─ num : int = 1
 ```
 

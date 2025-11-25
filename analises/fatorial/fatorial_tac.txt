@@ -1,7 +1,5 @@
 # Three Address Code (TAC)
 # Gerado automaticamente
-# CADA LINHA DE CÓDIGO GERA UMA IMPRESSÃO AUTOMÁTICA
-
 
 # Linha 1
 t0 = 1
@@ -35,134 +33,9 @@ t15 = PRINT[t4]
 
 # Linha 4
 t16 = MEM[FAT]
-MEM[RESULTADO] = t16
 t17 = PRINT[t16]
 
 # Linha 5
 t18 = 1
-MEM[NUM] = t18
-t19 = PRINT[t18]
-
-# Linha 6
-t20 = 1
-MEM[FATORIAL1] = t20
-t21 = PRINT[t20]
-
-# Linha 7
-t22 = 2
-MEM[NUM] = t22
-t23 = PRINT[t22]
-
-# Linha 8
-t24 = 1
-t25 = 2
-t26 = t24 * t25
-t27 = PRINT[t26]
-
-# Linha 9
-t28 = 1
-t29 = RES[t28]
-MEM[FATORIAL2] = t29
-t30 = PRINT[t29]
-
-# Linha 10
-t31 = 3
-MEM[NUM] = t31
-t32 = PRINT[t31]
-
-# Linha 11
-t33 = 2
-t34 = MEM[FATORIAL2]
-t35 = t33 * t34
-t36 = PRINT[t35]
-
-# Linha 12
-t37 = 1
-t38 = RES[t37]
-MEM[FATORIAL3] = t38
-t39 = PRINT[t38]
-
-# Linha 13
-t40 = 4
-MEM[NUM] = t40
-t41 = PRINT[t40]
-
-# Linha 14
-t42 = 3
-t43 = MEM[FATORIAL3]
-t44 = t42 * t43
-t45 = PRINT[t44]
-
-# Linha 15
-t46 = 1
-t47 = RES[t46]
-MEM[FATORIAL4] = t47
-t48 = PRINT[t47]
-
-# Linha 16
-t49 = 5
-MEM[NUM] = t49
-t50 = PRINT[t49]
-
-# Linha 17
-t51 = 4
-t52 = MEM[FATORIAL4]
-t53 = t51 * t52
-t54 = PRINT[t53]
-
-# Linha 18
-t55 = 1
-t56 = RES[t55]
-MEM[FATORIAL5] = t56
-t57 = PRINT[t56]
-
-# Linha 19
-t58 = 6
-MEM[NUM] = t58
-t59 = PRINT[t58]
-
-# Linha 20
-t60 = 5
-t61 = MEM[FATORIAL5]
-t62 = t60 * t61
-t63 = PRINT[t62]
-
-# Linha 21
-t64 = 1
-t65 = RES[t64]
-MEM[FATORIAL6] = t65
-t66 = PRINT[t65]
-
-# Linha 22
-t67 = 7
-MEM[NUM] = t67
-t68 = PRINT[t67]
-
-# Linha 23
-t69 = 6
-t70 = MEM[FATORIAL6]
-t71 = t69 * t70
-t72 = PRINT[t71]
-
-# Linha 24
-t73 = 1
-t74 = RES[t73]
-MEM[FATORIAL7] = t74
-t75 = PRINT[t74]
-
-# Linha 25
-t76 = 8
-MEM[NUM] = t76
-t77 = PRINT[t76]
-
-# Linha 26
-t78 = 7
-t79 = MEM[FATORIAL7]
-t80 = t78 * t79
-t81 = PRINT[t80]
-
-# Linha 27
-t82 = 1
-t83 = RES[t82]
-MEM[FATORIAL8] = t83
-t84 = PRINT[t83]
+t19 = RES[t18]
+t20 = PRINT[t19]

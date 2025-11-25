@@ -1,3 +1,4 @@
+# MODO: INTEIRO
 # fatorial.txt
 # Calcula fatorial de números de 1 até 8
 # ATENÇÃO: Requer compilador em MODO INTEIRO (--int) pois 8! (40320) > 127
@@ -12,45 +13,5 @@
 ((N 8 <=) (((FAT N *) FAT) ((N 1 +) N) *) while)
 
 # 3. Armazenar resultado final do loop
-(FAT RESULTADO)
-
-# 4. Cálculos individuais (Validação linha a linha)
-
-# 1!
-(1 NUM)
-(1 FATORIAL1)
-
-# 2!
-(2 NUM)
-(1 2 *)
-((1 RES) FATORIAL2)  # Corrigido: (1 RES) entre parênteses
-
-# 3!
-(3 NUM)
-(2 FATORIAL2 *)
-((1 RES) FATORIAL3)
-
-# 4!
-(4 NUM)
-(3 FATORIAL3 *)
-((1 RES) FATORIAL4)
-
-# 5!
-(5 NUM)
-(4 FATORIAL4 *)
-((1 RES) FATORIAL5)
-
-# 6!
-(6 NUM)
-(5 FATORIAL5 *)
-((1 RES) FATORIAL6)
-
-# 7!
-(7 NUM)
-(6 FATORIAL6 *)
-((1 RES) FATORIAL7)
-
-# 8!
-(8 NUM)
-(7 FATORIAL7 *)
-((1 RES) FATORIAL8)
+(FAT)
+(1 RES)

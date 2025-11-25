@@ -10,7 +10,7 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 
 ### Processo de Inferência (Bottom-Up)
 
-1. Nó 'num' (Valor: 5): Regra 2.1 (Literal) -> int
+1. Nó 'num' (Valor: 1): Regra 2.1 (Literal) -> int
 2. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> None
 3. Nó 'store': Regra 2.7 (Armazenamento) de 'int' em 'N' -> int
 
@@ -53,19 +53,20 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 ### Processo de Inferência (Bottom-Up)
 
 1. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> int
-2. Nó 'num' (Valor: 1): Regra 2.1 (Literal) -> int
-3. Nó 'gt' (Valor: >): Regra 2.6 (Relacional) com (int, int) -> booleano
+2. Nó 'num' (Valor: 8): Regra 2.1 (Literal) -> int
+3. Nó 'lte' (Valor: <=): Regra 2.6 (Relacional) com (int, int) -> booleano
 4. Nó 'id' (Valor: FAT): Regra 2.2 (Identificador) -> int
 5. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> int
 6. Nó 'mult' (Valor: *): Regra 2.3 (Aritmética) com (int, int) -> int
 7. Nó 'id' (Valor: FAT): Regra 2.2 (Identificador) -> None
 8. Nó 'store': Regra 2.7 (Armazenamento) de 'int' em 'FAT' -> int
-9. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> ERRO
-10. Nó 'num' (Valor: 1): Regra 2.1 (Literal) -> ERRO
-11. Nó 'minus' (Valor: -): Regra 2.3 (Aritmética) com (?, ?) -> ERRO
-12. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> ERRO
-13. Nó 'store': Regra 2.7 (Armazenamento) de '?' em 'N' -> ERRO
-14. Nó 'while' (Valor: while): Regra 2.10 (Laço) com (cond:booleano, body:int) -> int
+9. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> int
+10. Nó 'num' (Valor: 1): Regra 2.1 (Literal) -> int
+11. Nó 'plus' (Valor: +): Regra 2.3 (Aritmética) com (int, int) -> int
+12. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> None
+13. Nó 'store': Regra 2.7 (Armazenamento) de 'int' em 'N' -> int
+14. Nó 'mult' (Valor: *): Regra 2.3 (Aritmética) com (int, int) -> int
+15. Nó 'while' (Valor: while): Regra 2.10 (Laço) com (cond:booleano, body:int) -> int
 
 ### Regra de Dedução Formal (Nó Raiz)
 
@@ -95,4 +96,25 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 ──────────────────────────────────────────────
 Γ ⊢ FAT : int
 ```
+
+---
+
+## Linha 5
+
+**Tipo Inferido Final:** `int`
+
+### Processo de Inferência (Bottom-Up)
+
+1. Nó 'num' (Valor: 1): Regra 2.1 (Literal) -> int
+2. Nó 'res' (Valor: RES): Regra 2.8 (Histórico) com N='int' -> int
+
+### Regra de Dedução Formal (Nó Raiz)
+
+**Regra 2.8: Histórico**
+```
+Γ ⊢ e₁ : int    e₁.valor ≥ 1    historico[...].tipo = T
+────────────────────────────────────────────────────────
+Γ ⊢ (e₁ RES) : int
+```
+Contexto: N = 1
 

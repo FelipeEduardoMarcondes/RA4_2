@@ -1,7 +1,5 @@
 # Three Address Code (TAC)
 # Gerado automaticamente
-# CADA LINHA DE CÓDIGO GERA UMA IMPRESSÃO AUTOMÁTICA
-
 
 # Linha 1
 t0 = 0.5
