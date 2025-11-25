@@ -1,12 +1,12 @@
 # taylor.txt
+# cos(x) ~= 1 - x^2/2! + x^4/4! - x^6/6!
 
-# Teste 3: Série de Taylor para cos(X) expandida (até termo 10)
-# Formula: cos(x) ~= 1 - x^2/2! + x^4/4! - x^6/6! + x^8/8! - x^10/10!
-
-# 1. Inicialização (0.5 radianos)
+# Inicializacao (0.5 radianos)
+# cos(0.5) esperado ~= 0.87758
 (0.5 X_VAL)
 
-# 2. Cálculo dos termos
+(1.0 T1)
+
 
 # Termo 2: x^2 / 2! (2.0)
 (((X_VAL 2 ^) 2.0 |) T2)
@@ -14,37 +14,13 @@
 # Termo 3: x^4 / 4! (24.0)
 (((X_VAL 4 ^) 24.0 |) T3)
 
-# Termo 4: x^6 / 6! (720.0) -> Decomposto: 24 * 30
+# Termo 4: x^6 / 6! (720.0)
+# Nota: Como 720 > 127 (limite do Q8.8), decompomos a divisao:
+# 720 = 24 * 30. Primeiro dividimos por 24, depois por 30.
 ((((X_VAL 6 ^) 24.0 |) 30.0 |) T4)
 
-# Termo 5: x^8 / 8! (40320.0)
-# Decomposição: 8! = 6! * 56 = 24 * 30 * 56
-# Note: x^8 para x=0.5 é muito pequeno, pode dar underflow em Q8.8
-(((((X_VAL 8 ^) 24.0 |) 30.0 |) 56.0 |) T5)
+# cos(x) = T1 - T2 + T3 - T4
+((((T1 T2 -) T3 +) T4 -) FINAL_COS )
 
-# Termo 6: x^10 / 10! (3628800.0)
-# Decomposição: 10! = 8! * 90 = 24 * 30 * 56 * 90
-((((((X_VAL 10 ^) 24.0 |) 30.0 |) 56.0 |) 90.0 |) T6)
-
-# 3. Cálculo final
-# cos(x) = 1 - T2 + T3 - T4 + T5 - T6
-# Ordem RPN acumulada
-(
-    (
-        (
-            (
-                (
-                    (1.0 T2 -) 
-                    T3 
-                +) 
-                T4 
-            -) 
-            T5 
-        +) 
-        T6 
-    -)
-    FINAL_COS
-)
-
-# 4. Exibir resultado
+# Exibir resultado
 (FINAL_COS)

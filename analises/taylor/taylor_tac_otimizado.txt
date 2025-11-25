@@ -8,61 +8,43 @@ MEM[X_VAL] = 0.5
 HIST[0.5]
 
 # Linha 2
-t1 = MEM[X_VAL]
-t3 = t1 ^ 2
-t5 = t3 | 2.0
-MEM[T2] = t5
-HIST[t5]
+MEM[T1] = 1.0
+HIST[1.0]
 
 # Linha 3
-t6 = MEM[X_VAL]
-t8 = t6 ^ 4
-t10 = t8 | 24.0
-MEM[T3] = t10
-HIST[t10]
+t2 = MEM[X_VAL]
+t4 = t2 ^ 2
+t6 = t4 | 2.0
+MEM[T2] = t6
+HIST[t6]
 
 # Linha 4
-t11 = MEM[X_VAL]
-t13 = t11 ^ 6
-t15 = t13 | 24.0
-t17 = t15 | 30.0
-MEM[T4] = t17
-HIST[t17]
+t7 = MEM[X_VAL]
+t9 = t7 ^ 4
+t11 = t9 | 24.0
+MEM[T3] = t11
+HIST[t11]
 
 # Linha 5
-t18 = MEM[X_VAL]
-t20 = t18 ^ 8
-t22 = t20 | 24.0
-t24 = t22 | 30.0
-t26 = t24 | 56.0
-MEM[T5] = t26
-HIST[t26]
+t12 = MEM[X_VAL]
+t14 = t12 ^ 6
+t16 = t14 | 24.0
+t18 = t16 | 30.0
+MEM[T4] = t18
+HIST[t18]
 
 # Linha 6
-t27 = MEM[X_VAL]
-t29 = t27 ^ 10
-t31 = t29 | 24.0
-t33 = t31 | 30.0
-t35 = t33 | 56.0
-t37 = t35 | 90.0
-MEM[T6] = t37
-HIST[t37]
+t19 = MEM[T1]
+t20 = MEM[T2]
+t21 = t19 - t20
+t22 = MEM[T3]
+t23 = t21 + t22
+t24 = MEM[T4]
+t25 = t23 - t24
+MEM[FINAL_COS] = t25
+HIST[t25]
 
 # Linha 7
-t39 = MEM[T2]
-t40 = 1.0 - t39
-t41 = MEM[T3]
-t42 = t40 + t41
-t43 = MEM[T4]
-t44 = t42 - t43
-t45 = MEM[T5]
-t46 = t44 + t45
-t47 = MEM[T6]
-t48 = t46 - t47
-MEM[FINAL_COS] = t48
-HIST[t48]
-
-# Linha 8
-t49 = MEM[FINAL_COS]
-HIST[t49]
-t50 = PRINT[t49]
+t26 = MEM[FINAL_COS]
+HIST[t26]
+t27 = PRINT[t26]

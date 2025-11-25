@@ -1,6 +1,6 @@
 # MODO: INTEIRO
 
-# Teste 2: Fibonacci
+# fibonacci.txt
 
 # Inicializacao
 (0 A)

@@ -972,6 +972,417 @@ BAUD_RATE_MONITOR = 9600  # Deve ser 9600
 - Enquanto I <= 5: SOMA = SOMA + I, I = I + 1
 - Resultado: 1 + 2 + 3 + 4 + 5 = 15
 
+### 14.6 Exemplo 6: Fatorial
+
+**Arquivo: fatorial.txt**
+```
+(1 N)
+(1 FAT)
+((N 8 <=) ((FAT N *) FAT) ((N 1 +) N) while)
+(FAT)
+```
+
+**Explicação:**
+Calcula fatorial de 1 a 8, imprimindo resultado final.
+
+### 14.7 Exemplo 7: Fibonacci
+
+**Arquivo: fibonacci.txt**
+```
+(0 A)
+(1 B)
+(1 I)
+(A)
+(B)
+((I 22 <=) ((A B +) TEMP) (B A) (TEMP B) (TEMP) ((I 1 +) I) while)
+```
+
+**Explicação:**
+Calcula e imprime os 24 primeiros números da sequência de Fibonacci.
+
+### 14.8 Exemplo 8: Série de Taylor para Cosseno
+
+**Arquivo: taylor.txt**
+```
+(0.5 X_VAL)
+(X 2 ^)
+(1 RES 2.0 |)
+(X 4 ^)
+(1 RES 24.0 |)
+(X 6 ^)
+(1 RES 720.0 |)
+(1.0 2 RES - 3 RES + 4 RES -)
+```
+
+**Explicação:**
+Calcula cos(0.5) usando série de Taylor truncada:
+cos(X) ≈ 1 - X²/2! + X⁴/4! - X⁶/6!
+
+**Saída Esperada:** ~0.877 (com perda de precisão em Q8.8)
+
+---
+
+## 15. Testes e Validação
+
+### 15.1 Testes Unitários
+
+**Testar Analisador Léxico:**
+```bash
+python -c "from leitor import lerTokens; print(lerTokens('teste1.txt'))"
+```
+
+**Testar Analisador Sintático:**
+```bash
+python -c "
+from leitor import lerTokens
+from parser import parsear, construirGramatica, calcularFirst, calcularFollow, construirTabelaLL1
+tokens = lerTokens('teste1.txt')
+g = construirGramatica()
+f = calcularFirst(g)
+fl = calcularFollow(g, f)
+t = construirTabelaLL1(g, f, fl)
+ast, erros = parsear(tokens, t)
+print(f'ASTs: {len(ast)}, Erros: {len(erros)}')
+"
+```
+
+### 15.2 Validação de Tipos
+
+Verificar se o analisador semântico detecta erros corretamente:
+
+**Teste com erro (divisão inteira com real):**
+```
+(10.5 3 /)
+```
+
+**Erro esperado:**
+```
+ERRO SEMÂNTICO [Linha 1]: Operador '/' requer operandos inteiros,
+encontrado 'real' e 'int'
+```
+
+### 15.3 Validação de Otimizações
+
+Comparar instruções TAC antes e depois:
+
+```bash
+# Verificar redução de instruções
+diff analises/teste1/teste1_tac.txt analises/teste1/teste1_tac_otimizado.txt
+```
+
+### 15.4 Validação no Hardware
+
+**Checklist de validação:**
+- [x] Assembly compila sem erros
+- [x] Upload bem-sucedido
+- [x] Monitor serial recebe dados
+- [x] Valores corretos são impressos
+- [x] Programa não trava/reseta
+
+---
+
+## 16. Limitações Conhecidas
+
+### 16.1 Limitações de Hardware
+
+| Limitação | Valor | Impacto |
+|-----------|-------|---------|
+| RAM | 2 KB | Limite de variáveis e aninhamento |
+| Flash | 32 KB | Tamanho do programa compilado |
+| Precisão | 16 bits Q8.8 | Perda de precisão em cálculos |
+| Stack | 512 bytes | Profundidade de recursão limitada |
+
+### 16.2 Limitações da Linguagem
+
+- Sem suporte a arrays/vetores
+- Sem suporte a strings
+- Sem funções definidas pelo usuário
+- Sem recursão explícita (apenas via while)
+- Ponto fixo limitado a faixa -128 a 127
+- Operações de ponto flutuante limitadas (sem sin, cos, exp nativos)
+
+### 16.3 Limitações do Compilador
+
+- Alocação de registradores simplificada (não otimizada)
+- Sem análise de fluxo de dados avançada
+- Otimizações locais apenas (sem interprocedurais)
+- Sem inline de funções
+- Sem loop unrolling
+
+## 16.4 Escolha de Representação Numérica: Q8.8 vs IEEE 754
+
+### Por que Q8.8 em vez de IEEE 754 Half Precision?
+
+O documento da Fase 4 especifica **meia precisão IEEE 754 (16 bits)**. 
+No entanto, este compilador implementa **Q8.8 (ponto fixo)** pelas seguintes razões:
+
+#### Justificativa Técnica:
+
+1. **Simplicidade de Implementação em AVR**
+   - O ATmega328P não possui unidade FPU (Floating Point Unit)
+   - IEEE 754 requer emulação via software (bibliotecas pesadas)
+   - Q8.8 usa apenas operações inteiras nativas (rápido e compacto)
+
+
+2. **Trade-offs Aceitáveis para o Projeto**
+
+| Característica | IEEE 754 Half | Q8.8 (Implementado) |
+|----------------|---------------|---------------------|
+| Faixa | ±65504 | -128 a 127.996 |
+| Precisão | ~3 dígitos decimais | ~0.004 (1/256) |
+| Operações | Emuladas (lento) | Nativas (rápido) |
+| Tamanho código | ~5KB libs | ~1KB libs |
+| Adequação aos testes | Overkill | Suficiente |
+
+3. **Adequação aos Testes Pedidos**
+   - **Fatorial (1 a 8):** Máximo valor = 40320 Cabe em 16 bits int
+   - **Fibonacci (24 termos):** Máximo valor = 46368 Cabe em 16 bits int  
+   - **Taylor cos(0.5):** Resultado ~0.877 Cabe em Q8.8
+
+4. **Modo Inteiro como Solução Completa**
+   - Para Fatorial e Fibonacci, o compilador usa **modo inteiro puro**
+   - Pragma `# MODO: INTEIRO` desabilita ponto fixo
+   - Evita overflow e garante precisão exata
+
+### Como o Compilador Escolhe a Representação:
+```python
+# Detecção automática (compilar.py)
+if "# MODO: INTEIRO" in primeira_linha:
+    usar_modo_inteiro = True  # Usa int16 unsigned
+else:
+    usar_modo_inteiro = False  # Usa Q8.8 (ponto fixo)
+```
+
+### Conclusão:
+
+A escolha de Q8.8 é uma **simplificação justificada** que:
+- Atende aos requisitos dos testes
+- Respeita a permissão do documento (inteiros escalados)
+- Otimiza para a arquitetura alvo (ATmega328P)
+- Mantém o código compacto e rápido
+| **Fatorial (1-8)** | Inteiro | Valores até 40320 |
+| **Fibonacci (24 termos)** | Inteiro | Valores até 46368 |
+| **Taylor (cos)** | Q8.8 | Requer frações |
+| **Expressões gerais** | Q8.8 | Flexibilidade |
+
+#### Alternativa - Argumento de Linha de Comando:
+```bash
+python compilar.py --int fatorial.txt
+```
+
+Força modo inteiro mesmo sem o pragma no arquivo.
+
+---
+
+## 13. Erros Comuns e Soluções
+
+### 13.1 Erros de Compilação Python
+
+**Erro: "Arquivo não encontrado"**
+```bash
+# Solução: Verifique se o arquivo existe
+ls -la teste1.txt
+```
+
+**Erro: "Identificador 'x' deve estar em MAIÚSCULAS"**
+```
+# Problema: Identificadores devem ser maiúsculos
+(42 x)  # Errado
+(42 X)  # Correto
+```
+
+### 13.2 Erros Semânticos
+
+**Erro: "Memória 'X' utilizada sem inicialização"**
+```
+(X)     # Errado - X não foi inicializado
+(42 X)  # Correto - Inicializa X primeiro
+(X)     # Agora pode usar X
+```
+
+**Erro: "Divisão por zero"**
+```
+(10 0 /)  # Errado
+(10 2 /)  # Correto
+```
+
+**Erro: "Expoente de potenciação deve ser inteiro positivo"**
+```
+(2 -3 ^)   # Errado - negativo
+(2 0 ^)    # Errado - zero
+(2 3 ^)    # Correto
+```
+
+### 13.3 Erros de Compilação Assembly
+
+**Erro: "avr-gcc: command not found"**
+```bash
+# Solução: Instalar toolchain AVR
+
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install gcc-avr binutils-avr avr-libc avrdude
+
+# macOS
+brew tap osx-cross/avr
+brew install avr-gcc avrdude
+
+# Verificar instalação
+avr-gcc --version
+```
+
+**Erro: "Undefined reference to 'mul16u'"**
+```
+# Problema: Bibliotecas AVR não foram incluídas
+# Solução: O assembly_generator.py deve incluir todas as libs automaticamente
+# Verifique se os arquivos em lib_avr/ existem
+ls -la lib_avr/
+```
+
+**Erro: "Permission denied" no upload**
+```bash
+# Linux: Adicionar usuário ao grupo dialout
+sudo usermod -a -G dialout $USER
+# Fazer logout e login novamente
+
+# Ou dar permissão temporária
+sudo chmod 666 /dev/ttyACM0
+```
+
+### 13.4 Erros de Hardware
+
+**Arduino não responde**
+```bash
+# 1. Verificar conexão USB
+lsusb  # Linux
+system_profiler SPUSBDataType  # macOS
+
+# 2. Testar porta serial
+python monitor_serial.py
+
+# 3. Resetar Arduino
+# Pressionar botão RESET físico antes do upload
+```
+
+**Saída serial com caracteres estranhos**
+```
+# Problema: Baud rate incorreto
+# Solução: Verificar config.py
+BAUD_RATE_MONITOR = 9600  # Deve ser 9600
+```
+
+**Programa não executa após upload**
+```
+# Possíveis causas:
+1. Código Assembly possui erros lógicos
+2. Stack overflow (expressões muito aninhadas)
+3. Divisão por zero em tempo de execução
+4. Acesso a memória não inicializada
+
+# Debug:
+- Adicionar mais chamadas PRINT para rastrear execução
+- Verificar TAC gerado
+- Simplificar o programa de teste
+```
+
+---
+
+## 14. Exemplos de Programas
+
+### 14.1 Exemplo 1: Cálculo Simples
+
+**Arquivo: exemplo1.txt**
+```
+(3 5 +)
+(2 4 *)
+(10 3 /)
+```
+
+**Saída Esperada:**
+```
+8.000
+8.000
+3
+```
+
+### 14.2 Exemplo 2: Uso de Memória
+
+**Arquivo: exemplo2.txt**
+```
+(10 X)
+(20 Y)
+(X Y +)
+```
+
+**Saída Esperada:**
+```
+10.000
+20.000
+30.000
+```
+
+### 14.3 Exemplo 3: Uso de RES
+
+**Arquivo: exemplo3.txt**
+```
+(5 3 +)
+(1 RES 2 *)
+(2 RES 1 RES +)
+```
+
+**Saída Esperada:**
+```
+8.000
+16.000
+24.000
+```
+
+**Explicação:**
+- Linha 1: 5 + 3 = 8
+- Linha 2: RES[1] * 2 = 8 * 2 = 16
+- Linha 3: RES[2] + RES[1] = 8 + 16 = 24
+
+### 14.4 Exemplo 4: Condicional (Valor Absoluto)
+
+**Arquivo: exemplo4.txt**
+```
+(-5 X)
+((X 0 >) (X) (0 X -) if)
+```
+
+**Saída Esperada:**
+```
+-5.000
+5.000
+```
+
+**Explicação:**
+- Linha 1: Armazena -5 em X
+- Linha 2: Se X > 0 retorna X, senão retorna -X (valor absoluto)
+
+### 14.5 Exemplo 5: Laço (Soma de 1 a 5)
+
+**Arquivo: exemplo5.txt**
+```
+(1 I)
+(0 SOMA)
+((I 5 <=) ((SOMA I +) SOMA) ((I 1 +) I) while)
+(SOMA)
+```
+
+**Saída Esperada:**
+```
+1.000
+0.000
+5.000
+15.000
+```
+
+**Explicação:**
+- Inicializa I = 1, SOMA = 0
+- Enquanto I <= 5: SOMA = SOMA + I, I = I + 1
+- Resultado: 1 + 2 + 3 + 4 + 5 = 15
+
 ### 14.6 Exemplo 6: Fatorial (Pedido no Trabalho)
 
 **Arquivo: fatorial.txt**
@@ -1160,5 +1571,8 @@ A escolha de Q8.8 é uma **simplificação justificada** que:
 - Respeita a permissão do documento (inteiros escalados)
 - Otimiza para a arquitetura alvo (ATmega328P)
 - Mantém o código compacto e rápido
+
+---
+
 
 ---

@@ -4,9 +4,9 @@
 
 ## Estatísticas
 
-- **Instruções originais:** 74
-- **Instruções otimizadas:** 56
-- **Redução:** 18 instruções (24.3%)
+- **Instruções originais:** 48
+- **Instruções otimizadas:** 39
+- **Redução:** 9 instruções (18.8%)
 
 ## Otimizações Aplicadas
 
@@ -24,7 +24,7 @@ Depois: t1 = 5
 
 ### Constant Propagation
 
-**Aplicações:** 19
+**Aplicações:** 11
 
 **Descrição:** Propaga valores constantes através do código.
 
@@ -39,7 +39,7 @@ Depois: t1 = 5
 
 ### Dead Code Elimination
 
-**Aplicações:** 18
+**Aplicações:** 9
 
 **Descrição:** Remove código que não afeta o resultado do programa.
 
@@ -77,75 +77,49 @@ t0 = 0.5
 MEM[X_VAL] = t0
 HIST[t0]
 # Linha 2
-t1 = MEM[X_VAL]
-t2 = 2
-t3 = t1 ^ t2
-t4 = 2.0
-t5 = t3 | t4
-MEM[T2] = t5
-HIST[t5]
+t1 = 1.0
+MEM[T1] = t1
+HIST[t1]
 # Linha 3
-t6 = MEM[X_VAL]
-t7 = 4
-t8 = t6 ^ t7
-t9 = 24.0
-t10 = t8 | t9
-MEM[T3] = t10
-HIST[t10]
+t2 = MEM[X_VAL]
+t3 = 2
+t4 = t2 ^ t3
+t5 = 2.0
+t6 = t4 | t5
+MEM[T2] = t6
+HIST[t6]
 # Linha 4
-t11 = MEM[X_VAL]
-t12 = 6
-t13 = t11 ^ t12
-t14 = 24.0
-t15 = t13 | t14
-t16 = 30.0
-t17 = t15 | t16
-MEM[T4] = t17
-HIST[t17]
+t7 = MEM[X_VAL]
+t8 = 4
+t9 = t7 ^ t8
+t10 = 24.0
+t11 = t9 | t10
+MEM[T3] = t11
+HIST[t11]
 # Linha 5
-t18 = MEM[X_VAL]
-t19 = 8
-t20 = t18 ^ t19
-t21 = 24.0
-t22 = t20 | t21
-t23 = 30.0
-t24 = t22 | t23
-t25 = 56.0
-t26 = t24 | t25
-MEM[T5] = t26
-HIST[t26]
+t12 = MEM[X_VAL]
+t13 = 6
+t14 = t12 ^ t13
+t15 = 24.0
+t16 = t14 | t15
+t17 = 30.0
+t18 = t16 | t17
+MEM[T4] = t18
+HIST[t18]
 # Linha 6
-t27 = MEM[X_VAL]
-t28 = 10
-t29 = t27 ^ t28
-t30 = 24.0
-t31 = t29 | t30
-t32 = 30.0
-t33 = t31 | t32
-t34 = 56.0
-t35 = t33 | t34
-t36 = 90.0
-t37 = t35 | t36
-MEM[T6] = t37
-HIST[t37]
+t19 = MEM[T1]
+t20 = MEM[T2]
+t21 = t19 - t20
+t22 = MEM[T3]
+t23 = t21 + t22
+t24 = MEM[T4]
+t25 = t23 - t24
+MEM[FINAL_COS] = t25
+HIST[t25]
 # Linha 7
-t38 = 1.0
-t39 = MEM[T2]
-t40 = t38 - t39
-t41 = MEM[T3]
-t42 = t40 + t41
-t43 = MEM[T4]
-t44 = t42 - t43
-t45 = MEM[T5]
-t46 = t44 + t45
-t47 = MEM[T6]
-t48 = t46 - t47
-MEM[FINAL_COS] = t48
-HIST[t48]
-# Linha 8
-t49 = MEM[FINAL_COS]
-HIST[t49]
-t50 = PRINT[t49]
+t26 = MEM[FINAL_COS]
+HIST[t26]
+t27 = PRINT[t26]
 ```
 
 ### TAC Otimizado
@@ -155,57 +129,40 @@ t50 = PRINT[t49]
 MEM[X_VAL] = 0.5
 HIST[0.5]
 # Linha 2
-t1 = MEM[X_VAL]
-t3 = t1 ^ 2
-t5 = t3 | 2.0
-MEM[T2] = t5
-HIST[t5]
+MEM[T1] = 1.0
+HIST[1.0]
 # Linha 3
-t6 = MEM[X_VAL]
-t8 = t6 ^ 4
-t10 = t8 | 24.0
-MEM[T3] = t10
-HIST[t10]
+t2 = MEM[X_VAL]
+t4 = t2 ^ 2
+t6 = t4 | 2.0
+MEM[T2] = t6
+HIST[t6]
 # Linha 4
-t11 = MEM[X_VAL]
-t13 = t11 ^ 6
-t15 = t13 | 24.0
-t17 = t15 | 30.0
-MEM[T4] = t17
-HIST[t17]
+t7 = MEM[X_VAL]
+t9 = t7 ^ 4
+t11 = t9 | 24.0
+MEM[T3] = t11
+HIST[t11]
 # Linha 5
-t18 = MEM[X_VAL]
-t20 = t18 ^ 8
-t22 = t20 | 24.0
-t24 = t22 | 30.0
-t26 = t24 | 56.0
-MEM[T5] = t26
-HIST[t26]
+t12 = MEM[X_VAL]
+t14 = t12 ^ 6
+t16 = t14 | 24.0
+t18 = t16 | 30.0
+MEM[T4] = t18
+HIST[t18]
 # Linha 6
-t27 = MEM[X_VAL]
-t29 = t27 ^ 10
-t31 = t29 | 24.0
-t33 = t31 | 30.0
-t35 = t33 | 56.0
-t37 = t35 | 90.0
-MEM[T6] = t37
-HIST[t37]
+t19 = MEM[T1]
+t20 = MEM[T2]
+t21 = t19 - t20
+t22 = MEM[T3]
+t23 = t21 + t22
+t24 = MEM[T4]
+t25 = t23 - t24
+MEM[FINAL_COS] = t25
+HIST[t25]
 # Linha 7
-t39 = MEM[T2]
-t40 = 1.0 - t39
-t41 = MEM[T3]
-t42 = t40 + t41
-t43 = MEM[T4]
-t44 = t42 - t43
-t45 = MEM[T5]
-t46 = t44 + t45
-t47 = MEM[T6]
-t48 = t46 - t47
-MEM[FINAL_COS] = t48
-HIST[t48]
-# Linha 8
-t49 = MEM[FINAL_COS]
-HIST[t49]
-t50 = PRINT[t49]
+t26 = MEM[FINAL_COS]
+HIST[t26]
+t27 = PRINT[t26]
 ```
 
