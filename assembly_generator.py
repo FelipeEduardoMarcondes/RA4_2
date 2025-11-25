@@ -1,8 +1,6 @@
 # assembly_generator.py
 # FELIPE EDUARDO MARCONDES - GRUPO 2
-# VERSÃO FINAL: Integração com Libs AVR (Q8.8, Runtime, Storage)
-# CORREÇÃO: Tratamento de inteiros puros para Potência e RES
-# CORREÇÃO 2: Fix para números negativos literais (evita garbage at end of line)
+# VERSÃO UNIFICADA: Suporta Modo Inteiro (Fatorial/Fibo) e Ponto Fixo (Taylor)
 
 import re
 import subprocess
@@ -10,21 +8,27 @@ import os
 from config import get_config
 
 cfg = get_config()
-SCALE = cfg['scale']
 
 class AVRAssemblyGenerator:
-    def __init__(self):
+    def __init__(self, int_mode=False):
         self.assembly = []
-        self.bss_section = [] # Variáveis na RAM
+        self.bss_section = []
         self.vars_declared = set()
         self.label_counter = 0
+        self.int_mode = int_mode
+        
+        # Define a escala dinamicamente
+        # Modo Inteiro: 1 (1 = 1)
+        # Modo Ponto Fixo: 256 (1.0 = 256)
+        self.scale = 1 if int_mode else cfg['scale']
     
     def gerarAssembly(self, tac_instructions):
         self.assembly = []
         self.bss_section = []
         self.vars_declared = set()
+        self.label_counter = 0
         
-        # 1. Identifica variáveis para criar .lcomm
+        # 1. Identifica variáveis
         self._mapear_variaveis(tac_instructions)
         self._gerar_bss_section()
         
@@ -35,15 +39,13 @@ class AVRAssemblyGenerator:
         for inst in tac_instructions:
             clean_inst = inst.split('#')[0].strip()
             
-            # Comentários de Linha
-            if inst.strip().startswith('# Linha'):
+            if inst.strip().startswith('#'):
                 self.assembly.append(f"\n    ; {inst.strip()}")
                 continue
             
             if not clean_inst:
                 continue
             
-            # Labels (L1:)
             if clean_inst.endswith(':'):
                 self.assembly.append(clean_inst)
                 continue
@@ -53,22 +55,16 @@ class AVRAssemblyGenerator:
             if not self._processar_instrucao(clean_inst):
                 self.assembly.append(f"    ; ERRO: Instrução não suportada: {clean_inst}")
         
-        # 4. Gera Epílogo e Bibliotecas
+        # 4. Gera Epílogo
         self._gerar_epilogo()
         return self._montar_codigo_completo()
 
     def _mapear_variaveis(self, instructions):
-        # Varre o TAC procurando t0, t1, X, Y, MEM...
         for inst in instructions:
-            # Captura t0, t1...
             temps = re.findall(r'\b(t\d+)\b', inst)
-            self.vars_declared.update(temps)
-            
-            # Captura variáveis de usuário (X, Y, CONTADOR)
             mems = re.findall(r'MEM\[(\w+)\]', inst)
+            self.vars_declared.update(temps)
             self.vars_declared.update(mems)
-            
-            # Captura atribuições diretas: X = ...
             assign = re.match(r'([A-Z_][A-Z0-9_]*)\s*=', inst)
             if assign:
                 self.vars_declared.update([assign.group(1)])
@@ -76,7 +72,7 @@ class AVRAssemblyGenerator:
     def _gerar_bss_section(self):
         self.bss_section.append(".section .bss")
         for var in sorted(list(self.vars_declared)):
-            if var == "MEM": continue # MEM padrão já está no storage.s
+            if var == "MEM": continue
             self.bss_section.append(f"    .lcomm {var}, 2")
 
     def _gerar_prologo(self):
@@ -85,6 +81,7 @@ class AVRAssemblyGenerator:
             ".global main",
             "main:",
             "    ; --- Setup Inicial ---",
+            "    clr r1",          # Zera registrador de segurança
             "    ldi r16, 0x08", "    out 0x3E, r16", # SPH
             "    ldi r16, 0xFF", "    out 0x3D, r16", # SPL
             "    call uart_init  ; Inicia Serial",
@@ -103,33 +100,23 @@ class AVRAssemblyGenerator:
         return self.bss_section + self.assembly
 
     def _load_val(self, operand, reg_L='r24', reg_H='r25', is_raw=False):
-        """
-        Carrega valor (literal ou variável) nos registradores.
-        is_raw=True: Carrega o número inteiro puro (ex: expoente 2 vira 2)
-        is_raw=False: Carrega em Ponto Fixo Q8.8 (ex: 2 vira 512)
-        """
-        # CORREÇÃO: .strip() remove espaços que podem vir do regex da operação binária
-        operand_str = str(operand).strip() 
+        operand_str = str(operand).strip()
 
-        # Caso 1: Literal Numérico
         if re.match(r'^-?\d+(\.\d+)?$', operand_str):
             val_float = float(operand_str)
             
             if is_raw:
-                # Inteiro puro (sem escala)
                 val_int = int(val_float)
             else:
-                # Converte para Q8.8 (Fixed Point)
-                val_int = int(val_float * SCALE)
+                # Usa self.scale (1 ou 256 dependendo do modo)
+                val_int = int(val_float * self.scale)
             
-            # Trata negativos (Complemento de 2 de 16 bits)
             if val_int < 0: val_int = 65536 + val_int
             val_int = val_int & 0xFFFF
             
             self.assembly.append(f"    ldi {reg_L}, {val_int & 0xFF}")
             self.assembly.append(f"    ldi {reg_H}, {(val_int >> 8) & 0xFF}")
         
-        # Caso 2: Variável MEM ou Temporária
         else:
             var_name = operand_str
             if 'MEM[' in operand_str:
@@ -145,7 +132,6 @@ class AVRAssemblyGenerator:
                 self.assembly.append(f"    lds {reg_H}, {var_name} + 1")
 
     def _store_val(self, dest):
-        """Salva R25:R24 no destino."""
         var_name = dest
         if 'MEM[' in dest:
             var_name = re.match(r'MEM\[(\w+)\]', dest).group(1)
@@ -161,12 +147,14 @@ class AVRAssemblyGenerator:
         if 'PRINT[' in inst:
             src = re.match(r'.*PRINT\[(.*)\]', inst).group(1)
             self._load_val(src, 'r24', 'r25')
-            
-            # Salva no histórico ANTES de imprimir
             self.assembly.append("    call res_save") 
             
-            # Imprime (usando Ponto Fixo)
-            self.assembly.append("    call fx_print")
+            # DECISÃO DE MODO: Imprime Inteiro ou Fixo
+            if self.int_mode:
+                self.assembly.append("    call print_int16")
+            else:
+                self.assembly.append("    call fx_print")
+                
             self.assembly.append("    call uart_newline")
             
             dest_match = re.match(r'(\w+)\s*=', inst)
@@ -179,44 +167,49 @@ class AVRAssemblyGenerator:
             match = re.match(r'(\w+)\s*=\s*RES\[(.*)\]', inst)
             if match:
                 dest, n_operand = match.groups()
-                # CORREÇÃO: RES usa inteiro puro para o índice N
                 self._load_val(n_operand, 'r22', 'r23', is_raw=True)
-                
-                self.assembly.append("    call res_fetch") # Retorna em R25:R24
+                self.assembly.append("    call res_fetch")
                 self._store_val(dest)
                 return True
 
         # 3. Operações Binárias
-        # Regex ajustado para evitar falso positivo com números negativos (ex: -1)
         match_bin = re.match(r'(\w+|MEM\[\w+\])\s*=\s*(.*)\s*([+\-*/%^|]|==|!=|<=|>=|<|>)\s*(.*)', inst)
         if match_bin and 'PRINT' not in inst and 'RES' not in inst and 'ifFalse' not in inst:
             dest, op1, op, op2 = match_bin.groups()
             
-            # CORREÇÃO: Se op1 estiver vazio, é um negativo literal (ex: t1 = -5)
-            # O regex captura "-5" como op="-" e op2="5" e op1=""
-            if not op1.strip():
-                # Não é binária, deixa cair para Atribuição Simples
-                pass
+            if not op1.strip(): pass # Negativo literal
             else:
-                # Carrega OP1 (Sempre escalado/normal)
                 self._load_val(op1, 'r24', 'r25')
-                
-                # CORREÇÃO: Se for Potência (^), OP2 é RAW INT
                 is_power = (op == '^')
                 self._load_val(op2, 'r22', 'r23', is_raw=is_power)
                 
-                # Mapeamento para Libs
                 if op == '+':
                     self.assembly.append("    add r24, r22")
                     self.assembly.append("    adc r25, r23")
                 elif op == '-':
                     self.assembly.append("    sub r24, r22")
                     self.assembly.append("    sbc r25, r23")
-                elif op == '*': self.assembly.append("    call fx_mul")
-                elif op == '|': self.assembly.append("    call fx_div")
-                elif op == '/': self.assembly.append("    call div16s")
-                elif op == '%': self.assembly.append("    call op_mod")
-                elif op == '^': self.assembly.append("    call fx_pow") 
+                
+                # DECISÃO DE MODO: Operações Complexas
+                elif op == '*': 
+                    if self.int_mode: self.assembly.append("    call mul16u")
+                    else: self.assembly.append("    call fx_mul")
+                
+                elif op == '|': 
+                    if self.int_mode: self.assembly.append("    call fx_div") # Fallback ou erro se int puro não tiver div
+                    else: self.assembly.append("    call fx_div")
+                
+                elif op == '/': 
+                    self.assembly.append("    call div16s") # Ambos usam div16s (que no int_mode redireciona pra unsigned)
+                
+                elif op == '%': 
+                    self.assembly.append("    call op_mod")
+                
+                elif op == '^': 
+                    if self.int_mode: self.assembly.append("    call op_pow_int")
+                    else: self.assembly.append("    call fx_pow")
+                
+                # Relacionais
                 elif op == '==': self.assembly.append("    call op_eq")
                 elif op == '!=': self.assembly.append("    call op_neq")
                 elif op == '>':  self.assembly.append("    call op_gt")
@@ -227,7 +220,7 @@ class AVRAssemblyGenerator:
                 self._store_val(dest)
                 return True
 
-        # 4. Atribuição Simples (t1 = 10 ou t1 = -10)
+        # 4. Atribuição Simples
         match_assign = re.match(r'(\w+|MEM\[\w+\])\s*=\s*(.*)', inst)
         if match_assign and 'goto' not in inst and 'ifFalse' not in inst:
             dest, src = match_assign.groups()
@@ -235,30 +228,18 @@ class AVRAssemblyGenerator:
             self._store_val(dest)
             return True
             
-        # 5. Controle de Fluxo
+        # 5. Controle de Fluxo (COM FIX DO TRAMPOLIM)
         if 'ifFalse' in inst:
             cond, label = re.match(r'ifFalse\s+(.*)\s+goto\s+(\w+)', inst).groups()
             self._load_val(cond, 'r24', 'r25')
-
-            # Verifica se é zero (Falso)
             self.assembly.append("    or r24, r25")
-
-            # --- CORREÇÃO R_AVR_7_PCREL (TRAMPOLIM) ---
-            # Em vez de 'breq label' direto, usamos lógica invertida
-
+            
+            # Trampolim para evitar R_AVR_7_PCREL
             skip_label = f"_skip_{self.label_counter}"
             self.label_counter += 1
-
-            # Se NÃO for zero (True), pula o rjmp e continua o fluxo
-            self.assembly.append(f"    brne {skip_label}") 
-
-            # Se for zero (False), executa o rjmp (que alcança longe) para o alvo
+            self.assembly.append(f"    brne {skip_label}")
             self.assembly.append(f"    rjmp {label}")
-
-            # Alvo do pulo curto
             self.assembly.append(f"{skip_label}:")
-            # ------------------------------------------
-
             return True
             
         if 'goto' in inst:
@@ -269,17 +250,26 @@ class AVRAssemblyGenerator:
         return False
 
 # Funções auxiliares de I/O
-def salvarAssembly(instructions, filename):
+def salvarAssembly(instructions, filename, int_mode=False):
     libs_content = ""
-    # LISTA DE LIBS QUE CRIAMOS
+    # Bibliotecas comuns
     lib_files = [
         "lib_avr/uart.s", 
         "lib_avr/math_core.s", 
-        "lib_avr/math_signed.s", 
-        "lib_avr/math_fixed.s", 
         "lib_avr/runtime.s",
         "lib_avr/storage.s"
     ]
+    
+    # Seleção de Bibliotecas baseada no Modo
+    if int_mode:
+        # Modo Inteiro: Usa math_inteiro e NÃO usa math_fixed/signed
+        lib_files.append("lib_avr/math_inteiro.s")
+        print("[ASM] Incluindo libs para MODO INTEIRO (Unsigned)")
+    else:
+        # Modo Normal: Usa math_signed e math_fixed
+        lib_files.append("lib_avr/math_signed.s")
+        lib_files.append("lib_avr/math_fixed.s")
+        print("[ASM] Incluindo libs para MODO PONTO FIXO (Q8.8)")
     
     for lib in lib_files:
         if os.path.exists(lib):
@@ -308,7 +298,6 @@ def gerarHex(asm_file, hex_file):
     return res.returncode == 0
 
 def uploadHex(hex_file, port, baud):
-    # CORREÇÃO: Adicionadas aspas no caminho do arquivo para suportar espaços
     cmd = f"avrdude -c arduino -p atmega328p -P {port} -b {baud} -D -U flash:w:\"{hex_file}\":i"
     subprocess.run(cmd, shell=True)
     return True

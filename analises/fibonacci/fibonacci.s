@@ -40,8 +40,11 @@ main:
     out 0x3E, r16
     ldi r16, 0xFF
     out 0x3D, r16
-    call uart_init
-    call res_init
+    call uart_init  ; Inicia Serial
+    call res_init   ; Inicia Buffer RES
+    ; --- Inicio do Programa ---
+
+    ; # Linha 1
     ; TAC: MEM[A] = 0
     ldi r24, 0
     ldi r25, 0
@@ -55,6 +58,8 @@ main:
     call uart_newline
     sts t1, r24
     sts t1 + 1, r25
+
+    ; # Linha 2
     ; TAC: MEM[B] = 1
     ldi r24, 1
     ldi r25, 0
@@ -68,6 +73,8 @@ main:
     call uart_newline
     sts t3, r24
     sts t3 + 1, r25
+
+    ; # Linha 3
     ; TAC: MEM[I] = 0
     ldi r24, 0
     ldi r25, 0
@@ -81,6 +88,8 @@ main:
     call uart_newline
     sts t5, r24
     sts t5 + 1, r25
+
+    ; # Linha 4
     ; TAC: MEM[N] = 23
     ldi r24, 23
     ldi r25, 0
@@ -94,6 +103,8 @@ main:
     call uart_newline
     sts t7, r24
     sts t7 + 1, r25
+
+    ; # Linha 5
     ; TAC: t8 = MEM[A]
     lds r24, A
     lds r25, A + 1
@@ -107,6 +118,8 @@ main:
     call uart_newline
     sts t9, r24
     sts t9 + 1, r25
+
+    ; # Linha 6
     ; TAC: t10 = MEM[B]
     lds r24, B
     lds r25, B + 1
@@ -120,6 +133,8 @@ main:
     call uart_newline
     sts t11, r24
     sts t11 + 1, r25
+
+    ; # Linha 7
 L0:
     ; TAC: t13 = MEM[I]
     lds r24, I
@@ -143,9 +158,9 @@ L0:
     lds r24, t15
     lds r25, t15 + 1
     or r24, r25
-    brne _skip_jmp_0
+    brne _skip_0
     rjmp L1
-_skip_jmp_0:
+_skip_0:
     ; TAC: t16 = MEM[A]
     lds r24, A
     lds r25, A + 1
@@ -248,9 +263,9 @@ _skip_jmp_0:
     lds r24, t28
     lds r25, t28 + 1
     or r24, r25
-    brne _skip_jmp_1
+    brne _skip_1
     rjmp L2
-_skip_jmp_1:
+_skip_1:
     ; TAC: t30 = MEM[B]
     lds r24, B
     lds r25, B + 1
@@ -291,6 +306,7 @@ L1:
     call uart_newline
     sts t32, r24
     sts t32 + 1, r25
+    ; --- Fim ---
 end_loop:
     rjmp end_loop
 
@@ -515,67 +531,6 @@ d16_end:
     pop r26
     pop r17
     pop r16
-    ret
-
-; === LIB: lib_avr/math_inteiro.s ===
-; lib_avr/math_inteiro.s
-.section .text
-
-; === DIV16S ===
-; Redireciona para div16u (ignora sinal para suportar uint16 até 65535)
-.global div16s
-div16s:
-    call div16u
-    ret
-
-; === PRINT_INT16 (Unsigned) ===
-.global print_int16
-print_int16:
-    push r24
-    push r25
-    push r16
-    
-    ; Se for zero, imprime '0' direto
-    mov r16, r24
-    or r16, r25
-    brne p_start
-    ldi r24, '0'
-    call uart_tx
-    rjmp p_end
-
-p_start:
-    call p_rec
-
-p_end:
-    pop r16
-    pop r25
-    pop r24
-    ret
-
-; Recursão para imprimir dígitos
-p_rec:
-    ; Verifica se num == 0
-    mov r16, r24
-    or r16, r25
-    breq p_ret
-
-    push r24
-    push r25
-    
-    ldi r22, 10
-    ldi r23, 0
-    call div16u     ; R25:R24 = Quociente, R15:R14 = Resto
-    
-    push r14        ; Salva o resto (dígito atual) na pilha
-    call p_rec      ; Chama recursão com o quociente
-    pop r24         ; Recupera o resto da pilha para R24
-    
-    subi r24, -'0'  ; Converte para ASCII
-    call uart_tx    ; Imprime
-    
-    pop r25
-    pop r24
-p_ret:
     ret
 
 ; === LIB: lib_avr/runtime.s ===
@@ -882,4 +837,65 @@ do_load:
 
 end_mem_load:
     pop r16
+    ret
+
+; === LIB: lib_avr/math_inteiro.s ===
+; lib_avr/math_inteiro.s
+.section .text
+
+; === DIV16S ===
+; Redireciona para div16u (ignora sinal para suportar uint16 até 65535)
+.global div16s
+div16s:
+    call div16u
+    ret
+
+; === PRINT_INT16 (Unsigned) ===
+.global print_int16
+print_int16:
+    push r24
+    push r25
+    push r16
+    
+    ; Se for zero, imprime '0' direto
+    mov r16, r24
+    or r16, r25
+    brne p_start
+    ldi r24, '0'
+    call uart_tx
+    rjmp p_end
+
+p_start:
+    call p_rec
+
+p_end:
+    pop r16
+    pop r25
+    pop r24
+    ret
+
+; Recursão para imprimir dígitos
+p_rec:
+    ; Verifica se num == 0
+    mov r16, r24
+    or r16, r25
+    breq p_ret
+
+    push r24
+    push r25
+    
+    ldi r22, 10
+    ldi r23, 0
+    call div16u     ; R25:R24 = Quociente, R15:R14 = Resto
+    
+    push r14        ; Salva o resto (dígito atual) na pilha
+    call p_rec      ; Chama recursão com o quociente
+    pop r24         ; Recupera o resto da pilha para R24
+    
+    subi r24, -'0'  ; Converte para ASCII
+    call uart_tx    ; Imprime
+    
+    pop r25
+    pop r24
+p_ret:
     ret

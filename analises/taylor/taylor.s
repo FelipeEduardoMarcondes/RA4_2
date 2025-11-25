@@ -50,6 +50,7 @@
 .global main
 main:
     ; --- Setup Inicial ---
+    clr r1
     ldi r16, 0x08
     out 0x3E, r16
     ldi r16, 0xFF
@@ -627,6 +628,312 @@ d16_end:
     pop r16
     ret
 
+; === LIB: lib_avr/runtime.s ===
+; lib_avr/runtime.s
+; Operadores Relacionais e Wrappers Inteiros
+; Retorno Booleano: 1 (True) ou 0 (False) em R25:R24
+
+.section .text
+
+; ==========================================================
+; OPERADORES RELACIONAIS (Signed 16-bit)
+; Compara R25:R24 (A) com R23:R22 (B)
+; ==========================================================
+
+; === OP_EQ (==) ===
+.global op_eq
+op_eq:
+    cp r24, r22
+    cpc r25, r23
+    breq is_true
+    rjmp is_false
+
+; === OP_NEQ (!=) ===
+.global op_neq
+op_neq:
+    cp r24, r22
+    cpc r25, r23
+    brne is_true
+    rjmp is_false
+
+; === OP_GT (>) ===
+.global op_gt
+op_gt:
+    cp r22, r24     ; Compare B with A (Inverse for GT logic)
+    cpc r23, r25
+    brlt is_true    ; Se B < A, então A > B
+    rjmp is_false
+
+; === OP_LT (<) ===
+.global op_lt
+op_lt:
+    cp r24, r22     ; Compare A with B
+    cpc r25, r23
+    brlt is_true    ; Signed Less Than
+    rjmp is_false
+
+; === OP_GE (>=) ===
+.global op_ge
+op_ge:
+    cp r24, r22
+    cpc r25, r23
+    brge is_true    ; Signed Greater or Equal
+    rjmp is_false
+
+; === OP_LE (<=) ===
+.global op_le
+op_le:
+    cp r22, r24
+    cpc r23, r25
+    brge is_true    ; Se B >= A, então A <= B
+    rjmp is_false
+
+; --- Helpers de Retorno ---
+is_true:
+    ldi r24, 1
+    ldi r25, 0
+    ret
+
+is_false:
+    ldi r24, 0
+    ldi r25, 0
+    ret
+
+
+; ==========================================================
+; WRAPPERS ARITMÉTICOS INTEIROS
+; ==========================================================
+
+; === OP_MOD (%) ===
+; Resto da divisão inteira de R25:R24 por R23:R22
+.global op_mod
+op_mod:
+    call div16u     ; Faz a divisão padrão
+    ; div16u (versão math_core.s) retorna Quociente em R25:R24
+    ; e Resto em R15:R14.
+    ; Precisamos mover o Resto para R25:R24 (Retorno padrão)
+    
+    movw r24, r14   ; Move R15:R14 -> R25:R24
+    ret
+
+; === OP_POW_INT (Inteiro ^ Inteiro) ===
+; Base: R25:R24, Exp: R22 (8 bits é suficiente para o projeto)
+.global op_pow_int
+op_pow_int:
+    push r20
+    push r21
+    push r22
+    
+    mov r20, r22 ; Copia Expoente
+    
+    ; Exp == 0 -> 1
+    cpi r20, 0
+    brne chk_p1
+    ldi r24, 1
+    ldi r25, 0
+    rjmp pi_end
+    
+chk_p1:
+    ; Exp == 1 -> Base (já está em R25:R24)
+    cpi r20, 1
+    breq pi_end
+    
+    ; Setup loop
+    dec r20         ; Já temos base^1
+    movw r22, r24   ; R23:R22 guarda a BASE fixa
+    ; R25:R24 guarda o ACUMULADO
+
+pi_loop:
+    ; Precisamos chamar mul16u(Acumulado, Base)
+    ; mul16u espera A em R25:R24 e B em R23:R22.
+    ; Já está configurado corretamente (Acumulado em 25:24, Base em 23:22)
+    ; PORÉM: mul16u destrói R22/R23 (B) nos pops? 
+    ; Verificando math_core.s: mul16u usa push/pop de r20/r21...
+    ; Mas mul16u não garante preservar B (R23:R22) se usá-lo como temp?
+    ; O mul16u atual preserva R18-R21. R22 e R23 são registradores de argumento,
+    ; normalmente considerados "scratch" (sujos).
+    ; Vamos salvar a Base em R21:R20 (seguros) e restaurar a cada loop.
+
+    push r22 ; Salva Base Low
+    push r23 ; Salva Base High
+    
+    call mul16u
+    
+    pop r23  ; Recupera para o próximo loop
+    pop r22
+    
+    dec r20
+    brne pi_loop
+
+pi_end:
+    pop r22
+    pop r21
+    pop r20
+    ret
+
+; === LIB: lib_avr/storage.s ===
+; lib_avr/storage.s
+; Gerenciamento de Memória (RES e MEM)
+; Roda no ATmega328P (2KB SRAM)
+
+.section .bss
+    ; --- Buffer para o histórico de RES ---
+    ; Alocamos espaço para 100 resultados (200 bytes)
+    ; Se o programa tiver mais de 100 linhas, ele sobrescreve ou trava (simples por enquanto)
+    .lcomm res_buffer, 200 
+    .lcomm res_count, 1    ; Contador de quantos resultados já salvamos (0 a 255)
+
+    ; --- Memória de Variáveis (MEM) ---
+    ; Vamos supor 26 variáveis possíveis (A-Z) ou apenas uma "MEM" genérica.
+    ; O documento diz: "(V MEM): Armazena em uma memória".
+    ; E "(MEM): Retorna o valor". Parece ser uma variável única ou poucas.
+    ; Vamos alocar espaço para 1 variável genérica chamada MEM_VAL
+    .lcomm mem_val, 2      ; 2 bytes para a variável MEM
+    .lcomm mem_init, 1     ; Flag: 0 = não inicializada, 1 = inicializada
+
+.section .text
+
+; ==========================================================
+; FUNÇÕES DE RES (Histórico)
+; ==========================================================
+
+; === RES_INIT ===
+; Zera o contador de resultados no início do programa
+.global res_init
+res_init:
+    push r16
+    ldi r16, 0
+    sts res_count, r16
+    pop r16
+    ret
+
+; === RES_SAVE ===
+; Salva o valor atual (R25:R24) no topo do histórico
+; Deve ser chamado ao final de CADA expressão calculada
+.global res_save
+res_save:
+    push r16
+    push r30
+    push r31
+    
+    ; 1. Pega o índice atual (res_count)
+    lds r16, res_count
+    
+    ; 2. Calcula endereço: res_buffer + (index * 2)
+    ldi r30, lo8(res_buffer)
+    ldi r31, hi8(res_buffer)
+    
+    ; Adiciona (r16 * 2) ao Z
+    add r30, r16
+    adc r31, r1  ; r1 é zero
+    add r30, r16 ; Adiciona de novo para multiplicar por 2
+    adc r31, r1
+    
+    ; 3. Armazena R25:R24 na RAM
+    st Z+, r24   ; Low byte
+    st Z, r25    ; High byte
+    
+    ; 4. Incrementa contador
+    lds r16, res_count
+    inc r16
+    sts res_count, r16
+    
+    pop r31
+    pop r30
+    pop r16
+    ret
+
+; === RES_FETCH ===
+; Busca o resultado N linhas atrás
+; Entrada: R22 (N - inteiro 8 bits)
+; Saída:   R25:R24 (Valor recuperado)
+.global res_fetch
+res_fetch:
+    push r16
+    push r30
+    push r31
+    
+    ; 1. Pega o total de resultados salvos
+    lds r16, res_count
+    
+    ; 2. Calcula o índice alvo: (Count - N)
+    ; Se N=1, queremos o anterior imediato (Count - 1)
+    ; O comando diz "N linhas anteriores".
+    ; Se N=1, é o último salvo.
+    sub r16, r22
+    
+    ; Opcional: Verificar se r16 < 0 (Underflow/Erro)
+    ; Por simplicidade, assumimos que o usuário não pede RES maior que o existente.
+    ; Como o índice é 0-based no save, mas o count é incrementado, 
+    ; se salvamos 1 item, count é 1. Se pedimos 1 RES, queremos indice 0.
+    ; 1 - 1 = 0. Correto.
+    
+    ; 3. Calcula endereço: res_buffer + (target * 2)
+    ldi r30, lo8(res_buffer)
+    ldi r31, hi8(res_buffer)
+    
+    add r30, r16
+    adc r31, r1
+    add r30, r16
+    adc r31, r1
+    
+    ; 4. Lê da RAM
+    ld r24, Z+
+    ld r25, Z
+    
+    pop r31
+    pop r30
+    pop r16
+    ret
+
+; ==========================================================
+; FUNÇÕES DE MEM (Variável)
+; ==========================================================
+
+; === MEM_STORE ===
+; Salva R25:R24 na variável MEM e marca como inicializada
+.global mem_store
+mem_store:
+    push r16
+    
+    ; Salva valor
+    sts mem_val, r24
+    sts mem_val+1, r25
+    
+    ; Marca flag de inicialização
+    ldi r16, 1
+    sts mem_init, r16
+    
+    pop r16
+    ret
+
+; === MEM_LOAD ===
+; Carrega o valor de MEM para R25:R24
+; Se não inicializada, o comportamento é indefinido no Assembly 
+; (o analisador semântico já deve ter barrado isso), 
+; mas retornaremos 0 por segurança.
+.global mem_load
+mem_load:
+    push r16
+    
+    ; Verifica se inicializada (Opcional, pois o Semântico garante)
+    lds r16, mem_init
+    cpi r16, 1
+    breq do_load
+    
+    ; Se não, retorna 0
+    ldi r24, 0
+    ldi r25, 0
+    rjmp end_mem_load
+
+do_load:
+    lds r24, mem_val
+    lds r25, mem_val+1
+
+end_mem_load:
+    pop r16
+    ret
+
 ; === LIB: lib_avr/math_signed.s ===
 ; lib_avr/math_signed.s
 ; Wrappers para operações com sinal e impressão
@@ -973,310 +1280,4 @@ do_print_frac:
     pop r22
     pop r25
     pop r24
-    ret
-
-; === LIB: lib_avr/runtime.s ===
-; lib_avr/runtime.s
-; Operadores Relacionais e Wrappers Inteiros
-; Retorno Booleano: 1 (True) ou 0 (False) em R25:R24
-
-.section .text
-
-; ==========================================================
-; OPERADORES RELACIONAIS (Signed 16-bit)
-; Compara R25:R24 (A) com R23:R22 (B)
-; ==========================================================
-
-; === OP_EQ (==) ===
-.global op_eq
-op_eq:
-    cp r24, r22
-    cpc r25, r23
-    breq is_true
-    rjmp is_false
-
-; === OP_NEQ (!=) ===
-.global op_neq
-op_neq:
-    cp r24, r22
-    cpc r25, r23
-    brne is_true
-    rjmp is_false
-
-; === OP_GT (>) ===
-.global op_gt
-op_gt:
-    cp r22, r24     ; Compare B with A (Inverse for GT logic)
-    cpc r23, r25
-    brlt is_true    ; Se B < A, então A > B
-    rjmp is_false
-
-; === OP_LT (<) ===
-.global op_lt
-op_lt:
-    cp r24, r22     ; Compare A with B
-    cpc r25, r23
-    brlt is_true    ; Signed Less Than
-    rjmp is_false
-
-; === OP_GE (>=) ===
-.global op_ge
-op_ge:
-    cp r24, r22
-    cpc r25, r23
-    brge is_true    ; Signed Greater or Equal
-    rjmp is_false
-
-; === OP_LE (<=) ===
-.global op_le
-op_le:
-    cp r22, r24
-    cpc r23, r25
-    brge is_true    ; Se B >= A, então A <= B
-    rjmp is_false
-
-; --- Helpers de Retorno ---
-is_true:
-    ldi r24, 1
-    ldi r25, 0
-    ret
-
-is_false:
-    ldi r24, 0
-    ldi r25, 0
-    ret
-
-
-; ==========================================================
-; WRAPPERS ARITMÉTICOS INTEIROS
-; ==========================================================
-
-; === OP_MOD (%) ===
-; Resto da divisão inteira de R25:R24 por R23:R22
-.global op_mod
-op_mod:
-    call div16u     ; Faz a divisão padrão
-    ; div16u (versão math_core.s) retorna Quociente em R25:R24
-    ; e Resto em R15:R14.
-    ; Precisamos mover o Resto para R25:R24 (Retorno padrão)
-    
-    movw r24, r14   ; Move R15:R14 -> R25:R24
-    ret
-
-; === OP_POW_INT (Inteiro ^ Inteiro) ===
-; Base: R25:R24, Exp: R22 (8 bits é suficiente para o projeto)
-.global op_pow_int
-op_pow_int:
-    push r20
-    push r21
-    push r22
-    
-    mov r20, r22 ; Copia Expoente
-    
-    ; Exp == 0 -> 1
-    cpi r20, 0
-    brne chk_p1
-    ldi r24, 1
-    ldi r25, 0
-    rjmp pi_end
-    
-chk_p1:
-    ; Exp == 1 -> Base (já está em R25:R24)
-    cpi r20, 1
-    breq pi_end
-    
-    ; Setup loop
-    dec r20         ; Já temos base^1
-    movw r22, r24   ; R23:R22 guarda a BASE fixa
-    ; R25:R24 guarda o ACUMULADO
-
-pi_loop:
-    ; Precisamos chamar mul16u(Acumulado, Base)
-    ; mul16u espera A em R25:R24 e B em R23:R22.
-    ; Já está configurado corretamente (Acumulado em 25:24, Base em 23:22)
-    ; PORÉM: mul16u destrói R22/R23 (B) nos pops? 
-    ; Verificando math_core.s: mul16u usa push/pop de r20/r21...
-    ; Mas mul16u não garante preservar B (R23:R22) se usá-lo como temp?
-    ; O mul16u atual preserva R18-R21. R22 e R23 são registradores de argumento,
-    ; normalmente considerados "scratch" (sujos).
-    ; Vamos salvar a Base em R21:R20 (seguros) e restaurar a cada loop.
-
-    push r22 ; Salva Base Low
-    push r23 ; Salva Base High
-    
-    call mul16u
-    
-    pop r23  ; Recupera para o próximo loop
-    pop r22
-    
-    dec r20
-    brne pi_loop
-
-pi_end:
-    pop r22
-    pop r21
-    pop r20
-    ret
-
-; === LIB: lib_avr/storage.s ===
-; lib_avr/storage.s
-; Gerenciamento de Memória (RES e MEM)
-; Roda no ATmega328P (2KB SRAM)
-
-.section .bss
-    ; --- Buffer para o histórico de RES ---
-    ; Alocamos espaço para 100 resultados (200 bytes)
-    ; Se o programa tiver mais de 100 linhas, ele sobrescreve ou trava (simples por enquanto)
-    .lcomm res_buffer, 200 
-    .lcomm res_count, 1    ; Contador de quantos resultados já salvamos (0 a 255)
-
-    ; --- Memória de Variáveis (MEM) ---
-    ; Vamos supor 26 variáveis possíveis (A-Z) ou apenas uma "MEM" genérica.
-    ; O documento diz: "(V MEM): Armazena em uma memória".
-    ; E "(MEM): Retorna o valor". Parece ser uma variável única ou poucas.
-    ; Vamos alocar espaço para 1 variável genérica chamada MEM_VAL
-    .lcomm mem_val, 2      ; 2 bytes para a variável MEM
-    .lcomm mem_init, 1     ; Flag: 0 = não inicializada, 1 = inicializada
-
-.section .text
-
-; ==========================================================
-; FUNÇÕES DE RES (Histórico)
-; ==========================================================
-
-; === RES_INIT ===
-; Zera o contador de resultados no início do programa
-.global res_init
-res_init:
-    push r16
-    ldi r16, 0
-    sts res_count, r16
-    pop r16
-    ret
-
-; === RES_SAVE ===
-; Salva o valor atual (R25:R24) no topo do histórico
-; Deve ser chamado ao final de CADA expressão calculada
-.global res_save
-res_save:
-    push r16
-    push r30
-    push r31
-    
-    ; 1. Pega o índice atual (res_count)
-    lds r16, res_count
-    
-    ; 2. Calcula endereço: res_buffer + (index * 2)
-    ldi r30, lo8(res_buffer)
-    ldi r31, hi8(res_buffer)
-    
-    ; Adiciona (r16 * 2) ao Z
-    add r30, r16
-    adc r31, r1  ; r1 é zero
-    add r30, r16 ; Adiciona de novo para multiplicar por 2
-    adc r31, r1
-    
-    ; 3. Armazena R25:R24 na RAM
-    st Z+, r24   ; Low byte
-    st Z, r25    ; High byte
-    
-    ; 4. Incrementa contador
-    lds r16, res_count
-    inc r16
-    sts res_count, r16
-    
-    pop r31
-    pop r30
-    pop r16
-    ret
-
-; === RES_FETCH ===
-; Busca o resultado N linhas atrás
-; Entrada: R22 (N - inteiro 8 bits)
-; Saída:   R25:R24 (Valor recuperado)
-.global res_fetch
-res_fetch:
-    push r16
-    push r30
-    push r31
-    
-    ; 1. Pega o total de resultados salvos
-    lds r16, res_count
-    
-    ; 2. Calcula o índice alvo: (Count - N)
-    ; Se N=1, queremos o anterior imediato (Count - 1)
-    ; O comando diz "N linhas anteriores".
-    ; Se N=1, é o último salvo.
-    sub r16, r22
-    
-    ; Opcional: Verificar se r16 < 0 (Underflow/Erro)
-    ; Por simplicidade, assumimos que o usuário não pede RES maior que o existente.
-    ; Como o índice é 0-based no save, mas o count é incrementado, 
-    ; se salvamos 1 item, count é 1. Se pedimos 1 RES, queremos indice 0.
-    ; 1 - 1 = 0. Correto.
-    
-    ; 3. Calcula endereço: res_buffer + (target * 2)
-    ldi r30, lo8(res_buffer)
-    ldi r31, hi8(res_buffer)
-    
-    add r30, r16
-    adc r31, r1
-    add r30, r16
-    adc r31, r1
-    
-    ; 4. Lê da RAM
-    ld r24, Z+
-    ld r25, Z
-    
-    pop r31
-    pop r30
-    pop r16
-    ret
-
-; ==========================================================
-; FUNÇÕES DE MEM (Variável)
-; ==========================================================
-
-; === MEM_STORE ===
-; Salva R25:R24 na variável MEM e marca como inicializada
-.global mem_store
-mem_store:
-    push r16
-    
-    ; Salva valor
-    sts mem_val, r24
-    sts mem_val+1, r25
-    
-    ; Marca flag de inicialização
-    ldi r16, 1
-    sts mem_init, r16
-    
-    pop r16
-    ret
-
-; === MEM_LOAD ===
-; Carrega o valor de MEM para R25:R24
-; Se não inicializada, o comportamento é indefinido no Assembly 
-; (o analisador semântico já deve ter barrado isso), 
-; mas retornaremos 0 por segurança.
-.global mem_load
-mem_load:
-    push r16
-    
-    ; Verifica se inicializada (Opcional, pois o Semântico garante)
-    lds r16, mem_init
-    cpi r16, 1
-    breq do_load
-    
-    ; Se não, retorna 0
-    ldi r24, 0
-    ldi r25, 0
-    rjmp end_mem_load
-
-do_load:
-    lds r24, mem_val
-    lds r25, mem_val+1
-
-end_mem_load:
-    pop r16
     ret

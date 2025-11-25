@@ -1,4 +1,4 @@
-# fibonacci.txt
+# MODO: INTEIRO
 # Teste 2: Fibonacci
 # OBS: Devido ao formato Q8.8 (max 127), isso vai estourar 
 # apos o termo 11 (144). Para teste visual correto, usaremos N=11.

@@ -105,6 +105,19 @@ def gerarGramaticaAtributosMd(gramatica_atributos, filename):
         f.write("- **Regra:** `Γ ⊢ e₁ : T₁, Γ ⊢ e₂ : T₂ ──────────── Γ ⊢ (e₁ e₂ op) : promover_tipo(T₁, T₂)`\n")
 
 
+def detectar_modo_pelo_arquivo(filename):
+    """Lê a primeira linha do arquivo para buscar diretivas de compilação."""
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            primeira_linha = f.readline().upper() # Lê e converte para maiúsculas
+            
+            # Verifica se existe a tag mágica
+            if "# MODO: INTEIRO" in primeira_linha or "# PRAGMA: INTEIRO" in primeira_linha:
+                return True
+    except Exception:
+        pass
+    return False
+
 def main():
     if len(sys.argv) != 2:
         print("=" * 60)
@@ -114,6 +127,26 @@ def main():
         print("\nExemplo: python compilar.py teste_print.txt")
         print("=" * 60)
         sys.exit(1)
+
+    filename = sys.argv[1]
+    
+    # --- LÓGICA DE DETECÇÃO INTELIGENTE ---
+    usar_modo_inteiro = False
+    
+    # 1. Prioridade: Argumento de linha de comando (se você forçar --int)
+    if "--int" in sys.argv:
+        usar_modo_inteiro = True
+        print("\n>>> MODO: INTEIRO (Forçado via argumento) <<<")
+        
+    # 2. Automático: Verifica se o arquivo pede modo inteiro
+    elif detectar_modo_pelo_arquivo(filename):
+        usar_modo_inteiro = True
+        print(f"\n>>> MODO: INTEIRO (Detectado automaticamente em {filename}) <<<")
+        
+    # 3. Padrão: Ponto Fixo (Q8.8)
+    else:
+        print("\n>>> MODO: PADRÃO (Ponto Fixo Q8.8) <<<")
+
     
     filename = sys.argv[1]
     
@@ -210,14 +243,13 @@ def main():
         
         # FASE 4.2: GERAÇÃO DE ASSEMBLY
         print("\n[FASE 4.2] Gerando código Assembly AVR...")
-        asm_generator = AVRAssemblyGenerator()
+        asm_generator = AVRAssemblyGenerator(int_mode=usar_modo_inteiro)
         asm_instructions = asm_generator.gerarAssembly(tac_otimizado)
         print(f"[OK] {len(asm_instructions)} linhas de Assembly geradas")
         
         # FASE 4.3: COMPILAÇÃO PARA HEX
         print("\n[FASE 4.3] Compilando Assembly para HEX...")
-        salvarAssembly(asm_instructions, asm_file)
-        print(f"[OK] Assembly salvo: {asm_file}")
+        salvarAssembly(asm_instructions, asm_file, int_mode=usar_modo_inteiro)
         
         hex_gerado = gerarHex(asm_file, hex_file)
         if hex_gerado:
