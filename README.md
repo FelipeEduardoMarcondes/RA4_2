@@ -448,17 +448,43 @@ O compilador gera relatório detalhado mostrando:
 
 ### 7.3 Convenções de Registradores
 
-| Registrador | Uso |
-|-------------|-----|
-| R24:R25 | Operando A / Retorno |
-| R22:R23 | Operando B |
-| R20:R21 | Temporários |
-| R18:R19 | Temporários |
-| R0:R1 | Resultado MUL (zerado após uso) |
-| R14:R15 | Resto de divisões |
+#### Convenção de Chamada de Funções
+- **R24:R25** - Primeiro argumento / Valor de retorno
+- **R22:R23** - Segundo argumento
+- **R20:R21** - Argumentos adicionais (quando necessário)
 
----
+#### Registradores Scratch (Modificados por Funções)
+- **R0:R1** - Resultado de `MUL` (sempre zerado após uso)
+- **R14:R15** - Resto de divisões (sobrescrito)
+- **R16:R19** - Temporários locais
 
+#### Registradores Preservados (Caller-Saved)
+- **R26:R27 (X)** - Ponteiro de endereço
+- **R28:R29 (Y)** - Frame pointer (futuro uso)
+- **R30:R31 (Z)** - Ponteiro de programa (usado em tabelas)
+
+#### Exemplo de Uso em Chamadas
+```asm
+; Chamar fx_mul(256, 128)
+ldi r24, 0x00  ; 256 Low
+ldi r25, 0x01  ; 256 High
+ldi r22, 0x80  ; 128 Low
+ldi r23, 0x00  ; 128 High
+call fx_mul
+; Resultado em R25:R24
+```
+
+#### Preservação de Registradores
+Funções que modificam R16-R21 devem usar `push`/`pop`:
+```asm
+minha_funcao:
+    push r16
+    push r17
+    ; ... código ...
+    pop r17
+    pop r16
+    ret
+```
 ## 8. Monitor Serial
 
 ### 8.1 Uso Básico
@@ -1125,9 +1151,6 @@ if "# MODO: INTEIRO" in primeira_linha:
     usar_modo_inteiro = True  # Usa int16 unsigned
 else:
     usar_modo_inteiro = False  # Usa Q8.8 (ponto fixo)
-```
-
-
 ```
 
 ### Conclusão:
