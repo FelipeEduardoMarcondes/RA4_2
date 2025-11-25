@@ -29,15 +29,6 @@ class TACGenerator:
         return instruction
     
     def gerarTAC(self, arvore_atribuida):
-        """
-        Gera código TAC a partir da árvore sintática abstrata atribuída.
-        
-        Args:
-            arvore_atribuida: Lista de tuplas (linha_num, ast)
-            
-        Returns:
-            Lista de instruções TAC
-        """
         self.instructions = []
         self.temp_counter = 0
         self.label_counter = 0
@@ -45,25 +36,27 @@ class TACGenerator:
         for linha_num, ast in arvore_atribuida:
             self.emit(f"# Linha {linha_num}")
             
-            # Gera código para a expressão
+            # Gera código da expressão
             resultado_temp = self._gerar_expressao(ast)
             
-            # Sempre imprime o resultado de cada linha
+            # Tipos que não devem aparecer no Serial
+            tipos_silenciosos = ['store', 'if', 'while']
+            
             if resultado_temp:
-                # Verifica se já é um RES (que já adiciona ao histórico)
+                # [CORREÇÃO] Passo 1:
+                # Sempre gera instrução para salvar no histórico, independente do tipo.
+                # O comando 'HIST' deve apenas salvar, sem imprimir.
+                self.emit(f"HIST[{resultado_temp}]")
 
-                if ast['type'] == 'res':
-                    # RES já busca do histórico, apenas imprime
-                    print_temp = self.new_temp()
-                    self.emit(f"{print_temp} = PRINT[{resultado_temp}]")
-                
-                else:
-                    # Expressão normal: adiciona ao histórico e imprime
+                # Passo 2:
+                # Só gera o PRINT se não for silencioso
+                if ast['type'] not in tipos_silenciosos:
+                    # Para RES, usamos o valor retornado, mas ele já foi salvo pelo HIST acima?
+                    # Geralmente RES apenas lê. Se RES for "visualizar histórico", ele imprime.
                     print_temp = self.new_temp()
                     self.emit(f"{print_temp} = PRINT[{resultado_temp}]")
             
         return self.instructions
-    
     def _gerar_expressao(self, node):
         
         # Gera TAC para um nó da árvore recursivamente.

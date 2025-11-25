@@ -1,8 +1,6 @@
 # MODO: INTEIRO
+
 # Teste 2: Fibonacci
-# OBS: Devido ao formato Q8.8 (max 127), isso vai estourar 
-# apos o termo 11 (144). Para teste visual correto, usaremos N=11.
-# A logica porem vai ate 24 conforme pedido.
 
 # Inicializacao
 (0 A)
@@ -19,11 +17,8 @@
     (I N <)
     (
         # CORPO DO LACO:
-        # O compilador exige uma unica expressao.
-        # Vamos somar as operacoes de atribuicao (que retornam valor)
-        # e usar um IF para descartar a soma "lixo" e retornar apenas B.
         
-        # Condicao do IF (executa os side-effects):
+        # Condicao do IF:
         # 1. TEMP = A + B
         # 2. A = B
         # 3. B = TEMP
@@ -45,11 +40,11 @@
             0
             >
         )
-        
-        # Se a soma das operacoes for > 0 (sempre sera), retorna B
         (B)
         (B)
-        if
+        IF
     )
-    while
+    WHILE
 )
+
+(B)

@@ -10,12 +10,17 @@
     .lcomm t13, 2
     .lcomm t14, 2
     .lcomm t15, 2
+    .lcomm t16, 2
     .lcomm t17, 2
     .lcomm t18, 2
-    .lcomm t19, 2
+    .lcomm t20, 2
     .lcomm t21, 2
-    .lcomm t23, 2
+    .lcomm t22, 2
     .lcomm t24, 2
+    .lcomm t26, 2
+    .lcomm t27, 2
+    .lcomm t28, 2
+    .lcomm t29, 2
     .lcomm t4, 2
     .lcomm t5, 2
     .lcomm t6, 2
@@ -41,6 +46,10 @@ main:
     ldi r25, 0
     sts A, r24
     sts A + 1, r25
+    ; TAC: HIST[0]
+    ldi r24, 0
+    ldi r25, 0
+    call res_save
 
     ; # Linha 2
     ; TAC: MEM[B] = 1
@@ -48,6 +57,10 @@ main:
     ldi r25, 0
     sts B, r24
     sts B + 1, r25
+    ; TAC: HIST[1]
+    ldi r24, 1
+    ldi r25, 0
+    call res_save
 
     ; # Linha 3
     ; TAC: MEM[I] = 0
@@ -55,6 +68,10 @@ main:
     ldi r25, 0
     sts I, r24
     sts I + 1, r25
+    ; TAC: HIST[0]
+    ldi r24, 0
+    ldi r25, 0
+    call res_save
 
     ; # Linha 4
     ; TAC: MEM[N] = 23
@@ -62,6 +79,10 @@ main:
     ldi r25, 0
     sts N, r24
     sts N + 1, r25
+    ; TAC: HIST[23]
+    ldi r24, 23
+    ldi r25, 0
+    call res_save
 
     ; # Linha 5
     ; TAC: t4 = MEM[A]
@@ -69,163 +90,207 @@ main:
     lds r25, A + 1
     sts t4, r24
     sts t4 + 1, r25
-
-    ; # Linha 6
-    ; TAC: t5 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
+    ; TAC: HIST[t4]
+    lds r24, t4
+    lds r25, t4 + 1
+    call res_save
+    ; TAC: t5 = PRINT[t4]
+    lds r24, t4
+    lds r25, t4 + 1
+    call print_int16
+    call uart_newline
     sts t5, r24
     sts t5 + 1, r25
 
-    ; # Linha 7
-L0:
-    ; TAC: t6 = MEM[I]
-    lds r24, I
-    lds r25, I + 1
-    sts t6, r24
-    sts t6 + 1, r25
-    ; TAC: t7 = MEM[N]
-    lds r24, N
-    lds r25, N + 1
-    sts t7, r24
-    sts t7 + 1, r25
-    ; TAC: t8 = t6 < t7
-    lds r24, t6
-    lds r25, t6 + 1
-    lds r22, t7
-    lds r23, t7 + 1
-    call op_lt
-    sts t8, r24
-    sts t8 + 1, r25
-    ; TAC: ifFalse t8 goto L1
-    lds r24, t8
-    lds r25, t8 + 1
-    or r24, r25
-    brne _skip_0
-    rjmp L1
-_skip_0:
-    ; TAC: t9 = MEM[A]
-    lds r24, A
-    lds r25, A + 1
-    sts t9, r24
-    sts t9 + 1, r25
-    ; TAC: t10 = MEM[B]
+    ; # Linha 6
+    ; TAC: t6 = MEM[B]
     lds r24, B
     lds r25, B + 1
+    sts t6, r24
+    sts t6 + 1, r25
+    ; TAC: HIST[t6]
+    lds r24, t6
+    lds r25, t6 + 1
+    call res_save
+    ; TAC: t7 = PRINT[t6]
+    lds r24, t6
+    lds r25, t6 + 1
+    call print_int16
+    call uart_newline
+    sts t7, r24
+    sts t7 + 1, r25
+
+    ; # Linha 7
+L0:
+    ; TAC: t9 = MEM[I]
+    lds r24, I
+    lds r25, I + 1
+    sts t9, r24
+    sts t9 + 1, r25
+    ; TAC: t10 = MEM[N]
+    lds r24, N
+    lds r25, N + 1
     sts t10, r24
     sts t10 + 1, r25
-    ; TAC: t11 = t9 + t10
+    ; TAC: t11 = t9 < t10
     lds r24, t9
     lds r25, t9 + 1
     lds r22, t10
     lds r23, t10 + 1
-    add r24, r22
-    adc r25, r23
+    call op_lt
     sts t11, r24
     sts t11 + 1, r25
-    ; TAC: MEM[TEMP] = t11
+    ; TAC: ifFalse t11 goto L1
     lds r24, t11
     lds r25, t11 + 1
-    sts TEMP, r24
-    sts TEMP + 1, r25
-    ; TAC: t12 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
+    or r24, r25
+    brne _skip_0
+    rjmp L1
+_skip_0:
+    ; TAC: t12 = MEM[A]
+    lds r24, A
+    lds r25, A + 1
     sts t12, r24
     sts t12 + 1, r25
-    ; TAC: MEM[A] = t12
-    lds r24, t12
-    lds r25, t12 + 1
-    sts A, r24
-    sts A + 1, r25
-    ; TAC: t13 = t11 + t12
-    lds r24, t11
-    lds r25, t11 + 1
-    lds r22, t12
-    lds r23, t12 + 1
-    add r24, r22
-    adc r25, r23
+    ; TAC: t13 = MEM[B]
+    lds r24, B
+    lds r25, B + 1
     sts t13, r24
     sts t13 + 1, r25
-    ; TAC: t14 = MEM[TEMP]
-    lds r24, TEMP
-    lds r25, TEMP + 1
+    ; TAC: t14 = t12 + t13
+    lds r24, t12
+    lds r25, t12 + 1
+    lds r22, t13
+    lds r23, t13 + 1
+    add r24, r22
+    adc r25, r23
     sts t14, r24
     sts t14 + 1, r25
-    ; TAC: MEM[B] = t14
+    ; TAC: MEM[TEMP] = t14
     lds r24, t14
     lds r25, t14 + 1
-    sts B, r24
-    sts B + 1, r25
-    ; TAC: t15 = MEM[I]
-    lds r24, I
-    lds r25, I + 1
+    sts TEMP, r24
+    sts TEMP + 1, r25
+    ; TAC: t15 = MEM[B]
+    lds r24, B
+    lds r25, B + 1
     sts t15, r24
     sts t15 + 1, r25
-    ; TAC: t17 = t15 + 1
+    ; TAC: MEM[A] = t15
     lds r24, t15
     lds r25, t15 + 1
+    sts A, r24
+    sts A + 1, r25
+    ; TAC: t16 = t14 + t15
+    lds r24, t14
+    lds r25, t14 + 1
+    lds r22, t15
+    lds r23, t15 + 1
+    add r24, r22
+    adc r25, r23
+    sts t16, r24
+    sts t16 + 1, r25
+    ; TAC: t17 = MEM[TEMP]
+    lds r24, TEMP
+    lds r25, TEMP + 1
+    sts t17, r24
+    sts t17 + 1, r25
+    ; TAC: MEM[B] = t17
+    lds r24, t17
+    lds r25, t17 + 1
+    sts B, r24
+    sts B + 1, r25
+    ; TAC: t18 = MEM[I]
+    lds r24, I
+    lds r25, I + 1
+    sts t18, r24
+    sts t18 + 1, r25
+    ; TAC: t20 = t18 + 1
+    lds r24, t18
+    lds r25, t18 + 1
     ldi r22, 1
     ldi r23, 0
     add r24, r22
     adc r25, r23
-    sts t17, r24
-    sts t17 + 1, r25
-    ; TAC: MEM[I] = t17
-    lds r24, t17
-    lds r25, t17 + 1
+    sts t20, r24
+    sts t20 + 1, r25
+    ; TAC: MEM[I] = t20
+    lds r24, t20
+    lds r25, t20 + 1
     sts I, r24
     sts I + 1, r25
-    ; TAC: t18 = t14 + t17
-    lds r24, t14
-    lds r25, t14 + 1
-    lds r22, t17
-    lds r23, t17 + 1
+    ; TAC: t21 = t17 + t20
+    lds r24, t17
+    lds r25, t17 + 1
+    lds r22, t20
+    lds r23, t20 + 1
     add r24, r22
     adc r25, r23
-    sts t18, r24
-    sts t18 + 1, r25
-    ; TAC: t19 = t13 + t18
-    lds r24, t13
-    lds r25, t13 + 1
-    lds r22, t18
-    lds r23, t18 + 1
+    sts t21, r24
+    sts t21 + 1, r25
+    ; TAC: t22 = t16 + t21
+    lds r24, t16
+    lds r25, t16 + 1
+    lds r22, t21
+    lds r23, t21 + 1
     add r24, r22
     adc r25, r23
-    sts t19, r24
-    sts t19 + 1, r25
-    ; TAC: t21 = t19 > 0
-    lds r24, t19
-    lds r25, t19 + 1
+    sts t22, r24
+    sts t22 + 1, r25
+    ; TAC: t24 = t22 > 0
+    lds r24, t22
+    lds r25, t22 + 1
     ldi r22, 0
     ldi r23, 0
     call op_gt
-    sts t21, r24
-    sts t21 + 1, r25
-    ; TAC: ifFalse t21 goto L2
-    lds r24, t21
-    lds r25, t21 + 1
+    sts t24, r24
+    sts t24 + 1, r25
+    ; TAC: ifFalse t24 goto L2
+    lds r24, t24
+    lds r25, t24 + 1
     or r24, r25
     brne _skip_1
     rjmp L2
 _skip_1:
-    ; TAC: t23 = MEM[B]
+    ; TAC: t26 = MEM[B]
     lds r24, B
     lds r25, B + 1
-    sts t23, r24
-    sts t23 + 1, r25
+    sts t26, r24
+    sts t26 + 1, r25
     ; TAC: goto L3
     rjmp L3
 L2:
-    ; TAC: t24 = MEM[B]
+    ; TAC: t27 = MEM[B]
     lds r24, B
     lds r25, B + 1
-    sts t24, r24
-    sts t24 + 1, r25
+    sts t27, r24
+    sts t27 + 1, r25
 L3:
     ; TAC: goto L0
     rjmp L0
 L1:
+    ; TAC: HIST[t8]
+    lds r24, t8
+    lds r25, t8 + 1
+    call res_save
+
+    ; # Linha 8
+    ; TAC: t28 = MEM[B]
+    lds r24, B
+    lds r25, B + 1
+    sts t28, r24
+    sts t28 + 1, r25
+    ; TAC: HIST[t28]
+    lds r24, t28
+    lds r25, t28 + 1
+    call res_save
+    ; TAC: t29 = PRINT[t28]
+    lds r24, t28
+    lds r25, t28 + 1
+    call print_int16
+    call uart_newline
+    sts t29, r24
+    sts t29 + 1, r25
     ; --- Fim ---
 end_loop:
     rjmp end_loop

@@ -52,12 +52,3 @@ while : int = while
 id : int = FAT
 ```
 
-## Expressão 5
-
-**Tipo inferido:** `int`
-
-```
-res : int = RES
-  └─ num : int = 1
-```
-

@@ -213,18 +213,37 @@ def main():
         
         print(f"[OK] {len(ast_list)} expressão(ões) válida(s)")
         
-        # FASE 3: ANÁLISE SEMÂNTICA
+        # ========== FASE 3: ANÁLISE SEMÂNTICA ==========
         print("\n[FASE 3] Análise Semântica...")
         
         gramatica_atributos = definirGramaticaAtributos()
         tabela_simbolos = inicializarTabelaSimbolos() 
+        
+        # Realiza a análise
         arvore_anotada, erros_semanticos = analisarSemantica(ast_list, tabela_simbolos)
         
+        # --- MODIFICAÇÃO: Exibição robusta de erros ---
         if erros_semanticos:
-            print(f"[AVISO] {len(erros_semanticos)} erro(s) semântico(s) encontrado(s)")
+            print(f"ATENÇÃO: {len(erros_semanticos)} ERRO(S) SEMÂNTICO(S) ENCONTRADO(S)\n")
+            
+            for i, erro in enumerate(erros_semanticos, 1):
+                # Imprime o erro exatamente como retornado pelo analisador
+                print(f"[{i}] {erro}")
+            
+            
+            # Gera o relatório de erros imediatamente para garantir o registro
+            gerarRelatorioErros(erros_semanticos, relatorio_erros_file)
+            print(f"-> Relatório detalhado salvo em: {relatorio_erros_file}")
+            
+            print("\nInterrompendo compilação devido a erros semânticos.")
+            print("Corrija o código fonte e tente novamente.")
+            print("=" * 60)
+            sys.exit(1) # Sai do programa com código de erro
 
         else:
-            print("[OK] Nenhum erro semântico detectado")
+            print("Nenhum erro semântico detectado.")
+        
+        print("\n[FASE 3.1] Gerando árvore atribuída...")
         
         arvore_atribuida_final = gerarArvoreAtribuida(arvore_anotada)
         

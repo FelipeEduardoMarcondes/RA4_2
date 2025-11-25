@@ -8,43 +8,36 @@
     .lcomm X_VAL, 2
     .lcomm t1, 2
     .lcomm t10, 2
-    .lcomm t12, 2
+    .lcomm t11, 2
     .lcomm t13, 2
-    .lcomm t14, 2
-    .lcomm t16, 2
+    .lcomm t15, 2
+    .lcomm t17, 2
     .lcomm t18, 2
-    .lcomm t2, 2
     .lcomm t20, 2
-    .lcomm t21, 2
     .lcomm t22, 2
     .lcomm t24, 2
     .lcomm t26, 2
-    .lcomm t28, 2
-    .lcomm t30, 2
+    .lcomm t27, 2
+    .lcomm t29, 2
+    .lcomm t3, 2
     .lcomm t31, 2
-    .lcomm t32, 2
-    .lcomm t34, 2
-    .lcomm t36, 2
-    .lcomm t38, 2
-    .lcomm t4, 2
+    .lcomm t33, 2
+    .lcomm t35, 2
+    .lcomm t37, 2
+    .lcomm t39, 2
     .lcomm t40, 2
+    .lcomm t41, 2
     .lcomm t42, 2
     .lcomm t43, 2
+    .lcomm t44, 2
     .lcomm t45, 2
     .lcomm t46, 2
     .lcomm t47, 2
     .lcomm t48, 2
     .lcomm t49, 2
+    .lcomm t5, 2
     .lcomm t50, 2
-    .lcomm t51, 2
-    .lcomm t52, 2
-    .lcomm t53, 2
-    .lcomm t54, 2
-    .lcomm t55, 2
-    .lcomm t56, 2
-    .lcomm t57, 2
     .lcomm t6, 2
-    .lcomm t7, 2
     .lcomm t8, 2
 .section .text
 .global main
@@ -65,342 +58,317 @@ main:
     ldi r25, 0
     sts X_VAL, r24
     sts X_VAL + 1, r25
-    ; TAC: t1 = PRINT[0.5]
+    ; TAC: HIST[0.5]
     ldi r24, 128
     ldi r25, 0
     call res_save
-    call fx_print
-    call uart_newline
-    sts t1, r24
-    sts t1 + 1, r25
 
     ; # Linha 2
-    ; TAC: t2 = MEM[X_VAL]
+    ; TAC: t1 = MEM[X_VAL]
     lds r24, X_VAL
     lds r25, X_VAL + 1
-    sts t2, r24
-    sts t2 + 1, r25
-    ; TAC: t4 = t2 ^ 2
-    lds r24, t2
-    lds r25, t2 + 1
+    sts t1, r24
+    sts t1 + 1, r25
+    ; TAC: t3 = t1 ^ 2
+    lds r24, t1
+    lds r25, t1 + 1
     ldi r22, 2
     ldi r23, 0
     call fx_pow
-    sts t4, r24
-    sts t4 + 1, r25
-    ; TAC: t6 = t4 | 2.0
-    lds r24, t4
-    lds r25, t4 + 1
+    sts t3, r24
+    sts t3 + 1, r25
+    ; TAC: t5 = t3 | 2.0
+    lds r24, t3
+    lds r25, t3 + 1
     ldi r22, 0
     ldi r23, 2
     call fx_div
-    sts t6, r24
-    sts t6 + 1, r25
-    ; TAC: MEM[T2] = t6
-    lds r24, t6
-    lds r25, t6 + 1
+    sts t5, r24
+    sts t5 + 1, r25
+    ; TAC: MEM[T2] = t5
+    lds r24, t5
+    lds r25, t5 + 1
     sts T2, r24
     sts T2 + 1, r25
-    ; TAC: t7 = PRINT[t6]
-    lds r24, t6
-    lds r25, t6 + 1
+    ; TAC: HIST[t5]
+    lds r24, t5
+    lds r25, t5 + 1
     call res_save
-    call fx_print
-    call uart_newline
-    sts t7, r24
-    sts t7 + 1, r25
 
     ; # Linha 3
-    ; TAC: t8 = MEM[X_VAL]
+    ; TAC: t6 = MEM[X_VAL]
     lds r24, X_VAL
     lds r25, X_VAL + 1
-    sts t8, r24
-    sts t8 + 1, r25
-    ; TAC: t10 = t8 ^ 4
-    lds r24, t8
-    lds r25, t8 + 1
+    sts t6, r24
+    sts t6 + 1, r25
+    ; TAC: t8 = t6 ^ 4
+    lds r24, t6
+    lds r25, t6 + 1
     ldi r22, 4
     ldi r23, 0
     call fx_pow
-    sts t10, r24
-    sts t10 + 1, r25
-    ; TAC: t12 = t10 | 24.0
-    lds r24, t10
-    lds r25, t10 + 1
+    sts t8, r24
+    sts t8 + 1, r25
+    ; TAC: t10 = t8 | 24.0
+    lds r24, t8
+    lds r25, t8 + 1
     ldi r22, 0
     ldi r23, 24
     call fx_div
-    sts t12, r24
-    sts t12 + 1, r25
-    ; TAC: MEM[T3] = t12
-    lds r24, t12
-    lds r25, t12 + 1
+    sts t10, r24
+    sts t10 + 1, r25
+    ; TAC: MEM[T3] = t10
+    lds r24, t10
+    lds r25, t10 + 1
     sts T3, r24
     sts T3 + 1, r25
-    ; TAC: t13 = PRINT[t12]
-    lds r24, t12
-    lds r25, t12 + 1
+    ; TAC: HIST[t10]
+    lds r24, t10
+    lds r25, t10 + 1
     call res_save
-    call fx_print
-    call uart_newline
-    sts t13, r24
-    sts t13 + 1, r25
 
     ; # Linha 4
-    ; TAC: t14 = MEM[X_VAL]
+    ; TAC: t11 = MEM[X_VAL]
     lds r24, X_VAL
     lds r25, X_VAL + 1
-    sts t14, r24
-    sts t14 + 1, r25
-    ; TAC: t16 = t14 ^ 6
-    lds r24, t14
-    lds r25, t14 + 1
+    sts t11, r24
+    sts t11 + 1, r25
+    ; TAC: t13 = t11 ^ 6
+    lds r24, t11
+    lds r25, t11 + 1
     ldi r22, 6
     ldi r23, 0
     call fx_pow
-    sts t16, r24
-    sts t16 + 1, r25
-    ; TAC: t18 = t16 | 24.0
-    lds r24, t16
-    lds r25, t16 + 1
+    sts t13, r24
+    sts t13 + 1, r25
+    ; TAC: t15 = t13 | 24.0
+    lds r24, t13
+    lds r25, t13 + 1
     ldi r22, 0
     ldi r23, 24
     call fx_div
-    sts t18, r24
-    sts t18 + 1, r25
-    ; TAC: t20 = t18 | 30.0
-    lds r24, t18
-    lds r25, t18 + 1
+    sts t15, r24
+    sts t15 + 1, r25
+    ; TAC: t17 = t15 | 30.0
+    lds r24, t15
+    lds r25, t15 + 1
     ldi r22, 0
     ldi r23, 30
     call fx_div
-    sts t20, r24
-    sts t20 + 1, r25
-    ; TAC: MEM[T4] = t20
-    lds r24, t20
-    lds r25, t20 + 1
+    sts t17, r24
+    sts t17 + 1, r25
+    ; TAC: MEM[T4] = t17
+    lds r24, t17
+    lds r25, t17 + 1
     sts T4, r24
     sts T4 + 1, r25
-    ; TAC: t21 = PRINT[t20]
-    lds r24, t20
-    lds r25, t20 + 1
+    ; TAC: HIST[t17]
+    lds r24, t17
+    lds r25, t17 + 1
     call res_save
-    call fx_print
-    call uart_newline
-    sts t21, r24
-    sts t21 + 1, r25
 
     ; # Linha 5
-    ; TAC: t22 = MEM[X_VAL]
+    ; TAC: t18 = MEM[X_VAL]
     lds r24, X_VAL
     lds r25, X_VAL + 1
-    sts t22, r24
-    sts t22 + 1, r25
-    ; TAC: t24 = t22 ^ 8
-    lds r24, t22
-    lds r25, t22 + 1
+    sts t18, r24
+    sts t18 + 1, r25
+    ; TAC: t20 = t18 ^ 8
+    lds r24, t18
+    lds r25, t18 + 1
     ldi r22, 8
     ldi r23, 0
     call fx_pow
+    sts t20, r24
+    sts t20 + 1, r25
+    ; TAC: t22 = t20 | 24.0
+    lds r24, t20
+    lds r25, t20 + 1
+    ldi r22, 0
+    ldi r23, 24
+    call fx_div
+    sts t22, r24
+    sts t22 + 1, r25
+    ; TAC: t24 = t22 | 30.0
+    lds r24, t22
+    lds r25, t22 + 1
+    ldi r22, 0
+    ldi r23, 30
+    call fx_div
     sts t24, r24
     sts t24 + 1, r25
-    ; TAC: t26 = t24 | 24.0
+    ; TAC: t26 = t24 | 56.0
     lds r24, t24
     lds r25, t24 + 1
     ldi r22, 0
-    ldi r23, 24
+    ldi r23, 56
     call fx_div
     sts t26, r24
     sts t26 + 1, r25
-    ; TAC: t28 = t26 | 30.0
+    ; TAC: MEM[T5] = t26
     lds r24, t26
     lds r25, t26 + 1
-    ldi r22, 0
-    ldi r23, 30
-    call fx_div
-    sts t28, r24
-    sts t28 + 1, r25
-    ; TAC: t30 = t28 | 56.0
-    lds r24, t28
-    lds r25, t28 + 1
-    ldi r22, 0
-    ldi r23, 56
-    call fx_div
-    sts t30, r24
-    sts t30 + 1, r25
-    ; TAC: MEM[T5] = t30
-    lds r24, t30
-    lds r25, t30 + 1
     sts T5, r24
     sts T5 + 1, r25
-    ; TAC: t31 = PRINT[t30]
-    lds r24, t30
-    lds r25, t30 + 1
+    ; TAC: HIST[t26]
+    lds r24, t26
+    lds r25, t26 + 1
     call res_save
-    call fx_print
-    call uart_newline
-    sts t31, r24
-    sts t31 + 1, r25
 
     ; # Linha 6
-    ; TAC: t32 = MEM[X_VAL]
+    ; TAC: t27 = MEM[X_VAL]
     lds r24, X_VAL
     lds r25, X_VAL + 1
-    sts t32, r24
-    sts t32 + 1, r25
-    ; TAC: t34 = t32 ^ 10
-    lds r24, t32
-    lds r25, t32 + 1
+    sts t27, r24
+    sts t27 + 1, r25
+    ; TAC: t29 = t27 ^ 10
+    lds r24, t27
+    lds r25, t27 + 1
     ldi r22, 10
     ldi r23, 0
     call fx_pow
-    sts t34, r24
-    sts t34 + 1, r25
-    ; TAC: t36 = t34 | 24.0
-    lds r24, t34
-    lds r25, t34 + 1
+    sts t29, r24
+    sts t29 + 1, r25
+    ; TAC: t31 = t29 | 24.0
+    lds r24, t29
+    lds r25, t29 + 1
     ldi r22, 0
     ldi r23, 24
     call fx_div
-    sts t36, r24
-    sts t36 + 1, r25
-    ; TAC: t38 = t36 | 30.0
-    lds r24, t36
-    lds r25, t36 + 1
+    sts t31, r24
+    sts t31 + 1, r25
+    ; TAC: t33 = t31 | 30.0
+    lds r24, t31
+    lds r25, t31 + 1
     ldi r22, 0
     ldi r23, 30
     call fx_div
-    sts t38, r24
-    sts t38 + 1, r25
-    ; TAC: t40 = t38 | 56.0
-    lds r24, t38
-    lds r25, t38 + 1
+    sts t33, r24
+    sts t33 + 1, r25
+    ; TAC: t35 = t33 | 56.0
+    lds r24, t33
+    lds r25, t33 + 1
     ldi r22, 0
     ldi r23, 56
     call fx_div
-    sts t40, r24
-    sts t40 + 1, r25
-    ; TAC: t42 = t40 | 90.0
-    lds r24, t40
-    lds r25, t40 + 1
+    sts t35, r24
+    sts t35 + 1, r25
+    ; TAC: t37 = t35 | 90.0
+    lds r24, t35
+    lds r25, t35 + 1
     ldi r22, 0
     ldi r23, 90
     call fx_div
-    sts t42, r24
-    sts t42 + 1, r25
-    ; TAC: MEM[T6] = t42
-    lds r24, t42
-    lds r25, t42 + 1
+    sts t37, r24
+    sts t37 + 1, r25
+    ; TAC: MEM[T6] = t37
+    lds r24, t37
+    lds r25, t37 + 1
     sts T6, r24
     sts T6 + 1, r25
-    ; TAC: t43 = PRINT[t42]
-    lds r24, t42
-    lds r25, t42 + 1
+    ; TAC: HIST[t37]
+    lds r24, t37
+    lds r25, t37 + 1
     call res_save
-    call fx_print
-    call uart_newline
-    sts t43, r24
-    sts t43 + 1, r25
 
     ; # Linha 7
-    ; TAC: t45 = MEM[T2]
+    ; TAC: t39 = MEM[T2]
     lds r24, T2
     lds r25, T2 + 1
-    sts t45, r24
-    sts t45 + 1, r25
-    ; TAC: t46 = 1.0 - t45
+    sts t39, r24
+    sts t39 + 1, r25
+    ; TAC: t40 = 1.0 - t39
     ldi r24, 0
     ldi r25, 1
-    lds r22, t45
-    lds r23, t45 + 1
+    lds r22, t39
+    lds r23, t39 + 1
     sub r24, r22
     sbc r25, r23
-    sts t46, r24
-    sts t46 + 1, r25
-    ; TAC: t47 = MEM[T3]
+    sts t40, r24
+    sts t40 + 1, r25
+    ; TAC: t41 = MEM[T3]
     lds r24, T3
     lds r25, T3 + 1
+    sts t41, r24
+    sts t41 + 1, r25
+    ; TAC: t42 = t40 + t41
+    lds r24, t40
+    lds r25, t40 + 1
+    lds r22, t41
+    lds r23, t41 + 1
+    add r24, r22
+    adc r25, r23
+    sts t42, r24
+    sts t42 + 1, r25
+    ; TAC: t43 = MEM[T4]
+    lds r24, T4
+    lds r25, T4 + 1
+    sts t43, r24
+    sts t43 + 1, r25
+    ; TAC: t44 = t42 - t43
+    lds r24, t42
+    lds r25, t42 + 1
+    lds r22, t43
+    lds r23, t43 + 1
+    sub r24, r22
+    sbc r25, r23
+    sts t44, r24
+    sts t44 + 1, r25
+    ; TAC: t45 = MEM[T5]
+    lds r24, T5
+    lds r25, T5 + 1
+    sts t45, r24
+    sts t45 + 1, r25
+    ; TAC: t46 = t44 + t45
+    lds r24, t44
+    lds r25, t44 + 1
+    lds r22, t45
+    lds r23, t45 + 1
+    add r24, r22
+    adc r25, r23
+    sts t46, r24
+    sts t46 + 1, r25
+    ; TAC: t47 = MEM[T6]
+    lds r24, T6
+    lds r25, T6 + 1
     sts t47, r24
     sts t47 + 1, r25
-    ; TAC: t48 = t46 + t47
+    ; TAC: t48 = t46 - t47
     lds r24, t46
     lds r25, t46 + 1
     lds r22, t47
     lds r23, t47 + 1
-    add r24, r22
-    adc r25, r23
+    sub r24, r22
+    sbc r25, r23
     sts t48, r24
     sts t48 + 1, r25
-    ; TAC: t49 = MEM[T4]
-    lds r24, T4
-    lds r25, T4 + 1
-    sts t49, r24
-    sts t49 + 1, r25
-    ; TAC: t50 = t48 - t49
+    ; TAC: MEM[FINAL_COS] = t48
     lds r24, t48
     lds r25, t48 + 1
-    lds r22, t49
-    lds r23, t49 + 1
-    sub r24, r22
-    sbc r25, r23
-    sts t50, r24
-    sts t50 + 1, r25
-    ; TAC: t51 = MEM[T5]
-    lds r24, T5
-    lds r25, T5 + 1
-    sts t51, r24
-    sts t51 + 1, r25
-    ; TAC: t52 = t50 + t51
-    lds r24, t50
-    lds r25, t50 + 1
-    lds r22, t51
-    lds r23, t51 + 1
-    add r24, r22
-    adc r25, r23
-    sts t52, r24
-    sts t52 + 1, r25
-    ; TAC: t53 = MEM[T6]
-    lds r24, T6
-    lds r25, T6 + 1
-    sts t53, r24
-    sts t53 + 1, r25
-    ; TAC: t54 = t52 - t53
-    lds r24, t52
-    lds r25, t52 + 1
-    lds r22, t53
-    lds r23, t53 + 1
-    sub r24, r22
-    sbc r25, r23
-    sts t54, r24
-    sts t54 + 1, r25
-    ; TAC: MEM[FINAL_COS] = t54
-    lds r24, t54
-    lds r25, t54 + 1
     sts FINAL_COS, r24
     sts FINAL_COS + 1, r25
-    ; TAC: t55 = PRINT[t54]
-    lds r24, t54
-    lds r25, t54 + 1
+    ; TAC: HIST[t48]
+    lds r24, t48
+    lds r25, t48 + 1
     call res_save
-    call fx_print
-    call uart_newline
-    sts t55, r24
-    sts t55 + 1, r25
 
     ; # Linha 8
-    ; TAC: t56 = MEM[FINAL_COS]
+    ; TAC: t49 = MEM[FINAL_COS]
     lds r24, FINAL_COS
     lds r25, FINAL_COS + 1
-    sts t56, r24
-    sts t56 + 1, r25
-    ; TAC: t57 = PRINT[t56]
-    lds r24, t56
-    lds r25, t56 + 1
+    sts t49, r24
+    sts t49 + 1, r25
+    ; TAC: HIST[t49]
+    lds r24, t49
+    lds r25, t49 + 1
     call res_save
+    ; TAC: t50 = PRINT[t49]
+    lds r24, t49
+    lds r25, t49 + 1
     call fx_print
     call uart_newline
-    sts t57, r24
-    sts t57 + 1, r25
+    sts t50, r24
+    sts t50 + 1, r25
     ; --- Fim ---
 end_loop:
     rjmp end_loop

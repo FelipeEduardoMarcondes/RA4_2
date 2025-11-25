@@ -171,3 +171,22 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 ```
 **Restrição:** booleano == booleano
 
+---
+
+## Linha 8
+
+**Tipo Inferido Final:** `int`
+
+### Processo de Inferência (Bottom-Up)
+
+1. Nó 'id' (Valor: B): Regra 2.2 (Identificador) -> int
+
+### Regra de Dedução Formal (Nó Raiz)
+
+**Regra 2.2: Identificador**
+```
+Γ(B).tipo = int, Γ(B).inicializada = true
+──────────────────────────────────────────────
+Γ ⊢ B : int
+```
+

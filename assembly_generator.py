@@ -154,28 +154,36 @@ class AVRAssemblyGenerator:
             self.assembly.append(f"    sts {var_name} + 1, r25")
 
     def _processar_instrucao(self, inst):
-        # 1. PRINT
+        # 1. HIST (Novo comando para salvar no histórico)
+        # Adicione isto ANTES do PRINT ou logo no começo
+        if 'HIST[' in inst:
+            src = re.match(r'.*HIST\[(.*)\]', inst).group(1)
+            self._load_val(src, 'r24', 'r25')
+            self.assembly.append("    call res_save")
+            return True
+
+        # 2. PRINT (Modificado)
         if 'PRINT[' in inst:
             src = re.match(r'.*PRINT\[(.*)\]', inst).group(1)
             self._load_val(src, 'r24', 'r25')
-            self.assembly.append("    call res_save") 
+            
+            # [REMOVIDO] self.assembly.append("    call res_save")  <-- APAGUE ESTA LINHA
+            # O 'HIST' já salvou o valor antes, o PRINT agora só exibe.
             
             # DECISÃO DE MODO: Imprime Inteiro ou Fixo
             if self.int_mode:
                 self.assembly.append("    call print_int16")
-
             else:
                 self.assembly.append("    call fx_print")
                 
             self.assembly.append("    call uart_newline")
             
             dest_match = re.match(r'(\w+)\s*=', inst)
-
             if dest_match:
                 self._store_val(dest_match.group(1))
-
             return True
-
+            
+        # ... resto do código ...
         # 2. RES (Histórico)
         if 'RES[' in inst:
             match = re.match(r'(\w+)\s*=\s*RES\[(.*)\]', inst)

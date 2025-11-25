@@ -97,24 +97,3 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 Γ ⊢ FAT : int
 ```
 
----
-
-## Linha 5
-
-**Tipo Inferido Final:** `int`
-
-### Processo de Inferência (Bottom-Up)
-
-1. Nó 'num' (Valor: 1): Regra 2.1 (Literal) -> int
-2. Nó 'res' (Valor: RES): Regra 2.8 (Histórico) com N='int' -> int
-
-### Regra de Dedução Formal (Nó Raiz)
-
-**Regra 2.8: Histórico**
-```
-Γ ⊢ e₁ : int    e₁.valor ≥ 1    historico[...].tipo = T
-────────────────────────────────────────────────────────
-Γ ⊢ (e₁ RES) : int
-```
-Contexto: N = 1
-

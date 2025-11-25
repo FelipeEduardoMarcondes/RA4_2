@@ -1,7 +1,7 @@
 # MODO: INTEIRO
+
 # fatorial.txt
 # Calcula fatorial de números de 1 até 8
-# ATENÇÃO: Requer compilador em MODO INTEIRO (--int) pois 8! (40320) > 127
 
 # 1. Inicializar variáveis
 (1 N)
@@ -14,4 +14,3 @@
 
 # 3. Armazenar resultado final do loop
 (FAT)
-(1 RES)

@@ -1,19 +1,13 @@
 .section .bss
     .lcomm FAT, 2
     .lcomm N, 2
-    .lcomm t1, 2
-    .lcomm t10, 2
     .lcomm t11, 2
     .lcomm t13, 2
     .lcomm t14, 2
-    .lcomm t15, 2
-    .lcomm t16, 2
-    .lcomm t17, 2
-    .lcomm t19, 2
-    .lcomm t20, 2
+    .lcomm t2, 2
     .lcomm t3, 2
-    .lcomm t4, 2
     .lcomm t5, 2
+    .lcomm t6, 2
     .lcomm t7, 2
     .lcomm t8, 2
     .lcomm t9, 2
@@ -36,14 +30,10 @@ main:
     ldi r25, 0
     sts N, r24
     sts N + 1, r25
-    ; TAC: t1 = PRINT[1]
+    ; TAC: HIST[1]
     ldi r24, 1
     ldi r25, 0
     call res_save
-    call print_int16
-    call uart_newline
-    sts t1, r24
-    sts t1 + 1, r25
 
     ; # Linha 2
     ; TAC: MEM[FAT] = 1
@@ -51,134 +41,100 @@ main:
     ldi r25, 0
     sts FAT, r24
     sts FAT + 1, r25
-    ; TAC: t3 = PRINT[1]
+    ; TAC: HIST[1]
     ldi r24, 1
     ldi r25, 0
     call res_save
-    call print_int16
-    call uart_newline
-    sts t3, r24
-    sts t3 + 1, r25
 
     ; # Linha 3
 L0:
-    ; TAC: t5 = MEM[N]
+    ; TAC: t3 = MEM[N]
     lds r24, N
     lds r25, N + 1
-    sts t5, r24
-    sts t5 + 1, r25
-    ; TAC: t7 = t5 <= 8
-    lds r24, t5
-    lds r25, t5 + 1
+    sts t3, r24
+    sts t3 + 1, r25
+    ; TAC: t5 = t3 <= 8
+    lds r24, t3
+    lds r25, t3 + 1
     ldi r22, 8
     ldi r23, 0
     call op_le
-    sts t7, r24
-    sts t7 + 1, r25
-    ; TAC: ifFalse t7 goto L1
-    lds r24, t7
-    lds r25, t7 + 1
+    sts t5, r24
+    sts t5 + 1, r25
+    ; TAC: ifFalse t5 goto L1
+    lds r24, t5
+    lds r25, t5 + 1
     or r24, r25
     brne _skip_0
     rjmp L1
 _skip_0:
-    ; TAC: t8 = MEM[FAT]
+    ; TAC: t6 = MEM[FAT]
     lds r24, FAT
     lds r25, FAT + 1
+    sts t6, r24
+    sts t6 + 1, r25
+    ; TAC: t7 = MEM[N]
+    lds r24, N
+    lds r25, N + 1
+    sts t7, r24
+    sts t7 + 1, r25
+    ; TAC: t8 = t6 * t7
+    lds r24, t6
+    lds r25, t6 + 1
+    lds r22, t7
+    lds r23, t7 + 1
+    call mul16u
     sts t8, r24
     sts t8 + 1, r25
+    ; TAC: MEM[FAT] = t8
+    lds r24, t8
+    lds r25, t8 + 1
+    sts FAT, r24
+    sts FAT + 1, r25
     ; TAC: t9 = MEM[N]
     lds r24, N
     lds r25, N + 1
     sts t9, r24
     sts t9 + 1, r25
-    ; TAC: t10 = t8 * t9
-    lds r24, t8
-    lds r25, t8 + 1
-    lds r22, t9
-    lds r23, t9 + 1
-    call mul16u
-    sts t10, r24
-    sts t10 + 1, r25
-    ; TAC: MEM[FAT] = t10
-    lds r24, t10
-    lds r25, t10 + 1
-    sts FAT, r24
-    sts FAT + 1, r25
-    ; TAC: t11 = MEM[N]
-    lds r24, N
-    lds r25, N + 1
-    sts t11, r24
-    sts t11 + 1, r25
-    ; TAC: t13 = t11 + 1
-    lds r24, t11
-    lds r25, t11 + 1
+    ; TAC: t11 = t9 + 1
+    lds r24, t9
+    lds r25, t9 + 1
     ldi r22, 1
     ldi r23, 0
     add r24, r22
     adc r25, r23
-    sts t13, r24
-    sts t13 + 1, r25
-    ; TAC: MEM[N] = t13
-    lds r24, t13
-    lds r25, t13 + 1
+    sts t11, r24
+    sts t11 + 1, r25
+    ; TAC: MEM[N] = t11
+    lds r24, t11
+    lds r25, t11 + 1
     sts N, r24
     sts N + 1, r25
-    ; TAC: t14 = t10 * t13
-    lds r24, t10
-    lds r25, t10 + 1
-    lds r22, t13
-    lds r23, t13 + 1
-    call mul16u
-    sts t14, r24
-    sts t14 + 1, r25
-    ; TAC: t4 = t14
-    lds r24, t14
-    lds r25, t14 + 1
-    sts t4, r24
-    sts t4 + 1, r25
     ; TAC: goto L0
     rjmp L0
 L1:
-    ; TAC: t15 = PRINT[t4]
-    lds r24, t4
-    lds r25, t4 + 1
+    ; TAC: HIST[t2]
+    lds r24, t2
+    lds r25, t2 + 1
     call res_save
-    call print_int16
-    call uart_newline
-    sts t15, r24
-    sts t15 + 1, r25
 
     ; # Linha 4
-    ; TAC: t16 = MEM[FAT]
+    ; TAC: t13 = MEM[FAT]
     lds r24, FAT
     lds r25, FAT + 1
-    sts t16, r24
-    sts t16 + 1, r25
-    ; TAC: t17 = PRINT[t16]
-    lds r24, t16
-    lds r25, t16 + 1
+    sts t13, r24
+    sts t13 + 1, r25
+    ; TAC: HIST[t13]
+    lds r24, t13
+    lds r25, t13 + 1
     call res_save
+    ; TAC: t14 = PRINT[t13]
+    lds r24, t13
+    lds r25, t13 + 1
     call print_int16
     call uart_newline
-    sts t17, r24
-    sts t17 + 1, r25
-
-    ; # Linha 5
-    ; TAC: t19 = RES[1]
-    ldi r22, 1
-    ldi r23, 0
-    call res_fetch
-    sts t19, r24
-    sts t19 + 1, r25
-    ; TAC: t20 = PRINT[t19]
-    lds r24, t19
-    lds r25, t19 + 1
-    call res_save
-    call print_int16
-    call uart_newline
-    sts t20, r24
-    sts t20 + 1, r25
+    sts t14, r24
+    sts t14 + 1, r25
     ; --- Fim ---
 end_loop:
     rjmp end_loop

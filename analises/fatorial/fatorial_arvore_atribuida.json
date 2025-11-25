@@ -143,19 +143,5 @@
     "tipo_inferido": "int",
     "valor": "FAT",
     "filhos": []
-  },
-  {
-    "linha": 5,
-    "tipo_vertice": "res",
-    "tipo_inferido": "int",
-    "valor": "RES",
-    "filhos": [
-      {
-        "tipo_vertice": "num",
-        "tipo_inferido": "int",
-        "valor": 1,
-        "filhos": []
-      }
-    ]
   }
 ]

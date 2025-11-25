@@ -93,3 +93,11 @@ while : int = while
     └─ id : int = B
 ```
 
+## Expressão 8
+
+**Tipo inferido:** `int`
+
+```
+id : int = B
+```
+

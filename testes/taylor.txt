@@ -1,4 +1,5 @@
 # taylor.txt
+
 # Teste 3: Série de Taylor para cos(X) expandida (até termo 10)
 # Formula: cos(x) ~= 1 - x^2/2! + x^4/4! - x^6/6! + x^8/8! - x^10/10!
 

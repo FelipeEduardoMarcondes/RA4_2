@@ -274,5 +274,12 @@
         ]
       }
     ]
+  },
+  {
+    "linha": 8,
+    "tipo_vertice": "id",
+    "tipo_inferido": "int",
+    "valor": "B",
+    "filhos": []
   }
 ]
