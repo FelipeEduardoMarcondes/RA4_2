@@ -1,0 +1,334 @@
+[
+  {
+    "linha": 1,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 1,
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "N",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 2,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 1,
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "FAT",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 3,
+    "tipo_vertice": "while",
+    "tipo_inferido": "int",
+    "valor": "while",
+    "filhos": [
+      {
+        "tipo_vertice": "lte",
+        "tipo_inferido": "booleano",
+        "valor": "<=",
+        "filhos": [
+          {
+            "tipo_vertice": "id",
+            "tipo_inferido": "int",
+            "valor": "N",
+            "filhos": []
+          },
+          {
+            "tipo_vertice": "num",
+            "tipo_inferido": "int",
+            "valor": 8,
+            "filhos": []
+          }
+        ]
+      },
+      {
+        "tipo_vertice": "mult",
+        "tipo_inferido": "int",
+        "valor": "*",
+        "filhos": [
+          {
+            "tipo_vertice": "store",
+            "tipo_inferido": "int",
+            "valor": null,
+            "filhos": [
+              {
+                "tipo_vertice": "mult",
+                "tipo_inferido": "int",
+                "valor": "*",
+                "filhos": [
+                  {
+                    "tipo_vertice": "id",
+                    "tipo_inferido": "int",
+                    "valor": "FAT",
+                    "filhos": []
+                  },
+                  {
+                    "tipo_vertice": "id",
+                    "tipo_inferido": "int",
+                    "valor": "N",
+                    "filhos": []
+                  }
+                ]
+              },
+              {
+                "tipo_vertice": "id",
+                "tipo_inferido": null,
+                "valor": "FAT",
+                "filhos": []
+              }
+            ]
+          },
+          {
+            "tipo_vertice": "store",
+            "tipo_inferido": "int",
+            "valor": null,
+            "filhos": [
+              {
+                "tipo_vertice": "plus",
+                "tipo_inferido": "int",
+                "valor": "+",
+                "filhos": [
+                  {
+                    "tipo_vertice": "id",
+                    "tipo_inferido": "int",
+                    "valor": "N",
+                    "filhos": []
+                  },
+                  {
+                    "tipo_vertice": "num",
+                    "tipo_inferido": "int",
+                    "valor": 1,
+                    "filhos": []
+                  }
+                ]
+              },
+              {
+                "tipo_vertice": "id",
+                "tipo_inferido": null,
+                "valor": "N",
+                "filhos": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "linha": 4,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": "int",
+        "valor": "FAT",
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "RESULTADO",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 5,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 1,
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "NUM",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 6,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 1,
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "FATORIAL1",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 7,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 2,
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "NUM",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 8,
+    "tipo_vertice": "mult",
+    "tipo_inferido": "int",
+    "valor": "*",
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 1,
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 2,
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 9,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "res",
+        "tipo_inferido": "int",
+        "valor": "RES",
+        "filhos": [
+          {
+            "tipo_vertice": "num",
+            "tipo_inferido": "int",
+            "valor": 1,
+            "filhos": []
+          }
+        ]
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "FATORIAL2",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 10,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 3,
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "NUM",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 11,
+    "tipo_vertice": "mult",
+    "tipo_inferido": "int",
+    "valor": "*",
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 2,
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": "int",
+        "valor": "FATORIAL2",
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 12,
+    "tipo_vertice": "store",
+    "tipo_inferido": "int",
+    "valor": null,
+    "filhos": [
+      {
+        "tipo_vertice": "res",
+        "tipo_inferido": "int",
+        "valor": "RES",
+        "filhos": [
+          {
+            "tipo_vertice": "num",
+            "tipo_inferido": "int",
+            "valor": 1,
+            "filhos": []
+          }
+        ]
+      },
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": null,
+        "valor": "FATORIAL3",
+        "filhos": []
+      }
+    ]
+  }
+]

@@ -4,7 +4,7 @@
 
 
 # Linha 1
-t0 = 3.14
+t0 = 0.5
 MEM[X_VAL] = t0
 t1 = PRINT[t0]
 

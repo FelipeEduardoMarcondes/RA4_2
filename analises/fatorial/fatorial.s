@@ -1,31 +1,33 @@
 .section .bss
-    .lcomm A, 2
-    .lcomm B, 2
-    .lcomm I, 2
+    .lcomm FAT, 2
+    .lcomm FATORIAL1, 2
+    .lcomm FATORIAL2, 2
+    .lcomm FATORIAL3, 2
     .lcomm N, 2
-    .lcomm TEMP, 2
+    .lcomm NUM, 2
+    .lcomm RESULTADO, 2
     .lcomm t1, 2
     .lcomm t10, 2
     .lcomm t11, 2
-    .lcomm t12, 2
     .lcomm t13, 2
     .lcomm t14, 2
     .lcomm t15, 2
     .lcomm t16, 2
     .lcomm t17, 2
-    .lcomm t18, 2
     .lcomm t19, 2
     .lcomm t21, 2
-    .lcomm t22, 2
-    .lcomm t24, 2
-    .lcomm t28, 2
+    .lcomm t23, 2
+    .lcomm t27, 2
     .lcomm t29, 2
     .lcomm t3, 2
     .lcomm t30, 2
-    .lcomm t31, 2
     .lcomm t32, 2
-    .lcomm t33, 2
     .lcomm t34, 2
+    .lcomm t35, 2
+    .lcomm t36, 2
+    .lcomm t38, 2
+    .lcomm t39, 2
+    .lcomm t4, 2
     .lcomm t5, 2
     .lcomm t7, 2
     .lcomm t8, 2
@@ -33,231 +35,281 @@
 .section .text
 .global main
 main:
+    ; --- Setup Inicial ---
     ldi r16, 0x08
     out 0x3E, r16
     ldi r16, 0xFF
     out 0x3D, r16
-    call uart_init
-    call res_init
-    ; TAC: MEM[A] = 0
+    call uart_init  ; Inicia Serial
+    call res_init   ; Inicia Buffer RES
+    ; --- Inicio do Programa ---
+
+    ; # Linha 1
+    ; TAC: MEM[N] = 1
     ldi r24, 0
-    ldi r25, 0
-    sts A, r24
-    sts A + 1, r25
-    ; TAC: t1 = PRINT[0]
+    ldi r25, 1
+    sts N, r24
+    sts N + 1, r25
+    ; TAC: t1 = PRINT[1]
     ldi r24, 0
-    ldi r25, 0
+    ldi r25, 1
     call res_save
-    call print_int16
+    call fx_print
     call uart_newline
     sts t1, r24
     sts t1 + 1, r25
-    ; TAC: MEM[B] = 1
-    ldi r24, 1
-    ldi r25, 0
-    sts B, r24
-    sts B + 1, r25
+
+    ; # Linha 2
+    ; TAC: MEM[FAT] = 1
+    ldi r24, 0
+    ldi r25, 1
+    sts FAT, r24
+    sts FAT + 1, r25
     ; TAC: t3 = PRINT[1]
-    ldi r24, 1
-    ldi r25, 0
+    ldi r24, 0
+    ldi r25, 1
     call res_save
-    call print_int16
+    call fx_print
     call uart_newline
     sts t3, r24
     sts t3 + 1, r25
-    ; TAC: MEM[I] = 0
-    ldi r24, 0
-    ldi r25, 0
-    sts I, r24
-    sts I + 1, r25
-    ; TAC: t5 = PRINT[0]
-    ldi r24, 0
-    ldi r25, 0
-    call res_save
-    call print_int16
-    call uart_newline
-    sts t5, r24
-    sts t5 + 1, r25
-    ; TAC: MEM[N] = 2
-    ldi r24, 2
-    ldi r25, 0
-    sts N, r24
-    sts N + 1, r25
-    ; TAC: t7 = PRINT[2]
-    ldi r24, 2
-    ldi r25, 0
-    call res_save
-    call print_int16
-    call uart_newline
-    sts t7, r24
-    sts t7 + 1, r25
-    ; TAC: t8 = MEM[A]
-    lds r24, A
-    lds r25, A + 1
-    sts t8, r24
-    sts t8 + 1, r25
-    ; TAC: t9 = PRINT[t8]
-    lds r24, t8
-    lds r25, t8 + 1
-    call res_save
-    call print_int16
-    call uart_newline
-    sts t9, r24
-    sts t9 + 1, r25
-    ; TAC: t10 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
-    sts t10, r24
-    sts t10 + 1, r25
-    ; TAC: t11 = PRINT[t10]
-    lds r24, t10
-    lds r25, t10 + 1
-    call res_save
-    call print_int16
-    call uart_newline
-    sts t11, r24
-    sts t11 + 1, r25
+
+    ; # Linha 3
 L0:
-    ; TAC: t13 = MEM[I]
-    lds r24, I
-    lds r25, I + 1
-    sts t13, r24
-    sts t13 + 1, r25
-    ; TAC: t14 = MEM[N]
+    ; TAC: t5 = MEM[N]
     lds r24, N
     lds r25, N + 1
+    sts t5, r24
+    sts t5 + 1, r25
+    ; TAC: ifFalse t7 goto L1
+    lds r24, t7
+    lds r25, t7 + 1
+    or r24, r25
+    brne _skip_0
+    rjmp L1
+_skip_0:
+    ; TAC: t8 = MEM[FAT]
+    lds r24, FAT
+    lds r25, FAT + 1
+    sts t8, r24
+    sts t8 + 1, r25
+    ; TAC: t9 = MEM[N]
+    lds r24, N
+    lds r25, N + 1
+    sts t9, r24
+    sts t9 + 1, r25
+    ; TAC: t10 = t8 * t9
+    lds r24, t8
+    lds r25, t8 + 1
+    lds r22, t9
+    lds r23, t9 + 1
+    call fx_mul
+    sts t10, r24
+    sts t10 + 1, r25
+    ; TAC: MEM[FAT] = t10
+    lds r24, t10
+    lds r25, t10 + 1
+    sts FAT, r24
+    sts FAT + 1, r25
+    ; TAC: t11 = MEM[N]
+    lds r24, N
+    lds r25, N + 1
+    sts t11, r24
+    sts t11 + 1, r25
+    ; TAC: t13 = t11 + 1
+    lds r24, t11
+    lds r25, t11 + 1
+    ldi r22, 0
+    ldi r23, 1
+    add r24, r22
+    adc r25, r23
+    sts t13, r24
+    sts t13 + 1, r25
+    ; TAC: MEM[N] = t13
+    lds r24, t13
+    lds r25, t13 + 1
+    sts N, r24
+    sts N + 1, r25
+    ; TAC: t14 = t10 * t13
+    lds r24, t10
+    lds r25, t10 + 1
+    lds r22, t13
+    lds r23, t13 + 1
+    call fx_mul
     sts t14, r24
     sts t14 + 1, r25
-    ; TAC: ifFalse t15 goto L1
-    lds r24, t15
-    lds r25, t15 + 1
-    or r24, r25
-    brne _skip_jmp_0
-    rjmp L1
-_skip_jmp_0:
-    ; TAC: t16 = MEM[A]
-    lds r24, A
-    lds r25, A + 1
-    sts t16, r24
-    sts t16 + 1, r25
-    ; TAC: t17 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
-    sts t17, r24
-    sts t17 + 1, r25
-    ; TAC: t18 = t16 + t17
-    lds r24, t16
-    lds r25, t16 + 1
-    lds r22, t17
-    lds r23, t17 + 1
-    add r24, r22
-    adc r25, r23
-    sts t18, r24
-    sts t18 + 1, r25
-    ; TAC: MEM[TEMP] = t18
-    lds r24, t18
-    lds r25, t18 + 1
-    sts TEMP, r24
-    sts TEMP + 1, r25
-    ; TAC: t19 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
-    sts t19, r24
-    sts t19 + 1, r25
-    ; TAC: MEM[A] = t19
-    lds r24, t19
-    lds r25, t19 + 1
-    sts A, r24
-    sts A + 1, r25
-    ; TAC: t21 = MEM[TEMP]
-    lds r24, TEMP
-    lds r25, TEMP + 1
-    sts t21, r24
-    sts t21 + 1, r25
-    ; TAC: MEM[B] = t21
-    lds r24, t21
-    lds r25, t21 + 1
-    sts B, r24
-    sts B + 1, r25
-    ; TAC: t22 = MEM[I]
-    lds r24, I
-    lds r25, I + 1
-    sts t22, r24
-    sts t22 + 1, r25
-    ; TAC: t24 = t22 + 1
-    lds r24, t22
-    lds r25, t22 + 1
-    ldi r22, 1
-    ldi r23, 0
-    add r24, r22
-    adc r25, r23
-    sts t24, r24
-    sts t24 + 1, r25
-    ; TAC: MEM[I] = t24
-    lds r24, t24
-    lds r25, t24 + 1
-    sts I, r24
-    sts I + 1, r25
-    ; TAC: ifFalse t28 goto L2
-    lds r24, t28
-    lds r25, t28 + 1
-    or r24, r25
-    brne _skip_jmp_1
-    rjmp L2
-_skip_jmp_1:
-    ; TAC: t30 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
-    sts t30, r24
-    sts t30 + 1, r25
-    ; TAC: t29 = t30
-    lds r24, t30
-    lds r25, t30 + 1
-    sts t29, r24
-    sts t29 + 1, r25
-    ; TAC: goto L3
-    rjmp L3
-L2:
-    ; TAC: t31 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
-    sts t31, r24
-    sts t31 + 1, r25
-    ; TAC: t29 = t31
-    lds r24, t31
-    lds r25, t31 + 1
-    sts t29, r24
-    sts t29 + 1, r25
-L3:
-    ; TAC: t12 = t29
-    lds r24, t29
-    lds r25, t29 + 1
-    sts t12, r24
-    sts t12 + 1, r25
+    ; TAC: t4 = t14
+    lds r24, t14
+    lds r25, t14 + 1
+    sts t4, r24
+    sts t4 + 1, r25
     ; TAC: goto L0
     rjmp L0
 L1:
-    ; TAC: t32 = PRINT[t12]
-    lds r24, t12
-    lds r25, t12 + 1
+    ; TAC: t15 = PRINT[t4]
+    lds r24, t4
+    lds r25, t4 + 1
     call res_save
-    call print_int16
+    call fx_print
+    call uart_newline
+    sts t15, r24
+    sts t15 + 1, r25
+
+    ; # Linha 4
+    ; TAC: t16 = MEM[FAT]
+    lds r24, FAT
+    lds r25, FAT + 1
+    sts t16, r24
+    sts t16 + 1, r25
+    ; TAC: MEM[RESULTADO] = t16
+    lds r24, t16
+    lds r25, t16 + 1
+    sts RESULTADO, r24
+    sts RESULTADO + 1, r25
+    ; TAC: t17 = PRINT[t16]
+    lds r24, t16
+    lds r25, t16 + 1
+    call res_save
+    call fx_print
+    call uart_newline
+    sts t17, r24
+    sts t17 + 1, r25
+
+    ; # Linha 5
+    ; TAC: MEM[NUM] = 1
+    ldi r24, 0
+    ldi r25, 1
+    sts NUM, r24
+    sts NUM + 1, r25
+    ; TAC: t19 = PRINT[1]
+    ldi r24, 0
+    ldi r25, 1
+    call res_save
+    call fx_print
+    call uart_newline
+    sts t19, r24
+    sts t19 + 1, r25
+
+    ; # Linha 6
+    ; TAC: MEM[FATORIAL1] = 1
+    ldi r24, 0
+    ldi r25, 1
+    sts FATORIAL1, r24
+    sts FATORIAL1 + 1, r25
+    ; TAC: t21 = PRINT[1]
+    ldi r24, 0
+    ldi r25, 1
+    call res_save
+    call fx_print
+    call uart_newline
+    sts t21, r24
+    sts t21 + 1, r25
+
+    ; # Linha 7
+    ; TAC: MEM[NUM] = 2
+    ldi r24, 0
+    ldi r25, 2
+    sts NUM, r24
+    sts NUM + 1, r25
+    ; TAC: t23 = PRINT[2]
+    ldi r24, 0
+    ldi r25, 2
+    call res_save
+    call fx_print
+    call uart_newline
+    sts t23, r24
+    sts t23 + 1, r25
+
+    ; # Linha 8
+    ; TAC: t27 = PRINT[2]
+    ldi r24, 0
+    ldi r25, 2
+    call res_save
+    call fx_print
+    call uart_newline
+    sts t27, r24
+    sts t27 + 1, r25
+
+    ; # Linha 9
+    ; TAC: t29 = RES[1]
+    ldi r22, 1
+    ldi r23, 0
+    call res_fetch
+    sts t29, r24
+    sts t29 + 1, r25
+    ; TAC: MEM[FATORIAL2] = t29
+    lds r24, t29
+    lds r25, t29 + 1
+    sts FATORIAL2, r24
+    sts FATORIAL2 + 1, r25
+    ; TAC: t30 = PRINT[t29]
+    lds r24, t29
+    lds r25, t29 + 1
+    call res_save
+    call fx_print
+    call uart_newline
+    sts t30, r24
+    sts t30 + 1, r25
+
+    ; # Linha 10
+    ; TAC: MEM[NUM] = 3
+    ldi r24, 0
+    ldi r25, 3
+    sts NUM, r24
+    sts NUM + 1, r25
+    ; TAC: t32 = PRINT[3]
+    ldi r24, 0
+    ldi r25, 3
+    call res_save
+    call fx_print
     call uart_newline
     sts t32, r24
     sts t32 + 1, r25
-    ; TAC: t33 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
-    sts t33, r24
-    sts t33 + 1, r25
-    ; TAC: t34 = PRINT[t33]
-    lds r24, t33
-    lds r25, t33 + 1
-    call res_save
-    call print_int16
-    call uart_newline
+
+    ; # Linha 11
+    ; TAC: t34 = MEM[FATORIAL2]
+    lds r24, FATORIAL2
+    lds r25, FATORIAL2 + 1
     sts t34, r24
     sts t34 + 1, r25
+    ; TAC: t35 = 2 * t34
+    ldi r24, 0
+    ldi r25, 2
+    lds r22, t34
+    lds r23, t34 + 1
+    call fx_mul
+    sts t35, r24
+    sts t35 + 1, r25
+    ; TAC: t36 = PRINT[t35]
+    lds r24, t35
+    lds r25, t35 + 1
+    call res_save
+    call fx_print
+    call uart_newline
+    sts t36, r24
+    sts t36 + 1, r25
+
+    ; # Linha 12
+    ; TAC: t38 = RES[1]
+    ldi r22, 1
+    ldi r23, 0
+    call res_fetch
+    sts t38, r24
+    sts t38 + 1, r25
+    ; TAC: MEM[FATORIAL3] = t38
+    lds r24, t38
+    lds r25, t38 + 1
+    sts FATORIAL3, r24
+    sts FATORIAL3 + 1, r25
+    ; TAC: t39 = PRINT[t38]
+    lds r24, t38
+    lds r25, t38 + 1
+    call res_save
+    call fx_print
+    call uart_newline
+    sts t39, r24
+    sts t39 + 1, r25
+    ; --- Fim ---
 end_loop:
     rjmp end_loop
 
@@ -484,37 +536,86 @@ d16_end:
     pop r16
     ret
 
-; === LIB: lib_avr/math_inteiro.s ===
-; lib_avr/math_inteiro.s
-; Biblioteca Alternativa para Inteiros Grandes (Unsigned)
-; Substitui math_signed.s para os testes de Fibonacci/Fatorial
+; === LIB: lib_avr/math_signed.s ===
+; lib_avr/math_signed.s
+; Wrappers para operações com sinal e impressão
 
 .section .text
 
-; === DIV16S (Mantido apenas para compatibilidade de linkagem) ===
-; Mas implementado como DIV16U (Unsigned)
+; === DIV16S (Divisão com Sinal) ===
+; R25:R24 / R23:R22 -> R25:R24
 .global div16s
 div16s:
-    call div16u
+    push r16            ; Guarda sinal do resultado
+    push r14            ; Salva contexto que div16u vai sujar
+    push r15
+    clr r16
+    
+    ; Checa sinal do Dividendo
+    sbrs r25, 7
+    rjmp chk_div
+    inc r16             ; Sinal++
+    call negate_r24     ; Torna positivo
+
+chk_div:
+    ; Checa sinal do Divisor
+    sbrs r23, 7
+    rjmp do_div
+    inc r16             ; Sinal++
+    call negate_r22     ; Torna positivo
+
+do_div:
+    call div16u         ; Faz a divisão unsigned
+    
+    ; Se r16 for ímpar (1), o resultado é negativo
+    sbrs r16, 0
+    rjmp end_divs
+    call negate_r24     ; Inverte resultado
+
+end_divs:
+    pop r15
+    pop r14
+    pop r16
     ret
 
-; === PRINT_INT16 (Versão Unsigned 0-65535) ===
-; Ignora sinal para permitir imprimir até 65535 (ex: Fibo 24 = 46368)
+negate_r24:
+    com r25
+    neg r24
+    sbci r25, 0xFF
+    ret
+
+negate_r22:
+    com r23
+    neg r22
+    sbci r23, 0xFF
+    ret
+
+; === PRINT_INT16 (Impressão Decimal) ===
 .global print_int16
 print_int16:
     push r24
     push r25
-    push r16
+    push r16 ; Preserva registradores que usaremos
     
-    ; Caso especial: se for 0
+    ; Verifica se é 0 (caso especial simples)
     mov r16, r24
     or r16, r25
-    brne p_start
+    brne check_sign
     ldi r24, '0'
     call uart_tx
     rjmp p_end
 
-p_start:
+check_sign:
+    sbrs r25, 7         ; Verifica sinal
+    rjmp p_start_rec
+    
+    push r24
+    ldi r24, '-'
+    call uart_tx        ; Imprime '-'
+    pop r24
+    call negate_r24     ; Torna positivo
+
+p_start_rec:
     call p_rec
 
 p_end:
@@ -523,8 +624,9 @@ p_end:
     pop r24
     ret
 
-; Função recursiva de impressão
+; Função recursiva interna
 p_rec:
+    ; Se o número for 0, retorna (fim da recursão)
     mov r16, r24
     or r16, r25
     breq p_ret
@@ -534,19 +636,22 @@ p_rec:
     
     ldi r22, 10
     ldi r23, 0
-    call div16u     ; Divisão SEM sinal
+    call div16u     ; R25:R24 = Quociente, R15:R14 = Resto
     
-    push r14        ; Salva resto
-    call p_rec      ; Recursão
-    pop r24         ; Recupera resto
+    ; O resto (R14) é o dígito que queremos imprimir DEPOIS da recursão
+    push r14        ; Salva o dígito na pilha
+
+    call p_rec      ; Recursão com o Quociente (que já está em R25:R24)
     
-    subi r24, -'0'
+    pop r24         ; Recupera o dígito (estava em R14)
+    subi r24, -'0'  ; Converte para ASCII (add 48)
     call uart_tx
     
     pop r25
     pop r24
 p_ret:
     ret
+
 
 ; === LIB: lib_avr/math_fixed.s ===
 ; lib_avr/math_fixed.s

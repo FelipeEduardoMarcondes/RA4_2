@@ -11,6 +11,8 @@ from otimizador import TACOptimizer
 # Importa o NOVO gerador
 from assembly_generator_int import AVRAssemblyGeneratorInt, salvarAssemblyInt
 from assembly_generator import gerarHex, uploadHex # Reutiliza funções auxiliares
+from tac_generator import TACGenerator, salvarTAC  # <--- Adicione salvarTAC
+from otimizador import TACOptimizer, salvarTACOtimizado # <--- Adicione salvarTACOtimizado
 
 def main():
     if len(sys.argv) != 2:
@@ -49,7 +51,32 @@ def main():
     # 4. Otimização
     opt = TACOptimizer()
     tac_opt = opt.otimizarTAC(tac)
+    # ... (código anterior) ...
+
+    # Defina os nomes dos arquivos
+    tac_file = os.path.join(output_dir, f"{base_name}_tac.txt")
+    tac_opt_file = os.path.join(output_dir, f"{base_name}_tac_otimizado.txt")
+
+    # 3. TAC
+    tac_gen = TACGenerator()
+    tac = tac_gen.gerarTAC(arvore_anotada)
     
+    # --- ADICIONE ISTO ---
+    salvarTAC(tac, tac_file)
+    print(f"TAC salvo: {tac_file}")
+    # ---------------------
+    
+    # 4. Otimização
+    opt = TACOptimizer()
+    tac_opt = opt.otimizarTAC(tac)
+    
+    # --- ADICIONE ISTO ---
+    salvarTACOtimizado(tac_opt, tac_opt_file)
+    print(f"TAC Otimizado salvo: {tac_opt_file}")
+    # ---------------------
+
+    # 5. Assembly (USANDO O GERADOR MODIFICADO)
+    # ... (resto do código igual) ...
     # 5. Assembly (USANDO O GERADOR MODIFICADO)
     print("Gerando Assembly para inteiros sem sinal...")
     asm_gen = AVRAssemblyGeneratorInt()

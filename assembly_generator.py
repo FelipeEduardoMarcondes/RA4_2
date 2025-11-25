@@ -17,6 +17,7 @@ class AVRAssemblyGenerator:
         self.assembly = []
         self.bss_section = [] # Variáveis na RAM
         self.vars_declared = set()
+        self.label_counter = 0
     
     def gerarAssembly(self, tac_instructions):
         self.assembly = []
@@ -238,9 +239,26 @@ class AVRAssemblyGenerator:
         if 'ifFalse' in inst:
             cond, label = re.match(r'ifFalse\s+(.*)\s+goto\s+(\w+)', inst).groups()
             self._load_val(cond, 'r24', 'r25')
+
             # Verifica se é zero (Falso)
             self.assembly.append("    or r24, r25")
-            self.assembly.append(f"    breq {label}") # Se zero, pula
+
+            # --- CORREÇÃO R_AVR_7_PCREL (TRAMPOLIM) ---
+            # Em vez de 'breq label' direto, usamos lógica invertida
+
+            skip_label = f"_skip_{self.label_counter}"
+            self.label_counter += 1
+
+            # Se NÃO for zero (True), pula o rjmp e continua o fluxo
+            self.assembly.append(f"    brne {skip_label}") 
+
+            # Se for zero (False), executa o rjmp (que alcança longe) para o alvo
+            self.assembly.append(f"    rjmp {label}")
+
+            # Alvo do pulo curto
+            self.assembly.append(f"{skip_label}:")
+            # ------------------------------------------
+
             return True
             
         if 'goto' in inst:

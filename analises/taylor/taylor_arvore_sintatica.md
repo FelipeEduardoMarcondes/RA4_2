@@ -8,7 +8,7 @@
 
 ```
 store : real
-  ├─ num : real = 3.14
+  ├─ num : real = 0.5
   └─ id = X_VAL
 ```
 
