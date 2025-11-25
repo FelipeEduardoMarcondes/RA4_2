@@ -198,8 +198,9 @@ class TACOptimizer:
             if inst.startswith('#') or ':' in inst:
                 continue
             
-            # **CRÍTICO: Instruções com efeitos colaterais SEMPRE são consideradas usadas**
-            if any(keyword in inst for keyword in ['PRINT[', 'MEM[', 'RES[', 'goto', 'ifFalse']):
+            # --- CORREÇÃO AQUI (Passagem 1) ---
+            # Removemos 'goto' e 'ifFalse' desta lista para que caiam na verificação específica abaixo
+            if any(keyword in inst for keyword in ['PRINT[', 'MEM[', 'RES[']):
                 # Marca TODAS as variáveis do lado direito como usadas
                 parts = inst.split('=')
                 if len(parts) > 1:
@@ -208,13 +209,13 @@ class TACOptimizer:
                     used_vars.update(used_in_right)
                 continue
             
-            # Variáveis usadas no lado direito
+            # Variáveis usadas no lado direito (Atribuições normais)
             if '=' in inst:
                 _, right_side = inst.split('=', 1)
                 used_in_right = re.findall(r'\b(t\d+)\b', right_side)
                 used_vars.update(used_in_right)
             
-            # Variáveis usadas em condicionais
+            # Variáveis usadas em condicionais (AGORA O CÓDIGO CHEGA AQUI)
             if 'ifFalse' in inst or 'goto' in inst:
                 used_in_cond = re.findall(r'\b(t\d+)\b', inst)
                 used_vars.update(used_in_cond)
@@ -227,7 +228,8 @@ class TACOptimizer:
                 optimized.append(inst)
                 continue
             
-            # **NUNCA remover instruções com efeitos colaterais**
+            # --- MANTER ISTO (Passagem 2) ---
+            # Aqui mantemos 'goto' e 'ifFalse' para não removê-las da saída
             if any(keyword in inst for keyword in ['PRINT[', 'MEM[', 'RES[', 'goto', 'ifFalse']):
                 optimized.append(inst)
                 continue
@@ -245,7 +247,6 @@ class TACOptimizer:
             optimized.append(inst)
         
         return optimized
-    
     def _eliminate_redundant_jumps(self, instructions):
         """
         Remove saltos redundantes (saltos para a próxima instrução).

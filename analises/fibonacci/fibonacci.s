@@ -15,17 +15,18 @@
     .lcomm t17, 2
     .lcomm t18, 2
     .lcomm t19, 2
+    .lcomm t20, 2
     .lcomm t21, 2
     .lcomm t22, 2
     .lcomm t24, 2
+    .lcomm t25, 2
+    .lcomm t26, 2
     .lcomm t28, 2
     .lcomm t29, 2
     .lcomm t3, 2
     .lcomm t30, 2
     .lcomm t31, 2
     .lcomm t32, 2
-    .lcomm t33, 2
-    .lcomm t34, 2
     .lcomm t5, 2
     .lcomm t7, 2
     .lcomm t8, 2
@@ -33,6 +34,8 @@
 .section .text
 .global main
 main:
+    ; --- Setup Inicial ---
+    clr r1
     ldi r16, 0x08
     out 0x3E, r16
     ldi r16, 0xFF
@@ -78,13 +81,13 @@ main:
     call uart_newline
     sts t5, r24
     sts t5 + 1, r25
-    ; TAC: MEM[N] = 2
-    ldi r24, 2
+    ; TAC: MEM[N] = 23
+    ldi r24, 23
     ldi r25, 0
     sts N, r24
     sts N + 1, r25
-    ; TAC: t7 = PRINT[2]
-    ldi r24, 2
+    ; TAC: t7 = PRINT[23]
+    ldi r24, 23
     ldi r25, 0
     call res_save
     call print_int16
@@ -128,6 +131,14 @@ L0:
     lds r25, N + 1
     sts t14, r24
     sts t14 + 1, r25
+    ; TAC: t15 = t13 < t14
+    lds r24, t13
+    lds r25, t13 + 1
+    lds r22, t14
+    lds r23, t14 + 1
+    call op_lt
+    sts t15, r24
+    sts t15 + 1, r25
     ; TAC: ifFalse t15 goto L1
     lds r24, t15
     lds r25, t15 + 1
@@ -169,6 +180,15 @@ _skip_jmp_0:
     lds r25, t19 + 1
     sts A, r24
     sts A + 1, r25
+    ; TAC: t20 = t18 + t19
+    lds r24, t18
+    lds r25, t18 + 1
+    lds r22, t19
+    lds r23, t19 + 1
+    add r24, r22
+    adc r25, r23
+    sts t20, r24
+    sts t20 + 1, r25
     ; TAC: t21 = MEM[TEMP]
     lds r24, TEMP
     lds r25, TEMP + 1
@@ -198,6 +218,32 @@ _skip_jmp_0:
     lds r25, t24 + 1
     sts I, r24
     sts I + 1, r25
+    ; TAC: t25 = t21 + t24
+    lds r24, t21
+    lds r25, t21 + 1
+    lds r22, t24
+    lds r23, t24 + 1
+    add r24, r22
+    adc r25, r23
+    sts t25, r24
+    sts t25 + 1, r25
+    ; TAC: t26 = t20 + t25
+    lds r24, t20
+    lds r25, t20 + 1
+    lds r22, t25
+    lds r23, t25 + 1
+    add r24, r22
+    adc r25, r23
+    sts t26, r24
+    sts t26 + 1, r25
+    ; TAC: t28 = t26 > 0
+    lds r24, t26
+    lds r25, t26 + 1
+    ldi r22, 0
+    ldi r23, 0
+    call op_gt
+    sts t28, r24
+    sts t28 + 1, r25
     ; TAC: ifFalse t28 goto L2
     lds r24, t28
     lds r25, t28 + 1
@@ -245,19 +291,6 @@ L1:
     call uart_newline
     sts t32, r24
     sts t32 + 1, r25
-    ; TAC: t33 = MEM[B]
-    lds r24, B
-    lds r25, B + 1
-    sts t33, r24
-    sts t33 + 1, r25
-    ; TAC: t34 = PRINT[t33]
-    lds r24, t33
-    lds r25, t33 + 1
-    call res_save
-    call print_int16
-    call uart_newline
-    sts t34, r24
-    sts t34 + 1, r25
 end_loop:
     rjmp end_loop
 
@@ -486,27 +519,23 @@ d16_end:
 
 ; === LIB: lib_avr/math_inteiro.s ===
 ; lib_avr/math_inteiro.s
-; Biblioteca Alternativa para Inteiros Grandes (Unsigned)
-; Substitui math_signed.s para os testes de Fibonacci/Fatorial
-
 .section .text
 
-; === DIV16S (Mantido apenas para compatibilidade de linkagem) ===
-; Mas implementado como DIV16U (Unsigned)
+; === DIV16S ===
+; Redireciona para div16u (ignora sinal para suportar uint16 até 65535)
 .global div16s
 div16s:
     call div16u
     ret
 
-; === PRINT_INT16 (Versão Unsigned 0-65535) ===
-; Ignora sinal para permitir imprimir até 65535 (ex: Fibo 24 = 46368)
+; === PRINT_INT16 (Unsigned) ===
 .global print_int16
 print_int16:
     push r24
     push r25
     push r16
     
-    ; Caso especial: se for 0
+    ; Se for zero, imprime '0' direto
     mov r16, r24
     or r16, r25
     brne p_start
@@ -523,8 +552,9 @@ p_end:
     pop r24
     ret
 
-; Função recursiva de impressão
+; Recursão para imprimir dígitos
 p_rec:
+    ; Verifica se num == 0
     mov r16, r24
     or r16, r25
     breq p_ret
@@ -534,249 +564,18 @@ p_rec:
     
     ldi r22, 10
     ldi r23, 0
-    call div16u     ; Divisão SEM sinal
+    call div16u     ; R25:R24 = Quociente, R15:R14 = Resto
     
-    push r14        ; Salva resto
-    call p_rec      ; Recursão
-    pop r24         ; Recupera resto
+    push r14        ; Salva o resto (dígito atual) na pilha
+    call p_rec      ; Chama recursão com o quociente
+    pop r24         ; Recupera o resto da pilha para R24
     
-    subi r24, -'0'
-    call uart_tx
+    subi r24, -'0'  ; Converte para ASCII
+    call uart_tx    ; Imprime
     
     pop r25
     pop r24
 p_ret:
-    ret
-
-; === LIB: lib_avr/math_fixed.s ===
-; lib_avr/math_fixed.s
-; Aritmética Q8.8 (Ponto Fixo) - CORRIGIDO
-
-.section .text
-
-; === FX_MUL (Multiplicação Q8.8) ===
-.global fx_mul
-fx_mul:
-    push r20
-    push r21
-    push r16
-    
-    clr r16
-    sbrs r25, 7
-    rjmp chk_b_mul
-    inc r16
-    call fx_neg_a_local
-chk_b_mul:
-    sbrs r23, 7
-    rjmp do_mul
-    inc r16
-    call fx_neg_b_local
-
-do_mul:
-    call mul16_32       ; R25..R22
-    mov r25, r24
-    mov r24, r23
-    
-    sbrs r16, 0
-    rjmp mul_end
-    call fx_neg_a_local
-
-mul_end:
-    pop r16
-    pop r21
-    pop r20
-    ret
-
-; === FX_DIV (Divisão Q8.8) ===
-.global fx_div
-fx_div:
-    ; Salva contexto completo
-    push r14
-    push r15
-    push r16
-    push r17
-    push r18
-    push r19
-    push r20
-    push r21
-    push r28 ; Usaremos R28 para guardar o sinal
-
-    ; 1. Calcula Sinal
-    clr r28
-    sbrs r25, 7
-    rjmp div_check_b
-    inc r28
-    call fx_neg_a_local
-div_check_b:
-    sbrs r23, 7
-    rjmp div_setup
-    inc r28
-    call fx_neg_b_local
-
-div_setup:
-    ; 2. Configura Divisor (B) em R21:R18
-    mov r18, r22  ; B Low
-    mov r19, r23  ; B High
-    clr r20       ; Zero
-    clr r21       ; Zero
-
-    ; 3. Configura Dividendo (A) << 8 em R25:R22
-    ; Entrada A: R25:R24
-    mov r22, r25  ; Temp High
-    
-    mov r23, r24  ; A Low -> Byte 1
-    mov r24, r22  ; A High -> Byte 2
-    clr r22       ; Byte 0 = 0
-    clr r25       ; Byte 3 = 0
-    
-    ; 4. Executa Divisão 32 bits
-    call div32u   ; Quociente em R25:R22
-    
-    ; 5. Resultado Q8.8 está nos bytes do meio (R23:R22 do resultado)
-    ; Se entrada foi escalada em 8 bits, o resultado da div inteira
-    ; já está na escala correta se interpretarmos R22 como fração e R23 como inteiro.
-    ; Precisamos mover R23:R22 -> R25:R24
-    
-    movw r24, r22 ; Copia R23:R22 para R25:R24
-    
-    ; 6. Aplica Sinal
-    sbrs r28, 0
-    rjmp div_restore
-    call fx_neg_a_local
-
-div_restore:
-    pop r28
-    pop r21
-    pop r20
-    pop r19
-    pop r18
-    pop r17
-    pop r16
-    pop r15
-    pop r14
-    ret
-
-; === FX_POW (Potência) ===
-.global fx_pow
-fx_pow:
-    push r20
-    push r21
-    push r22 ; Exp
-    push r26
-    push r27
-    
-    mov r26, r22
-    
-    cpi r26, 0
-    brne pow_chk_1
-    ldi r24, 0x00
-    ldi r25, 0x01 ; 1.0
-    rjmp pow_ret
-
-pow_chk_1:
-    cpi r26, 1
-    breq pow_ret
-    
-    movw r20, r24 ; Base fixa
-    dec r26
-
-pow_loop:
-    movw r22, r20
-    call fx_mul
-    dec r26
-    brne pow_loop
-
-pow_ret:
-    pop r27
-    pop r26
-    pop r22
-    pop r21
-    pop r20
-    ret
-
-; Auxiliares
-fx_neg_a_local:
-    com r25
-    neg r24
-    sbci r25, 0xFF
-    ret
-
-fx_neg_b_local:
-    com r23
-    neg r22
-    sbci r23, 0xFF
-    ret
-
-; === FX_PRINT (Formatado) ===
-.global fx_print
-fx_print:
-    push r24
-    push r25
-    push r22
-    push r23
-    push r16
-    
-    sbrs r25, 7
-    rjmp pr_int
-    push r24
-    ldi r24, '-'
-    call uart_tx
-    pop r24
-    call fx_neg_a_local
-
-pr_int:
-    push r24
-    mov r24, r25
-    ldi r25, 0
-    call print_int16
-    pop r24
-    
-    push r24
-    ldi r24, '.'
-    call uart_tx
-    pop r24
-    
-    ; Fração
-    mov r22, r24
-    ldi r23, 0
-    mov r24, r22
-    ldi r25, 0
-    
-    ldi r22, lo8(1000)
-    ldi r23, hi8(1000)
-    call mul16_32
-    
-    mov r25, r24
-    mov r24, r23
-    
-    ; Padding
-    ldi r16, 0
-    cpi r24, 100
-    cpc r25, r16
-    brsh check_10
-    push r24
-    ldi r24, '0'
-    call uart_tx
-    pop r24
-
-check_10:
-    ldi r16, 0
-    cpi r24, 10
-    cpc r25, r16
-    brsh do_print_frac
-    push r24
-    ldi r24, '0'
-    call uart_tx
-    pop r24
-
-do_print_frac:
-    call print_int16
-    
-    pop r16
-    pop r23
-    pop r22
-    pop r25
-    pop r24
     ret
 
 ; === LIB: lib_avr/runtime.s ===

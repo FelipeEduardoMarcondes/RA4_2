@@ -19,7 +19,7 @@ MEM[I] = t4
 t5 = PRINT[t4]
 
 # Linha 4
-t6 = 2
+t6 = 23
 MEM[N] = t6
 t7 = PRINT[t6]
 
@@ -66,7 +66,3 @@ t12 = t29
 goto L0
 L1:
 t32 = PRINT[t12]
-
-# Linha 8
-t33 = MEM[B]
-t34 = PRINT[t33]

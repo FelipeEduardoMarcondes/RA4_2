@@ -1,25 +1,21 @@
 ; lib_avr/math_inteiro.s
-; Biblioteca Alternativa para Inteiros Grandes (Unsigned)
-; Substitui math_signed.s para os testes de Fibonacci/Fatorial
-
 .section .text
 
-; === DIV16S (Mantido apenas para compatibilidade de linkagem) ===
-; Mas implementado como DIV16U (Unsigned)
+; === DIV16S ===
+; Redireciona para div16u (ignora sinal para suportar uint16 até 65535)
 .global div16s
 div16s:
     call div16u
     ret
 
-; === PRINT_INT16 (Versão Unsigned 0-65535) ===
-; Ignora sinal para permitir imprimir até 65535 (ex: Fibo 24 = 46368)
+; === PRINT_INT16 (Unsigned) ===
 .global print_int16
 print_int16:
     push r24
     push r25
     push r16
     
-    ; Caso especial: se for 0
+    ; Se for zero, imprime '0' direto
     mov r16, r24
     or r16, r25
     brne p_start
@@ -36,8 +32,9 @@ p_end:
     pop r24
     ret
 
-; Função recursiva de impressão
+; Recursão para imprimir dígitos
 p_rec:
+    ; Verifica se num == 0
     mov r16, r24
     or r16, r25
     breq p_ret
@@ -47,14 +44,14 @@ p_rec:
     
     ldi r22, 10
     ldi r23, 0
-    call div16u     ; Divisão SEM sinal
+    call div16u     ; R25:R24 = Quociente, R15:R14 = Resto
     
-    push r14        ; Salva resto
-    call p_rec      ; Recursão
-    pop r24         ; Recupera resto
+    push r14        ; Salva o resto (dígito atual) na pilha
+    call p_rec      ; Chama recursão com o quociente
+    pop r24         ; Recupera o resto da pilha para R24
     
-    subi r24, -'0'
-    call uart_tx
+    subi r24, -'0'  ; Converte para ASCII
+    call uart_tx    ; Imprime
     
     pop r25
     pop r24

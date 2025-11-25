@@ -55,10 +55,15 @@ class AVRAssemblyGeneratorInt:
 
     def _gerar_prologo(self):
         self.assembly.extend([
-            ".section .text", ".global main", "main:",
+            ".section .text", 
+            ".global main", 
+            "main:",
+            "    ; --- Setup Inicial ---",
+            "    clr r1",          # <--- ADICIONE ISSO (Zera registrador de "zero")
             "    ldi r16, 0x08", "    out 0x3E, r16",
             "    ldi r16, 0xFF", "    out 0x3D, r16",
-            "    call uart_init", "    call res_init"
+            "    call uart_init", 
+            "    call res_init"
         ])
 
     def _gerar_epilogo(self):
@@ -185,7 +190,6 @@ def salvarAssemblyInt(instructions, filename):
         "lib_avr/uart.s", 
         "lib_avr/math_core.s", 
         "lib_avr/math_inteiro.s", 
-        "lib_avr/math_fixed.s", 
         "lib_avr/runtime.s",
         "lib_avr/storage.s"
     ]

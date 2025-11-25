@@ -14,6 +14,7 @@ t3 = PRINT[1]
 # Linha 3
 L0:
 t5 = MEM[N]
+t7 = t5 <= 8
 ifFalse t7 goto L1
 t8 = MEM[FAT]
 t9 = MEM[N]
@@ -66,3 +67,73 @@ t36 = PRINT[t35]
 t38 = RES[1]
 MEM[FATORIAL3] = t38
 t39 = PRINT[t38]
+
+# Linha 13
+MEM[NUM] = 4
+t41 = PRINT[4]
+
+# Linha 14
+t43 = MEM[FATORIAL3]
+t44 = 3 * t43
+t45 = PRINT[t44]
+
+# Linha 15
+t47 = RES[1]
+MEM[FATORIAL4] = t47
+t48 = PRINT[t47]
+
+# Linha 16
+MEM[NUM] = 5
+t50 = PRINT[5]
+
+# Linha 17
+t52 = MEM[FATORIAL4]
+t53 = 4 * t52
+t54 = PRINT[t53]
+
+# Linha 18
+t56 = RES[1]
+MEM[FATORIAL5] = t56
+t57 = PRINT[t56]
+
+# Linha 19
+MEM[NUM] = 6
+t59 = PRINT[6]
+
+# Linha 20
+t61 = MEM[FATORIAL5]
+t62 = 5 * t61
+t63 = PRINT[t62]
+
+# Linha 21
+t65 = RES[1]
+MEM[FATORIAL6] = t65
+t66 = PRINT[t65]
+
+# Linha 22
+MEM[NUM] = 7
+t68 = PRINT[7]
+
+# Linha 23
+t70 = MEM[FATORIAL6]
+t71 = 6 * t70
+t72 = PRINT[t71]
+
+# Linha 24
+t74 = RES[1]
+MEM[FATORIAL7] = t74
+t75 = PRINT[t74]
+
+# Linha 25
+MEM[NUM] = 8
+t77 = PRINT[8]
+
+# Linha 26
+t79 = MEM[FATORIAL7]
+t80 = 7 * t79
+t81 = PRINT[t80]
+
+# Linha 27
+t83 = RES[1]
+MEM[FATORIAL8] = t83
+t84 = PRINT[t83]
