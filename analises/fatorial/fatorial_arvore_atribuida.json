@@ -65,9 +65,9 @@
         ]
       },
       {
-        "tipo_vertice": "mult",
+        "tipo_vertice": "plus",
         "tipo_inferido": "int",
-        "valor": "*",
+        "valor": "+",
         "filhos": [
           {
             "tipo_vertice": "store",

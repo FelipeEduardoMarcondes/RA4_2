@@ -31,7 +31,7 @@ while : int = while
   ├─ lte : booleano = <=
     ├─ id : int = N
     └─ num : int = 8
-  └─ mult : int = *
+  └─ plus : int = +
     ├─ store : int
       ├─ mult : int = *
         ├─ id : int = FAT

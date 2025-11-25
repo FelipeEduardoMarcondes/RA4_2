@@ -65,7 +65,7 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 11. Nó 'plus' (Valor: +): Regra 2.3 (Aritmética) com (int, int) -> int
 12. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> None
 13. Nó 'store': Regra 2.7 (Armazenamento) de 'int' em 'N' -> int
-14. Nó 'mult' (Valor: *): Regra 2.3 (Aritmética) com (int, int) -> int
+14. Nó 'plus' (Valor: +): Regra 2.3 (Aritmética) com (int, int) -> int
 15. Nó 'while' (Valor: while): Regra 2.10 (Laço) com (cond:booleano, body:int) -> int
 
 ### Regra de Dedução Formal (Nó Raiz)

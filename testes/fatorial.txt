@@ -1,16 +1,24 @@
 # MODO: INTEIRO
 
-# fatorial.txt
-# Calcula fatorial de números de 1 até 8
+# Calcula fatorial de 1 até 8
+# Fórmula: FAT = 1 * 2 * 3 * ... * 8
 
-# 1. Inicializar variáveis
+# Inicialização
 (1 N)
 (1 FAT)
 
-# 2. Loop principal
-# WHILE(N <= 8) { FAT = FAT * N; N = N + 1; }
-# Corpo unido por '*' para formar uma única expressão
-((N 8 <=) (((FAT N *) FAT) ((N 1 +) N) *) while)
+# Loop: WHILE (N <= 8) { FAT = FAT * N; N = N + 1; }
+# Em RPN: (condição corpo while)
+# Corpo retorna o último valor (N incrementado)
+(
+    (N 8 <=)               # Condição: N <= 8
+    (
+        ((FAT N *) FAT)    # FAT = FAT * N
+        ((N 1 +) N)        # N = N + 1
+        +                  # Combina (retorna soma, mas não importa)
+    )
+    while
+)
 
-# 3. Armazenar resultado final do loop
+# Resultado final
 (FAT)

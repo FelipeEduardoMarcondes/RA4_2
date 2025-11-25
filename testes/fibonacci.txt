@@ -1,6 +1,6 @@
 # MODO: INTEIRO
 
-# fibonacci.txt
+# Teste 2: Fibonacci
 
 # Inicializacao
 (0 A)
@@ -40,11 +40,11 @@
             0
             >
         )
+        
+        # Se a soma das operacoes for > 0 (sempre sera), retorna B
         (B)
         (B)
         IF
     )
     WHILE
 )
-
-(B)
