@@ -1,4 +1,4 @@
-# Árvore Sintática Atribuída - .\teste2.txt
+# Árvore Sintática Atribuída - testes/teste2.txt
 
 **Gerado pelo compilador RPN - Fase 3**
 

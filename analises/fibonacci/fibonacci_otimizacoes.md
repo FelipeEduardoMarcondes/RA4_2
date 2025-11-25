@@ -4,9 +4,9 @@
 
 ## Estatísticas
 
-- **Instruções originais:** 57
-- **Instruções otimizadas:** 46
-- **Redução:** 11 instruções (19.3%)
+- **Instruções originais:** 78
+- **Instruções otimizadas:** 65
+- **Redução:** 13 instruções (16.7%)
 
 ## Otimizações Aplicadas
 
@@ -24,7 +24,7 @@ Depois: t1 = 5
 
 ### Constant Propagation
 
-**Aplicações:** 10
+**Aplicações:** 12
 
 **Descrição:** Propaga valores constantes através do código.
 
@@ -39,7 +39,7 @@ Depois: t1 = 5
 
 ### Dead Code Elimination
 
-**Aplicações:** 11
+**Aplicações:** 13
 
 **Descrição:** Remove código que não afeta o resultado do programa.
 
@@ -85,7 +85,7 @@ t4 = 0
 MEM[I] = t4
 t5 = PRINT[t4]
 # Linha 4
-t6 = 12
+t6 = 3
 MEM[N] = t6
 t7 = PRINT[t6]
 # Linha 5
@@ -129,6 +129,27 @@ t12 = t29
 goto L0
 L1:
 t32 = PRINT[t12]
+# Linha 8
+t33 = MEM[A]
+t34 = PRINT[t33]
+# Linha 9
+t35 = MEM[B]
+t36 = PRINT[t35]
+# Linha 10
+t37 = MEM[A]
+t38 = PRINT[t37]
+# Linha 11
+t39 = MEM[B]
+t40 = PRINT[t39]
+# Linha 12
+t41 = MEM[A]
+t42 = 2
+t43 = t41 + t42
+t44 = PRINT[t43]
+# Linha 13
+t45 = 1
+t46 = RES[t45]
+t47 = PRINT[t46]
 ```
 
 ### TAC Otimizado
@@ -144,8 +165,8 @@ t3 = PRINT[1]
 MEM[I] = 0
 t5 = PRINT[0]
 # Linha 4
-MEM[N] = 12
-t7 = PRINT[12]
+MEM[N] = 3
+t7 = PRINT[3]
 # Linha 5
 t8 = MEM[A]
 t9 = PRINT[t8]
@@ -180,5 +201,24 @@ t12 = t29
 goto L0
 L1:
 t32 = PRINT[t12]
+# Linha 8
+t33 = MEM[A]
+t34 = PRINT[t33]
+# Linha 9
+t35 = MEM[B]
+t36 = PRINT[t35]
+# Linha 10
+t37 = MEM[A]
+t38 = PRINT[t37]
+# Linha 11
+t39 = MEM[B]
+t40 = PRINT[t39]
+# Linha 12
+t41 = MEM[A]
+t43 = t41 + 2
+t44 = PRINT[t43]
+# Linha 13
+t46 = RES[1]
+t47 = PRINT[t46]
 ```
 

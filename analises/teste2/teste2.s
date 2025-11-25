@@ -211,8 +211,8 @@ main:
     sts t14, r24
     sts t14 + 1, r25
     ; TAC: t15 = t13 + t14
-    lds r24, t13 
-    lds r25, t13  + 1
+    lds r24, t13
+    lds r25, t13 + 1
     lds r22, t14
     lds r23, t14 + 1
     add r24, r22
@@ -225,8 +225,8 @@ main:
     sts t16, r24
     sts t16 + 1, r25
     ; TAC: t17 = t15 - t16
-    lds r24, t15 
-    lds r25, t15  + 1
+    lds r24, t15
+    lds r25, t15 + 1
     lds r22, t16
     lds r23, t16 + 1
     sub r24, r22
@@ -254,8 +254,8 @@ main:
     sts t20, r24
     sts t20 + 1, r25
     ; TAC: t21 = t19 * t20
-    lds r24, t19 
-    lds r25, t19  + 1
+    lds r24, t19
+    lds r25, t19 + 1
     lds r22, t20
     lds r23, t20 + 1
     call fx_mul
@@ -267,8 +267,8 @@ main:
     sts t22, r24
     sts t22 + 1, r25
     ; TAC: t23 = t21 / t22
-    lds r24, t21 
-    lds r25, t21  + 1
+    lds r24, t21
+    lds r25, t21 + 1
     lds r22, t22
     lds r23, t22 + 1
     call div16s
@@ -340,8 +340,8 @@ main:
     sts t32, r24
     sts t32 + 1, r25
     ; TAC: t33 = t31 + t32
-    lds r24, t31 
-    lds r25, t31  + 1
+    lds r24, t31
+    lds r25, t31 + 1
     lds r22, t32
     lds r23, t32 + 1
     add r24, r22
@@ -354,8 +354,8 @@ main:
     sts t34, r24
     sts t34 + 1, r25
     ; TAC: t35 = t33 - t34
-    lds r24, t33 
-    lds r25, t33  + 1
+    lds r24, t33
+    lds r25, t33 + 1
     lds r22, t34
     lds r23, t34 + 1
     sub r24, r22
@@ -383,8 +383,8 @@ main:
     sts t38, r24
     sts t38 + 1, r25
     ; TAC: t39 = t37 * t38
-    lds r24, t37 
-    lds r25, t37  + 1
+    lds r24, t37
+    lds r25, t37 + 1
     lds r22, t38
     lds r23, t38 + 1
     call fx_mul
@@ -396,8 +396,8 @@ main:
     sts t40, r24
     sts t40 + 1, r25
     ; TAC: t41 = t39 / t40
-    lds r24, t39 
-    lds r25, t39  + 1
+    lds r24, t39
+    lds r25, t39 + 1
     lds r22, t40
     lds r23, t40 + 1
     call div16s
@@ -419,8 +419,8 @@ main:
     sts t43, r24
     sts t43 + 1, r25
     ; TAC: t45 = t43 ^ 2
-    lds r24, t43 
-    lds r25, t43  + 1
+    lds r24, t43
+    lds r25, t43 + 1
     ldi r22, 2
     ldi r23, 0
     call fx_pow
@@ -432,16 +432,16 @@ main:
     sts t46, r24
     sts t46 + 1, r25
     ; TAC: t48 = t46 ^ 2
-    lds r24, t46 
-    lds r25, t46  + 1
+    lds r24, t46
+    lds r25, t46 + 1
     ldi r22, 2
     ldi r23, 0
     call fx_pow
     sts t48, r24
     sts t48 + 1, r25
     ; TAC: t49 = t45 + t48
-    lds r24, t45 
-    lds r25, t45  + 1
+    lds r24, t45
+    lds r25, t45 + 1
     lds r22, t48
     lds r23, t48 + 1
     add r24, r22
@@ -474,16 +474,16 @@ main:
     sts t53, r24
     sts t53 + 1, r25
     ; TAC: t54 = t52 | t53
-    lds r24, t52 
-    lds r25, t52  + 1
+    lds r24, t52
+    lds r25, t52 + 1
     lds r22, t53
     lds r23, t53 + 1
     call fx_div
     sts t54, r24
     sts t54 + 1, r25
     ; TAC: t55 = t51 + t54
-    lds r24, t51 
-    lds r25, t51  + 1
+    lds r24, t51
+    lds r25, t51 + 1
     lds r22, t54
     lds r23, t54 + 1
     add r24, r22
@@ -609,8 +609,8 @@ L3:
     sts t80, r24
     sts t80 + 1, r25
     ; TAC: t81 = t79 % t80
-    lds r24, t79 
-    lds r25, t79  + 1
+    lds r24, t79
+    lds r25, t79 + 1
     lds r22, t80
     lds r23, t80 + 1
     call op_mod
@@ -622,8 +622,8 @@ L3:
     sts t82, r24
     sts t82 + 1, r25
     ; TAC: t83 = t81 + t82
-    lds r24, t81 
-    lds r25, t81  + 1
+    lds r24, t81
+    lds r25, t81 + 1
     lds r22, t82
     lds r23, t82 + 1
     add r24, r22
@@ -656,8 +656,8 @@ L3:
     sts t89, r24
     sts t89 + 1, r25
     ; TAC: t91 = t89 - 1
-    lds r24, t89 
-    lds r25, t89  + 1
+    lds r24, t89
+    lds r25, t89 + 1
     ldi r22, 0
     ldi r23, 1
     sub r24, r22
@@ -678,8 +678,8 @@ L4:
     sts t92, r24
     sts t92 + 1, r25
     ; TAC: t94 = t92 + 1
-    lds r24, t92 
-    lds r25, t92  + 1
+    lds r24, t92
+    lds r25, t92 + 1
     ldi r22, 0
     ldi r23, 1
     add r24, r22
@@ -726,12 +726,8 @@ L5:
     rjmp L7
 L6:
     ; TAC: t99 = -1
-    lds r24, 
-    lds r25,  + 1
-    ldi r22, 0
-    ldi r23, 1
-    sub r24, r22
-    sbc r25, r23
+    ldi r24, 0
+    ldi r25, 255
     sts t99, r24
     sts t99 + 1, r25
 L7:
@@ -777,8 +773,8 @@ L8:
     sts t109, r24
     sts t109 + 1, r25
     ; TAC: t111 = t109 + 1
-    lds r24, t109 
-    lds r25, t109  + 1
+    lds r24, t109
+    lds r25, t109 + 1
     ldi r22, 0
     ldi r23, 1
     add r24, r22
@@ -796,8 +792,8 @@ L8:
     sts t112, r24
     sts t112 + 1, r25
     ; TAC: t113 = t111 + t112
-    lds r24, t111 
-    lds r25, t111  + 1
+    lds r24, t111
+    lds r25, t111 + 1
     lds r22, t112
     lds r23, t112 + 1
     add r24, r22

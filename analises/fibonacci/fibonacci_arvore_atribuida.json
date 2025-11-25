@@ -68,7 +68,7 @@
       {
         "tipo_vertice": "num",
         "tipo_inferido": "int",
-        "valor": 12,
+        "valor": 3,
         "filhos": []
       },
       {
@@ -272,6 +272,68 @@
             "filhos": []
           }
         ]
+      }
+    ]
+  },
+  {
+    "linha": 8,
+    "tipo_vertice": "id",
+    "tipo_inferido": "int",
+    "valor": "A",
+    "filhos": []
+  },
+  {
+    "linha": 9,
+    "tipo_vertice": "id",
+    "tipo_inferido": "int",
+    "valor": "B",
+    "filhos": []
+  },
+  {
+    "linha": 10,
+    "tipo_vertice": "id",
+    "tipo_inferido": "int",
+    "valor": "A",
+    "filhos": []
+  },
+  {
+    "linha": 11,
+    "tipo_vertice": "id",
+    "tipo_inferido": "int",
+    "valor": "B",
+    "filhos": []
+  },
+  {
+    "linha": 12,
+    "tipo_vertice": "plus",
+    "tipo_inferido": "int",
+    "valor": "+",
+    "filhos": [
+      {
+        "tipo_vertice": "id",
+        "tipo_inferido": "int",
+        "valor": "A",
+        "filhos": []
+      },
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 2,
+        "filhos": []
+      }
+    ]
+  },
+  {
+    "linha": 13,
+    "tipo_vertice": "res",
+    "tipo_inferido": "int",
+    "valor": "RES",
+    "filhos": [
+      {
+        "tipo_vertice": "num",
+        "tipo_inferido": "int",
+        "valor": 1,
+        "filhos": []
       }
     ]
   }

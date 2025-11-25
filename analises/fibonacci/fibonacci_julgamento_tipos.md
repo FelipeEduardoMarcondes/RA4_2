@@ -73,7 +73,7 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 
 ### Processo de Inferência (Bottom-Up)
 
-1. Nó 'num' (Valor: 12): Regra 2.1 (Literal) -> int
+1. Nó 'num' (Valor: 3): Regra 2.1 (Literal) -> int
 2. Nó 'id' (Valor: N): Regra 2.2 (Identificador) -> None
 3. Nó 'store': Regra 2.7 (Armazenamento) de 'int' em 'N' -> int
 
@@ -170,4 +170,122 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 Γ ⊢ (e₁ e₂ while) : int
 ```
 **Restrição:** booleano == booleano
+
+---
+
+## Linha 8
+
+**Tipo Inferido Final:** `int`
+
+### Processo de Inferência (Bottom-Up)
+
+1. Nó 'id' (Valor: A): Regra 2.2 (Identificador) -> int
+
+### Regra de Dedução Formal (Nó Raiz)
+
+**Regra 2.2: Identificador**
+```
+Γ(A).tipo = int, Γ(A).inicializada = true
+──────────────────────────────────────────────
+Γ ⊢ A : int
+```
+
+---
+
+## Linha 9
+
+**Tipo Inferido Final:** `int`
+
+### Processo de Inferência (Bottom-Up)
+
+1. Nó 'id' (Valor: B): Regra 2.2 (Identificador) -> int
+
+### Regra de Dedução Formal (Nó Raiz)
+
+**Regra 2.2: Identificador**
+```
+Γ(B).tipo = int, Γ(B).inicializada = true
+──────────────────────────────────────────────
+Γ ⊢ B : int
+```
+
+---
+
+## Linha 10
+
+**Tipo Inferido Final:** `int`
+
+### Processo de Inferência (Bottom-Up)
+
+1. Nó 'id' (Valor: A): Regra 2.2 (Identificador) -> int
+
+### Regra de Dedução Formal (Nó Raiz)
+
+**Regra 2.2: Identificador**
+```
+Γ(A).tipo = int, Γ(A).inicializada = true
+──────────────────────────────────────────────
+Γ ⊢ A : int
+```
+
+---
+
+## Linha 11
+
+**Tipo Inferido Final:** `int`
+
+### Processo de Inferência (Bottom-Up)
+
+1. Nó 'id' (Valor: B): Regra 2.2 (Identificador) -> int
+
+### Regra de Dedução Formal (Nó Raiz)
+
+**Regra 2.2: Identificador**
+```
+Γ(B).tipo = int, Γ(B).inicializada = true
+──────────────────────────────────────────────
+Γ ⊢ B : int
+```
+
+---
+
+## Linha 12
+
+**Tipo Inferido Final:** `int`
+
+### Processo de Inferência (Bottom-Up)
+
+1. Nó 'id' (Valor: A): Regra 2.2 (Identificador) -> int
+2. Nó 'num' (Valor: 2): Regra 2.1 (Literal) -> int
+3. Nó 'plus' (Valor: +): Regra 2.3 (Aritmética) com (int, int) -> int
+
+### Regra de Dedução Formal (Nó Raiz)
+
+**Regra 2.3: Operação Aritmética (com promoção)**
+```
+Γ ⊢ e₁ : int    Γ ⊢ e₂ : int
+────────────────────────────────────────────────
+Γ ⊢ (e₁ e₂ +) : promover_tipo(int, int) = int
+```
+
+---
+
+## Linha 13
+
+**Tipo Inferido Final:** `int`
+
+### Processo de Inferência (Bottom-Up)
+
+1. Nó 'num' (Valor: 1): Regra 2.1 (Literal) -> int
+2. Nó 'res' (Valor: RES): Regra 2.8 (Histórico) com N='int' -> int
+
+### Regra de Dedução Formal (Nó Raiz)
+
+**Regra 2.8: Histórico**
+```
+Γ ⊢ e₁ : int    e₁.valor ≥ 1    historico[...].tipo = T
+────────────────────────────────────────────────────────
+Γ ⊢ (e₁ RES) : int
+```
+Contexto: N = 1
 

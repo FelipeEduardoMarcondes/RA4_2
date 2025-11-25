@@ -16,8 +16,8 @@ MEM[I] = 0
 t5 = PRINT[0]
 
 # Linha 4
-MEM[N] = 12
-t7 = PRINT[12]
+MEM[N] = 3
+t7 = PRINT[3]
 
 # Linha 5
 t8 = MEM[A]
@@ -55,3 +55,28 @@ t12 = t29
 goto L0
 L1:
 t32 = PRINT[t12]
+
+# Linha 8
+t33 = MEM[A]
+t34 = PRINT[t33]
+
+# Linha 9
+t35 = MEM[B]
+t36 = PRINT[t35]
+
+# Linha 10
+t37 = MEM[A]
+t38 = PRINT[t37]
+
+# Linha 11
+t39 = MEM[B]
+t40 = PRINT[t39]
+
+# Linha 12
+t41 = MEM[A]
+t43 = t41 + 2
+t44 = PRINT[t43]
+
+# Linha 13
+t46 = RES[1]
+t47 = PRINT[t46]

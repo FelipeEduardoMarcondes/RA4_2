@@ -1,4 +1,4 @@
-# Árvore Sintática Atribuída - .\testes\fibonacci.txt
+# Árvore Sintática Atribuída - testes/fibonacci.txt
 
 **Gerado pelo compilador RPN - Fase 3**
 
@@ -38,7 +38,7 @@ store : int
 
 ```
 store : int
-  ├─ num : int = 12
+  ├─ num : int = 3
   └─ id = N
 ```
 
@@ -91,5 +91,56 @@ while : int = while
       └─ num : int = 0
     ├─ id : int = B
     └─ id : int = B
+```
+
+## Expressão 8
+
+**Tipo inferido:** `int`
+
+```
+id : int = A
+```
+
+## Expressão 9
+
+**Tipo inferido:** `int`
+
+```
+id : int = B
+```
+
+## Expressão 10
+
+**Tipo inferido:** `int`
+
+```
+id : int = A
+```
+
+## Expressão 11
+
+**Tipo inferido:** `int`
+
+```
+id : int = B
+```
+
+## Expressão 12
+
+**Tipo inferido:** `int`
+
+```
+plus : int = +
+  ├─ id : int = A
+  └─ num : int = 2
+```
+
+## Expressão 13
+
+**Tipo inferido:** `int`
+
+```
+res : int = RES
+  └─ num : int = 1
 ```
 
