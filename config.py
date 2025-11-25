@@ -10,7 +10,7 @@
 # Windows: "COM3", "COM4", "COM5", etc.
 # Linux: "/dev/ttyUSB0", "/dev/ttyACM0", etc.
 # macOS: "/dev/cu.usbserial-XXXX"
-PORTA_SERIAL = "COM4"
+PORTA_SERIAL = "/dev/ttyACM0"
 
 # Taxa de comunicação (baud rate)
 # Padrão: 115200 para upload, 9600 para serial monitor

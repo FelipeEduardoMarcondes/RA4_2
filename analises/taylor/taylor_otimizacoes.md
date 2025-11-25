@@ -73,7 +73,7 @@ Depois: L1:
 
 ```
 # Linha 1
-t0 = 0.5
+t0 = 3.14
 MEM[X_VAL] = t0
 t1 = PRINT[t0]
 # Linha 2
@@ -151,8 +151,8 @@ t57 = PRINT[t56]
 
 ```
 # Linha 1
-MEM[X_VAL] = 0.5
-t1 = PRINT[0.5]
+MEM[X_VAL] = 3.14
+t1 = PRINT[3.14]
 # Linha 2
 t2 = MEM[X_VAL]
 t4 = t2 ^ 2

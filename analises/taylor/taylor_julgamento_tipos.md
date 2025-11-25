@@ -10,7 +10,7 @@ Análise detalhada da inferência de tipos e aplicação das regras semânticas 
 
 ### Processo de Inferência (Bottom-Up)
 
-1. Nó 'num' (Valor: 0.5): Regra 2.1 (Literal) -> real
+1. Nó 'num' (Valor: 3.14): Regra 2.1 (Literal) -> real
 2. Nó 'id' (Valor: X_VAL): Regra 2.2 (Identificador) -> None
 3. Nó 'store': Regra 2.7 (Armazenamento) de 'real' em 'X_VAL' -> real
 

@@ -59,14 +59,14 @@ main:
     ; --- Inicio do Programa ---
 
     ; # Linha 1
-    ; TAC: MEM[X_VAL] = 0.5
-    ldi r24, 128
-    ldi r25, 0
+    ; TAC: MEM[X_VAL] = 3.14
+    ldi r24, 35
+    ldi r25, 3
     sts X_VAL, r24
     sts X_VAL + 1, r25
-    ; TAC: t1 = PRINT[0.5]
-    ldi r24, 128
-    ldi r25, 0
+    ; TAC: t1 = PRINT[3.14]
+    ldi r24, 35
+    ldi r25, 3
     call res_save
     call fx_print
     call uart_newline

@@ -8,7 +8,7 @@
       {
         "tipo_vertice": "num",
         "tipo_inferido": "real",
-        "valor": 0.5,
+        "valor": 3.14,
         "filhos": []
       },
       {

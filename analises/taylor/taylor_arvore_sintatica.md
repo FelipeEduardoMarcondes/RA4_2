@@ -1,4 +1,4 @@
-# Árvore Sintática Atribuída - .\testes\taylor.txt
+# Árvore Sintática Atribuída - testes/taylor.txt
 
 **Gerado pelo compilador RPN - Fase 3**
 
@@ -8,7 +8,7 @@
 
 ```
 store : real
-  ├─ num : real = 0.5
+  ├─ num : real = 3.14
   └─ id = X_VAL
 ```
 

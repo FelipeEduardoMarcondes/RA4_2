@@ -16,7 +16,7 @@ try:
 except ImportError:
     print("AVISO: arquivo config.py não encontrado, usando configurações padrão")
     config = {
-        'porta_serial': 'COM4',
+        'porta_serial': '/dev/ttyUSB0',
         'baud_upload': 115200,
         'auto_upload': False,
         'output_dir': 'analises',
