@@ -1,6 +1,5 @@
 # monitor_serial.py
 # FELIPE EDUARDO MARCONDES - GRUPO 2
-# Monitor Serial com Debug Aprimorado
 
 import serial
 import serial.tools.list_ports
@@ -11,7 +10,7 @@ import sys
 # CONFIGURAÇÕES
 # ==========================================
 BAUD_RATE = 9600
-PORTA_PADRAO = '/dev/ttyACM0'
+PORTA_PADRAO = 'COM4'
 TIMEOUT = 1
 # ==========================================
 

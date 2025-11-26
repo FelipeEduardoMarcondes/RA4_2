@@ -1,4 +1,4 @@
-# Árvore Sintática Atribuída - testes/fatorial.txt
+# Árvore Sintática Atribuída - .\testes\fatorial.txt
 
 **Gerado pelo compilador RPN - Fase 3**
 

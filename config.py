@@ -1,5 +1,4 @@
 # config.py
-# Configurações do Compilador RPN
 # FELIPE EDUARDO MARCONDES - GRUPO 2
 
 # ============================================
@@ -10,7 +9,7 @@
 # Windows: "COM3", "COM4", "COM5", etc.
 # Linux: "/dev/ttyUSB0", "/dev/ttyACM0", etc.
 # macOS: "/dev/cu.usbserial-XXXX"
-PORTA_SERIAL = "/dev/ttyACM0"
+PORTA_SERIAL = "COM4"
 
 # Taxa de comunicação (baud rate)
 # Padrão: 115200 para upload, 9600 para serial monitor

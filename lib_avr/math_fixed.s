@@ -1,5 +1,5 @@
 ; lib_avr/math_fixed.s
-; Aritmética Q8.8 (Ponto Fixo) - CORRIGIDO
+; Aritmética Q8.8 (Ponto Fixo)
 
 .section .text
 
@@ -48,7 +48,7 @@ fx_div:
     push r19
     push r20
     push r21
-    push r28 ; Usaremos R28 para guardar o sinal
+    push r28
 
     ; 1. Calcula Sinal
     clr r28
@@ -81,10 +81,7 @@ div_setup:
     ; 4. Executa Divisão 32 bits
     call div32u   ; Quociente em R25:R22
     
-    ; 5. Resultado Q8.8 está nos bytes do meio (R23:R22 do resultado)
-    ; Se entrada foi escalada em 8 bits, o resultado da div inteira
-    ; já está na escala correta se interpretarmos R22 como fração e R23 como inteiro.
-    ; Precisamos mover R23:R22 -> R25:R24
+
     
     movw r24, r22 ; Copia R23:R22 para R25:R24
     
@@ -156,7 +153,7 @@ fx_neg_b_local:
     sbci r23, 0xFF
     ret
 
-; === FX_PRINT (Formatado) ===
+; === FX_PRINT ===
 .global fx_print
 fx_print:
     push r24
