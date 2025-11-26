@@ -197,15 +197,14 @@ class TACOptimizer:
             if inst.startswith('#') or ':' in inst:
                 continue
             
-            # --- CORREÇÃO AQUI (Passagem 1) ---
-            # Removemos 'goto' e 'ifFalse' desta lista para que caiam na verificação específica abaixo
-            if any(keyword in inst for keyword in ['PRINT[', 'MEM[', 'RES[']):
+            if any(keyword in inst for keyword in ['PRINT[', 'MEM[', 'RES[', 'HIST[']):
                 # Marca TODAS as variáveis do lado direito como usadas
                 parts = inst.split('=')
                 if len(parts) > 1:
                     right_side = parts[1]
                     used_in_right = re.findall(r'\b(t\d+|[A-Z_][A-Z0-9_]*)\b', right_side)
                     used_vars.update(used_in_right)
+
                 continue
             
             # Variáveis usadas no lado direito (Atribuições normais)
@@ -227,7 +226,6 @@ class TACOptimizer:
                 optimized.append(inst)
                 continue
             
-            # --- MANTER ISTO (Passagem 2) ---
             # Aqui mantemos 'goto' e 'ifFalse' para não removê-las da saída
             if any(keyword in inst for keyword in ['PRINT[', 'MEM[', 'RES[', 'goto', 'ifFalse']):
                 optimized.append(inst)
@@ -247,23 +245,25 @@ class TACOptimizer:
         
         return optimized
     def _eliminate_redundant_jumps(self, instructions):
-        """
-        Remove saltos redundantes (saltos para a próxima instrução).
-        """
+        # Remove saltos redundantes (saltos para a próxima instrução).
         optimized = []
         
         for i, inst in enumerate(instructions):
             # Detectar goto L1 seguido imediatamente por L1:
+
             if 'goto' in inst and not 'ifFalse' in inst:
                 match = re.match(r'goto\s+(\w+)', inst)
+
                 if match:
                     target = match.group(1)
                     
                     # Verificar se a próxima instrução é o rótulo alvo
                     if i + 1 < len(instructions):
                         next_inst = instructions[i + 1]
+
                         if next_inst.strip() == f"{target}:":
                             self.optimizations_applied['redundant_jumps'] += 1
+
                             continue
             
             optimized.append(inst)
@@ -271,12 +271,13 @@ class TACOptimizer:
         return optimized
     
     def get_optimization_stats(self):
-        """Retorna estatísticas das otimizações aplicadas."""
+        # Retorna estatísticas das otimizações aplicadas.
+
         return self.optimizations_applied.copy()
 
 
 def salvarTACOtimizado(instructions, filename):
-    """Salva instruções TAC otimizadas em arquivo."""
+    # Salva instruções TAC otimizadas em arquivo.
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("# Three Address Code (TAC) - Otimizado\n")
         f.write("# Gerado automaticamente\n")
@@ -290,7 +291,7 @@ def salvarTACOtimizado(instructions, filename):
 
 
 def gerarRelatorioOtimizacoes(tac_original, tac_otimizado, stats, filename):
-    """Gera relatório markdown com as otimizações aplicadas."""
+    # Gera relatório markdown com as otimizações aplicadas.
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("# Relatório de Otimizações de Código\n\n")
         f.write("**Gerado automaticamente pelo otimizador TAC**\n\n")
@@ -302,6 +303,7 @@ def gerarRelatorioOtimizacoes(tac_original, tac_otimizado, stats, filename):
         reducao = len(tac_original) - len(tac_otimizado)
         if len(tac_original) > 0:
             perc = 100 * reducao / len(tac_original)
+            
         else:
             perc = 0
             

@@ -614,17 +614,9 @@ pi_end:
 ; Roda no ATmega328P (2KB SRAM)
 
 .section .bss
-    ; --- Buffer para o histórico de RES ---
-    ; Alocamos espaço para 100 resultados (200 bytes)
-    ; Se o programa tiver mais de 100 linhas, ele sobrescreve ou trava (simples por enquanto)
+
     .lcomm res_buffer, 200 
     .lcomm res_count, 1    ; Contador de quantos resultados já salvamos (0 a 255)
-
-    ; --- Memória de Variáveis (MEM) ---
-    ; Vamos supor 26 variáveis possíveis (A-Z) ou apenas uma "MEM" genérica.
-    ; O documento diz: "(V MEM): Armazena em uma memória".
-    ; E "(MEM): Retorna o valor". Parece ser uma variável única ou poucas.
-    ; Vamos alocar espaço para 1 variável genérica chamada MEM_VAL
     .lcomm mem_val, 2      ; 2 bytes para a variável MEM
     .lcomm mem_init, 1     ; Flag: 0 = não inicializada, 1 = inicializada
 
@@ -646,7 +638,6 @@ res_init:
 
 ; === RES_SAVE ===
 ; Salva o valor atual (R25:R24) no topo do histórico
-; Deve ser chamado ao final de CADA expressão calculada
 .global res_save
 res_save:
     push r16
@@ -695,16 +686,10 @@ res_fetch:
     
     ; 2. Calcula o índice alvo: (Count - N)
     ; Se N=1, queremos o anterior imediato (Count - 1)
-    ; O comando diz "N linhas anteriores".
     ; Se N=1, é o último salvo.
     sub r16, r22
     
-    ; Opcional: Verificar se r16 < 0 (Underflow/Erro)
-    ; Por simplicidade, assumimos que o usuário não pede RES maior que o existente.
-    ; Como o índice é 0-based no save, mas o count é incrementado, 
-    ; se salvamos 1 item, count é 1. Se pedimos 1 RES, queremos indice 0.
-    ; 1 - 1 = 0. Correto.
-    
+
     ; 3. Calcula endereço: res_buffer + (target * 2)
     ldi r30, lo8(res_buffer)
     ldi r31, hi8(res_buffer)
@@ -747,8 +732,7 @@ mem_store:
 ; === MEM_LOAD ===
 ; Carrega o valor de MEM para R25:R24
 ; Se não inicializada, o comportamento é indefinido no Assembly 
-; (o analisador semântico já deve ter barrado isso), 
-; mas retornaremos 0 por segurança.
+
 .global mem_load
 mem_load:
     push r16
@@ -890,7 +874,7 @@ p_ret:
 
 ; === LIB: lib_avr/math_fixed.s ===
 ; lib_avr/math_fixed.s
-; Aritmética Q8.8 (Ponto Fixo) - CORRIGIDO
+; Aritmética Q8.8 (Ponto Fixo)
 
 .section .text
 
@@ -939,7 +923,7 @@ fx_div:
     push r19
     push r20
     push r21
-    push r28 ; Usaremos R28 para guardar o sinal
+    push r28
 
     ; 1. Calcula Sinal
     clr r28
@@ -972,10 +956,7 @@ div_setup:
     ; 4. Executa Divisão 32 bits
     call div32u   ; Quociente em R25:R22
     
-    ; 5. Resultado Q8.8 está nos bytes do meio (R23:R22 do resultado)
-    ; Se entrada foi escalada em 8 bits, o resultado da div inteira
-    ; já está na escala correta se interpretarmos R22 como fração e R23 como inteiro.
-    ; Precisamos mover R23:R22 -> R25:R24
+
     
     movw r24, r22 ; Copia R23:R22 para R25:R24
     
@@ -1047,7 +1028,7 @@ fx_neg_b_local:
     sbci r23, 0xFF
     ret
 
-; === FX_PRINT (Formatado) ===
+; === FX_PRINT ===
 .global fx_print
 fx_print:
     push r24
